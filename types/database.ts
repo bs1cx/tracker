@@ -365,6 +365,33 @@ export interface MenstrualLog {
   created_at: string
 }
 
+export interface DailyHealthSummary {
+  id: string
+  user_id: string
+  summary_date: string // DATE
+  overall_wellness_score: number | null // 0-10
+  notes: string | null
+  ongoing_conditions: string[] | null // Devam eden hastalıklar
+  symptoms: string[] | null // Belirtiler
+  medications_taken: string[] | null // Alınan ilaçlar
+  total_steps: number
+  total_exercise_minutes: number
+  total_water_ml: number
+  total_calories: number
+  sleep_hours: number | null
+  sleep_quality: "poor" | "fair" | "good" | "excellent" | null
+  avg_heart_rate: number | null
+  avg_energy_level: number | null // 0-10
+  avg_stress_level: number | null // 0-10
+  cigarettes_count: number
+  alcohol_drinks: number
+  caffeine_mg: number
+  is_completed: boolean
+  carried_over_conditions: boolean
+  created_at: string
+  updated_at: string
+}
+
 export interface HealthGoal {
   id: string
   user_id: string

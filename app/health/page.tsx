@@ -16,6 +16,7 @@ import { StressForm } from "@/components/health/stress-form"
 import { MedicationForm } from "@/components/health/medication-form"
 import { PainForm } from "@/components/health/pain-form"
 import { WeeklyAnalysis } from "@/components/health/weekly-analysis"
+import { DailyHealthSummaryCard } from "@/components/health/daily-health-summary"
 import { Heart, Moon, Droplet, Utensils, Cigarette, Footprints, Activity, Wine, Coffee, Battery, AlertTriangle, Pill, AlertCircle } from "lucide-react"
 import { getCurrentISODate } from "@/lib/date-utils"
 import {
@@ -187,6 +188,12 @@ export default async function HealthPage() {
         </div>
 
         <div className="space-y-8">
+          {/* Günlük Sağlık Özeti */}
+          <div>
+            <h2 className="text-xl font-semibold mb-4 text-slate-200">Günlük Sağlık Özeti</h2>
+            <DailyHealthSummaryCard />
+          </div>
+
           {/* Temel Sağlık Metrikleri */}
           <div>
             <h2 className="text-xl font-semibold mb-4 text-slate-200">Temel Metrikler</h2>
