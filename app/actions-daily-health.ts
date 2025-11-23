@@ -75,6 +75,7 @@ export async function updateDailyHealthSummary(data: {
   symptoms?: string[] | null
   medications_taken?: string[] | null
   is_completed?: boolean
+  carried_over_conditions?: boolean
 }) {
   const supabase = await createClient()
   const {
@@ -98,6 +99,8 @@ export async function updateDailyHealthSummary(data: {
   if (data.medications_taken !== undefined)
     updateData.medications_taken = data.medications_taken
   if (data.is_completed !== undefined) updateData.is_completed = data.is_completed
+  if (data.carried_over_conditions !== undefined)
+    updateData.carried_over_conditions = data.carried_over_conditions
 
   const { error } = await supabase
     .from("daily_health_summary")
