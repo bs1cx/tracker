@@ -244,7 +244,7 @@ export function CalendarWidget({ trackables }: CalendarWidgetProps) {
                           key={trackable.id}
                           className={cn(
                             "text-[9px] px-1 py-0.5 rounded truncate",
-                            trackable.is_completed_today
+                            (trackable as any).is_completed_on_date
                               ? "bg-green-500/20 text-green-400"
                               : "bg-[#60a5fa]/20 text-[#60a5fa]"
                           )}
@@ -286,7 +286,7 @@ export function CalendarWidget({ trackables }: CalendarWidgetProps) {
                             <div className="flex items-start justify-between gap-2">
                               <div className="flex-1 min-w-0">
                                 <div className="flex items-center gap-2 mb-1">
-                                  {trackable.is_completed_today ? (
+                                  {(trackable as any).is_completed_on_date ? (
                                     <CheckCircle2 className="h-4 w-4 text-green-400 flex-shrink-0" />
                                   ) : (
                                     <XCircle className="h-4 w-4 text-slate-400 flex-shrink-0" />
