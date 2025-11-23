@@ -2,9 +2,12 @@ import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
 import { tr } from "@/lib/i18n"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
 import { PomodoroTimer } from "@/components/productivity/pomodoro-timer"
-import { CheckSquare, Calendar, Focus, Target, FileText } from "lucide-react"
+import { FocusMode } from "@/components/productivity/focus-mode"
+import { GoalsManager } from "@/components/productivity/goals-manager"
+import { CheckSquare, FileText } from "lucide-react"
+import { getTodayPomodoroSessions, getTodayFocusSessions } from "@/app/actions-productivity"
+import Link from "next/link"
 
 export const dynamic = 'force-dynamic'
 
@@ -19,29 +22,83 @@ export default async function ProductivityPage() {
     redirect("/auth")
   }
 
+  // Fetch today's data
+  const [todayPomodoro, todayFocus] = await Promise.all([
+    getTodayPomodoroSessions(),
+    getTodayFocusSessions(),
+  ])
+
+  const totalPomodoroMinutes = todayPomodoro.reduce((sum, session) => sum + (session.duration_minutes || 0), 0)
+  const totalFocusMinutes = todayFocus.reduce((sum, session) => sum + (session.duration_minutes || 0), 0)
+  const completedPomodoros = todayPomodoro.filter(s => s.completed).length
+
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#0f172a]">
       <div className="container mx-auto px-4 py-8 max-w-7xl">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold tracking-tight">{tr.productivity.title}</h1>
-          <p className="text-muted-foreground mt-1">
+          <h1 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-[#60a5fa] via-[#3b82f6] to-[#60a5fa] bg-clip-text text-transparent">
+            {tr.productivity.title}
+          </h1>
+          <p className="text-slate-400 mt-2 text-lg">
             Görevlerinizi yönetin, odaklanın ve hedeflerinize ulaşın
           </p>
         </div>
 
+        {/* Today's Summary */}
+        <div className="grid gap-4 md:grid-cols-3 mb-6">
+          <Card className="border-slate-700/50 bg-gradient-to-br from-slate-800/80 to-slate-900/80 backdrop-blur-sm">
+            <CardContent className="pt-4">
+              <div className="text-sm text-slate-400">Bugünkü Pomodoro</div>
+              <div className="text-2xl font-bold text-slate-200">
+                {completedPomodoros} seans
+              </div>
+              <div className="text-xs text-slate-500 mt-1">
+                {totalPomodoroMinutes} dakika
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="border-slate-700/50 bg-gradient-to-br from-slate-800/80 to-slate-900/80 backdrop-blur-sm">
+            <CardContent className="pt-4">
+              <div className="text-sm text-slate-400">Bugünkü Odaklanma</div>
+              <div className="text-2xl font-bold text-slate-200">
+                {totalFocusMinutes} dk
+              </div>
+              <div className="text-xs text-slate-500 mt-1">
+                {todayFocus.length} seans
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="border-slate-700/50 bg-gradient-to-br from-slate-800/80 to-slate-900/80 backdrop-blur-sm">
+            <CardContent className="pt-4">
+              <div className="text-sm text-slate-400">Toplam Çalışma</div>
+              <div className="text-2xl font-bold text-slate-200">
+                {totalPomodoroMinutes + totalFocusMinutes} dk
+              </div>
+              <div className="text-xs text-slate-500 mt-1">
+                Bugün
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {/* Todo List */}
-          <Card>
+          {/* Todo List - Link to main dashboard */}
+          <Card className="border-slate-700/50 bg-gradient-to-br from-slate-800/80 to-slate-900/80 backdrop-blur-sm">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <CheckSquare className="h-5 w-5" />
+              <CardTitle className="flex items-center gap-2 text-slate-200">
+                <CheckSquare className="h-5 w-5 text-[#60a5fa]" />
                 {tr.productivity.todo}
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <Button className="w-full" size="sm">
-                Görev Listesini Aç
-              </Button>
+              <p className="text-sm text-slate-400 mb-4">
+                Görevlerinizi ana sayfadan yönetebilirsiniz
+              </p>
+              <Link href="/">
+                <button className="w-full px-4 py-2 bg-[#60a5fa] hover:bg-[#3b82f6] text-white rounded-md transition-colors">
+                  Görev Listesini Aç
+                </button>
+              </Link>
             </CardContent>
           </Card>
 
@@ -49,49 +106,12 @@ export default async function ProductivityPage() {
           <PomodoroTimer />
 
           {/* Focus Mode */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Focus className="h-5 w-5" />
-                {tr.productivity.focusMode}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Button className="w-full" size="sm">
-                Odak Modunu Aç
-              </Button>
-            </CardContent>
-          </Card>
+          <FocusMode />
 
           {/* Goals */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Target className="h-5 w-5" />
-                {tr.productivity.weeklyGoals}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Button className="w-full" size="sm">
-                Hedefler
-              </Button>
-            </CardContent>
-          </Card>
-
-          {/* Reports */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <FileText className="h-5 w-5" />
-                {tr.productivity.reports}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Button className="w-full" size="sm">
-                Raporları Görüntüle
-              </Button>
-            </CardContent>
-          </Card>
+          <div className="md:col-span-2 lg:col-span-3">
+            <GoalsManager />
+          </div>
         </div>
       </div>
     </div>
