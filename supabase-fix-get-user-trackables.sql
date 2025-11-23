@@ -1,6 +1,13 @@
 -- Fix get_user_trackables function return type issue
 -- This script drops the old function and recreates it with the updated return type
 
+-- Create trackable_priority enum if it doesn't exist
+DO $$ BEGIN
+    CREATE TYPE trackable_priority AS ENUM ('low', 'medium', 'high');
+EXCEPTION
+    WHEN duplicate_object THEN null;
+END $$;
+
 -- Drop the existing function if it exists
 DROP FUNCTION IF EXISTS get_user_trackables(uuid);
 
