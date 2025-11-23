@@ -206,22 +206,39 @@ export function DashboardContent({
     }
   }
 
+  // Separate calendar from other widgets
+  const calendarWidget = widgets.find((id) => id === "calendar")
+  const otherWidgets = widgets.filter((id) => id !== "calendar")
+
   return (
     <div className="space-y-8">
-      {/* Widgets Section */}
-      <div className="grid gap-6 md:grid-cols-2">
-        {widgets.map((widgetId) => (
-          <div key={widgetId}>{renderWidget(widgetId)}</div>
-        ))}
-        {widgets.length < 2 && (
-          <div className="flex items-center justify-center min-h-[200px]">
-            <WidgetSelector
-              onAddWidget={handleAddWidget}
-              existingWidgets={widgets}
-            />
-          </div>
-        )}
-      </div>
+      {/* Calendar Widget - Full Width */}
+      {calendarWidget && (
+        <div className="w-full">
+          {renderWidget("calendar")}
+        </div>
+      )}
+
+      {/* Other Widgets Section */}
+      {otherWidgets.length > 0 && (
+        <div className="grid gap-6 md:grid-cols-2">
+          {otherWidgets.map((widgetId) => (
+            <div key={widgetId} className="w-full">
+              {renderWidget(widgetId)}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Widget Selector */}
+      {widgets.length < 2 && (
+        <div className="flex items-center justify-center min-h-[200px]">
+          <WidgetSelector
+            onAddWidget={handleAddWidget}
+            existingWidgets={widgets}
+          />
+        </div>
+      )}
 
       {/* Trackables Sections */}
       <div className="space-y-8">

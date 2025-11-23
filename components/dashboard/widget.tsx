@@ -26,7 +26,7 @@ export function Widget({
   return (
     <Card
       className={cn(
-        "relative group transition-all hover:shadow-xl border-slate-700/50 bg-gradient-to-br from-slate-800/80 to-slate-900/80 backdrop-blur-sm",
+        "relative group transition-all hover:shadow-xl border-slate-700/50 bg-gradient-to-br from-slate-800/80 to-slate-900/80 backdrop-blur-sm w-full",
         isDragging && "opacity-50",
         className
       )}
