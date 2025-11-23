@@ -3,6 +3,37 @@
 import { createClient } from "@/lib/supabase/server"
 import { revalidatePath } from "next/cache"
 import { getCurrentISODate } from "@/lib/date-utils"
+import { DailyHealthSummary } from "@/types/database"
+
+// Serialize summary data to ensure all values are JSON-serializable
+function serializeSummary(data: any): DailyHealthSummary {
+  return {
+    id: String(data.id || ""),
+    user_id: String(data.user_id || ""),
+    summary_date: data.summary_date ? String(data.summary_date) : getCurrentISODate(),
+    overall_wellness_score: data.overall_wellness_score != null ? Number(data.overall_wellness_score) : null,
+    notes: data.notes ? String(data.notes) : null,
+    ongoing_conditions: Array.isArray(data.ongoing_conditions) ? data.ongoing_conditions.map(String) : null,
+    symptoms: Array.isArray(data.symptoms) ? data.symptoms.map(String) : null,
+    medications_taken: Array.isArray(data.medications_taken) ? data.medications_taken.map(String) : null,
+    total_steps: Number(data.total_steps ?? 0),
+    total_exercise_minutes: Number(data.total_exercise_minutes ?? 0),
+    total_water_ml: Number(data.total_water_ml ?? 0),
+    total_calories: Number(data.total_calories ?? 0),
+    sleep_hours: data.sleep_hours != null ? Number(data.sleep_hours) : null,
+    sleep_quality: data.sleep_quality || null,
+    avg_heart_rate: data.avg_heart_rate != null ? Number(data.avg_heart_rate) : null,
+    avg_energy_level: data.avg_energy_level != null ? Number(data.avg_energy_level) : null,
+    avg_stress_level: data.avg_stress_level != null ? Number(data.avg_stress_level) : null,
+    cigarettes_count: Number(data.cigarettes_count ?? 0),
+    alcohol_drinks: Number(data.alcohol_drinks ?? 0),
+    caffeine_mg: Number(data.caffeine_mg ?? 0),
+    is_completed: Boolean(data.is_completed ?? false),
+    carried_over_conditions: Boolean(data.carried_over_conditions ?? false),
+    created_at: data.created_at ? (data.created_at instanceof Date ? data.created_at.toISOString() : String(data.created_at)) : new Date().toISOString(),
+    updated_at: data.updated_at ? (data.updated_at instanceof Date ? data.updated_at.toISOString() : String(data.updated_at)) : new Date().toISOString(),
+  }
+}
 
 // Get or create today's health summary
 export async function getOrCreateTodaySummary() {
@@ -49,10 +80,10 @@ export async function getOrCreateTodaySummary() {
       }
     }
 
-    // If exists, return it
+    // If exists, return it (with proper serialization)
     if (existing) {
       console.log("[SERVER ACTION] getOrCreateTodaySummary - Found existing summary:", existing.id)
-      return existing
+      return serializeSummary(existing)
     }
 
     // Check if yesterday had ongoing conditions
@@ -107,7 +138,7 @@ export async function getOrCreateTodaySummary() {
     }
 
     console.log("[SERVER ACTION] getOrCreateTodaySummary - SUCCESS:", newSummary?.id)
-    return newSummary
+    return serializeSummary(newSummary)
   } catch (error: any) {
     console.error("[SERVER ACTION] getOrCreateTodaySummary - EXCEPTION:", error)
     throw error // Re-throw to let client handle it
@@ -228,19 +259,29 @@ export async function updateDailyHealthSummary(data: {
 
 // Auto-calculate and update today's summary from logs
 export async function calculateTodaySummary() {
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  try {
+    console.log("[SERVER ACTION] calculateTodaySummary - START")
+    
+    const supabase = await createClient()
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser()
 
-  if (!user) {
-    throw new Error("Unauthorized")
-  }
+    if (authError || !user) {
+      console.error("[SERVER ACTION] calculateTodaySummary - Auth error:", authError)
+      throw new Error("Kimlik doğrulama hatası. Lütfen tekrar giriş yapın.")
+    }
 
-  const today = getCurrentISODate()
+    const today = getCurrentISODate()
 
-  // Get or create today's summary
-  const summary = await getOrCreateTodaySummary()
+    // Get or create today's summary
+    const summary = await getOrCreateTodaySummary()
+    
+    if (!summary || !summary.id) {
+      console.error("[SERVER ACTION] calculateTodaySummary - No summary found")
+      throw new Error("Günlük özet bulunamadı")
+    }
 
   // Calculate totals from logs
   const [
@@ -257,154 +298,232 @@ export async function calculateTodaySummary() {
     caffeineResult,
   ] = await Promise.all([
     // Steps
-    supabase
-      .from("steps_logs")
-      .select("steps_count")
-      .eq("user_id", user.id)
-      .eq("log_date", today)
-      .then(({ data }) => ({
-        total: data?.reduce((sum, log) => sum + (log.steps_count || 0), 0) || 0,
-      })),
+    Promise.resolve(
+      supabase
+        .from("steps_logs")
+        .select("steps_count")
+        .eq("user_id", user.id)
+        .eq("log_date", today)
+    ).then(({ data, error }) => {
+      if (error) return { total: 0 }
+      const total = data?.reduce((sum, log) => {
+        const count = Number(log?.steps_count ?? 0)
+        return sum + (isNaN(count) ? 0 : count)
+      }, 0) ?? 0
+      return { total: Number(total) || 0 }
+    }).catch(() => ({ total: 0 })),
 
     // Exercise
-    supabase
-      .from("exercise_logs")
-      .select("duration_minutes")
-      .eq("user_id", user.id)
-      .eq("log_date", today)
-      .then(({ data }) => ({
-        total: data?.reduce((sum, log) => sum + (log.duration_minutes || 0), 0) || 0,
-      })),
+    Promise.resolve(
+      supabase
+        .from("exercise_logs")
+        .select("duration_minutes")
+        .eq("user_id", user.id)
+        .eq("log_date", today)
+    ).then(({ data, error }) => {
+      if (error) return { total: 0 }
+      const total = data?.reduce((sum, log) => {
+        const minutes = Number(log?.duration_minutes ?? 0)
+        return sum + (isNaN(minutes) ? 0 : minutes)
+      }, 0) ?? 0
+      return { total: Number(total) || 0 }
+    }).catch(() => ({ total: 0 })),
 
     // Water
-    supabase
-      .from("water_intake")
-      .select("amount_ml")
-      .eq("user_id", user.id)
-      .eq("log_date", today)
-      .then(({ data }) => ({
-        total: data?.reduce((sum, log) => sum + (log.amount_ml || 0), 0) || 0,
-      })),
+    Promise.resolve(
+      supabase
+        .from("water_intake")
+        .select("amount_ml")
+        .eq("user_id", user.id)
+        .eq("log_date", today)
+    ).then(({ data, error }) => {
+      if (error) return { total: 0 }
+      const total = data?.reduce((sum, log) => {
+        const ml = Number(log?.amount_ml ?? 0)
+        return sum + (isNaN(ml) ? 0 : ml)
+      }, 0) ?? 0
+      return { total: Number(total) || 0 }
+    }).catch(() => ({ total: 0 })),
 
     // Nutrition
-    supabase
-      .from("nutrition_logs")
-      .select("calories")
-      .eq("user_id", user.id)
-      .eq("log_date", today)
-      .then(({ data }) => ({
-        total: data?.reduce((sum, log) => sum + (log.calories || 0), 0) || 0,
-      })),
+    Promise.resolve(
+      supabase
+        .from("nutrition_logs")
+        .select("calories")
+        .eq("user_id", user.id)
+        .eq("log_date", today)
+    ).then(({ data, error }) => {
+      if (error) return { total: 0 }
+      const total = data?.reduce((sum, log) => {
+        const calories = Number(log?.calories ?? 0)
+        return sum + (isNaN(calories) ? 0 : calories)
+      }, 0) ?? 0
+      return { total: Number(total) || 0 }
+    }).catch(() => ({ total: 0 })),
 
     // Sleep
-    supabase
-      .from("sleep_logs")
-      .select("sleep_duration, sleep_quality")
-      .eq("user_id", user.id)
-      .eq("log_date", today)
-      .order("created_at", { ascending: false })
-      .limit(1)
-      .maybeSingle()
-      .then(({ data }) => ({
-        hours: data?.sleep_duration || null,
+    Promise.resolve(
+      supabase
+        .from("sleep_logs")
+        .select("sleep_duration, sleep_quality")
+        .eq("user_id", user.id)
+        .eq("log_date", today)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle()
+    ).then(({ data, error }) => {
+      if (error) return { hours: null, quality: null }
+      const hours = data?.sleep_duration != null ? Number(data.sleep_duration) : null
+      return {
+        hours: hours != null && !isNaN(hours) ? hours : null,
         quality: data?.sleep_quality || null,
-      })),
+      }
+    }).catch(() => ({ hours: null, quality: null })),
 
     // Heart Rate
-    supabase
-      .from("health_metrics")
-      .select("heart_rate")
-      .eq("user_id", user.id)
-      .eq("log_date", today)
-      .then(({ data }) => {
-        if (!data || data.length === 0) return { avg: null }
-        const sum = data.reduce((acc, log) => acc + (log.heart_rate || 0), 0)
-        return { avg: Math.round(sum / data.length) }
-      }),
+    Promise.resolve(
+      supabase
+        .from("health_metrics")
+        .select("heart_rate")
+        .eq("user_id", user.id)
+        .eq("log_date", today)
+    ).then(({ data, error }) => {
+      if (error || !data || data.length === 0) return { avg: null }
+      const validRates = data
+        .map(log => Number(log?.heart_rate ?? 0))
+        .filter(rate => !isNaN(rate) && rate > 0)
+      if (validRates.length === 0) return { avg: null }
+      const sum = validRates.reduce((acc, rate) => acc + rate, 0)
+      return { avg: Math.round(sum / validRates.length) }
+    }).catch(() => ({ avg: null })),
 
     // Energy
-    supabase
-      .from("energy_logs")
-      .select("energy_level")
-      .eq("user_id", user.id)
-      .eq("log_date", today)
-      .then(({ data }) => {
-        if (!data || data.length === 0) return { avg: null }
-        const sum = data.reduce((acc, log) => acc + (log.energy_level || 0), 0)
-        return { avg: Math.round((sum / data.length) * 10) / 10 }
-      }),
+    Promise.resolve(
+      supabase
+        .from("energy_logs")
+        .select("energy_level")
+        .eq("user_id", user.id)
+        .eq("log_date", today)
+    ).then(({ data, error }) => {
+      if (error || !data || data.length === 0) return { avg: null }
+      const validLevels = data
+        .map(log => Number(log?.energy_level ?? 0))
+        .filter(level => !isNaN(level))
+      if (validLevels.length === 0) return { avg: null }
+      const sum = validLevels.reduce((acc, level) => acc + level, 0)
+      return { avg: Math.round((sum / validLevels.length) * 10) / 10 }
+    }).catch(() => ({ avg: null })),
 
     // Stress
-    supabase
-      .from("stress_logs")
-      .select("stress_level")
-      .eq("user_id", user.id)
-      .eq("log_date", today)
-      .then(({ data }) => {
-        if (!data || data.length === 0) return { avg: null }
-        const sum = data.reduce((acc, log) => acc + (log.stress_level || 0), 0)
-        return { avg: Math.round((sum / data.length) * 10) / 10 }
-      }),
+    Promise.resolve(
+      supabase
+        .from("stress_logs")
+        .select("stress_level")
+        .eq("user_id", user.id)
+        .eq("log_date", today)
+    ).then(({ data, error }) => {
+      if (error || !data || data.length === 0) return { avg: null }
+      const validLevels = data
+        .map(log => Number(log?.stress_level ?? 0))
+        .filter(level => !isNaN(level))
+      if (validLevels.length === 0) return { avg: null }
+      const sum = validLevels.reduce((acc, level) => acc + level, 0)
+      return { avg: Math.round((sum / validLevels.length) * 10) / 10 }
+    }).catch(() => ({ avg: null })),
 
     // Smoking
-    supabase
-      .from("smoking_logs")
-      .select("cigarettes_count")
-      .eq("user_id", user.id)
-      .eq("log_date", today)
-      .then(({ data }) => ({
-        total: data?.reduce((sum, log) => sum + (log.cigarettes_count || 0), 0) || 0,
-      })),
+    Promise.resolve(
+      supabase
+        .from("smoking_logs")
+        .select("cigarettes_count")
+        .eq("user_id", user.id)
+        .eq("log_date", today)
+    ).then(({ data, error }) => {
+      if (error) return { total: 0 }
+      const total = data?.reduce((sum, log) => {
+        const count = Number(log?.cigarettes_count ?? 0)
+        return sum + (isNaN(count) ? 0 : count)
+      }, 0) ?? 0
+      return { total: Number(total) || 0 }
+    }).catch(() => ({ total: 0 })),
 
     // Alcohol
-    supabase
-      .from("alcohol_logs")
-      .select("id")
-      .eq("user_id", user.id)
-      .eq("log_date", today)
-      .then(({ data }) => ({
-        total: data?.length || 0,
-      })),
+    Promise.resolve(
+      supabase
+        .from("alcohol_logs")
+        .select("id")
+        .eq("user_id", user.id)
+        .eq("log_date", today)
+    ).then(({ data, error }) => {
+      if (error) return { total: 0 }
+      return { total: Array.isArray(data) ? data.length : 0 }
+    }).catch(() => ({ total: 0 })),
 
     // Caffeine
-    supabase
-      .from("caffeine_logs")
-      .select("caffeine_mg")
-      .eq("user_id", user.id)
-      .eq("log_date", today)
-      .then(({ data }) => ({
-        total: data?.reduce((sum, log) => sum + (log.caffeine_mg || 0), 0) || 0,
-      })),
+    Promise.resolve(
+      supabase
+        .from("caffeine_logs")
+        .select("caffeine_mg")
+        .eq("user_id", user.id)
+        .eq("log_date", today)
+    ).then(({ data, error }) => {
+      if (error) return { total: 0 }
+      const total = data?.reduce((sum, log) => {
+        const mg = Number(log?.caffeine_mg ?? 0)
+        return sum + (isNaN(mg) ? 0 : mg)
+      }, 0) ?? 0
+      return { total: Number(total) || 0 }
+    }).catch(() => ({ total: 0 })),
   ])
 
-  // Update summary with calculated values
+  // Update summary with calculated values (ensure all are numbers, not null/undefined)
+  const updateData: any = {
+    total_steps: Number(stepsResult?.total ?? 0) || 0,
+    total_exercise_minutes: Number(exerciseResult?.total ?? 0) || 0,
+    total_water_ml: Number(waterResult?.total ?? 0) || 0,
+    total_calories: Number(nutritionResult?.total ?? 0) || 0,
+    sleep_hours: sleepResult?.hours != null ? Number(sleepResult.hours) : null,
+    sleep_quality: sleepResult?.quality || null,
+    avg_heart_rate: heartRateResult?.avg != null ? Number(heartRateResult.avg) : null,
+    avg_energy_level: energyResult?.avg != null ? Number(energyResult.avg) : null,
+    avg_stress_level: stressResult?.avg != null ? Number(stressResult.avg) : null,
+    cigarettes_count: Number(smokingResult?.total ?? 0) || 0,
+    alcohol_drinks: Number(alcoholResult?.total ?? 0) || 0,
+    caffeine_mg: Number(caffeineResult?.total ?? 0) || 0,
+    updated_at: new Date().toISOString(),
+  }
+
+  console.log("[SERVER ACTION] calculateTodaySummary - Updating with data:", updateData)
+
   const { error } = await supabase
     .from("daily_health_summary")
-    .update({
-      total_steps: stepsResult.total,
-      total_exercise_minutes: exerciseResult.total,
-      total_water_ml: waterResult.total,
-      total_calories: nutritionResult.total,
-      sleep_hours: sleepResult.hours,
-      sleep_quality: sleepResult.quality,
-      avg_heart_rate: heartRateResult.avg,
-      avg_energy_level: energyResult.avg,
-      avg_stress_level: stressResult.avg,
-      cigarettes_count: smokingResult.total,
-      alcohol_drinks: alcoholResult.total,
-      caffeine_mg: caffeineResult.total,
-      updated_at: new Date().toISOString(),
-    })
+    .update(updateData)
     .eq("id", summary.id)
     .eq("user_id", user.id)
 
   if (error) {
-    console.error("Error updating calculated summary:", error)
-    throw new Error("Günlük özet hesaplanırken bir hata oluştu")
+    console.error("[SERVER ACTION] calculateTodaySummary - Update error:", error)
+    console.error("Error code:", error.code)
+    console.error("Error message:", error.message)
+    
+    if (error.code === "42P01") {
+      throw new Error("Veritabanı tablosu bulunamadı. Lütfen Supabase SQL Editor'de 'supabase-schema-daily-health-summary.sql' dosyasını çalıştırın.")
+    }
+    if (error.code === "42703") {
+      throw new Error("Veritabanı kolonu bulunamadı. Lütfen Supabase SQL Editor'de 'supabase-schema-daily-health-summary.sql' dosyasını çalıştırın.")
+    }
+    
+    throw new Error(`Günlük özet hesaplanırken bir hata oluştu: ${error.message || "Bilinmeyen hata"}`)
   }
 
+  console.log("[SERVER ACTION] calculateTodaySummary - SUCCESS")
   revalidatePath("/health")
   return { success: true }
+  } catch (error: any) {
+    console.error("[SERVER ACTION] calculateTodaySummary - EXCEPTION:", error)
+    console.error("Error stack:", error?.stack)
+    throw error // Re-throw to let client handle it
+  }
 }
 
 // Get summary for a specific date
