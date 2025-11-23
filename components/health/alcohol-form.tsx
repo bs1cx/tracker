@@ -66,6 +66,9 @@ export function AlcoholForm() {
         setTimeout(() => {
           router.refresh()
         }, 100)
+      } else {
+        setIsLoading(false)
+        alert("Alkol kaydı eklenirken bir sorun oluştu. Lütfen tekrar deneyin.")
       }
     } catch (error) {
       console.error("Error adding alcohol log:", error)

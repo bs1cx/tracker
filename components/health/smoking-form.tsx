@@ -45,6 +45,9 @@ export function SmokingForm() {
         setTimeout(() => {
           router.refresh()
         }, 100)
+      } else {
+        setIsLoading(false)
+        alert("Sigara kaydı eklenirken bir sorun oluştu. Lütfen tekrar deneyin.")
       }
     } catch (error) {
       console.error("Error adding smoking log:", error)

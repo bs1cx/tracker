@@ -66,6 +66,9 @@ export function NutritionForm() {
         setTimeout(() => {
           router.refresh()
         }, 100)
+      } else {
+        setIsLoading(false)
+        alert("Beslenme kaydı eklenirken bir sorun oluştu. Lütfen tekrar deneyin.")
       }
     } catch (error) {
       console.error("Error adding nutrition log:", error)

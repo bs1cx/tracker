@@ -44,6 +44,9 @@ export function HeartRateForm() {
         setTimeout(() => {
           router.refresh()
         }, 100)
+      } else {
+        setIsLoading(false)
+        alert("Nabız kaydı eklenirken bir sorun oluştu. Lütfen tekrar deneyin.")
       }
     } catch (error) {
       console.error("Error adding heart rate log:", error)

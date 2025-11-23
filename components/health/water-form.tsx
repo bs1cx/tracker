@@ -41,6 +41,9 @@ export function WaterForm() {
         setTimeout(() => {
           router.refresh()
         }, 100)
+      } else {
+        setIsLoading(false)
+        alert("Su kaydı eklenirken bir sorun oluştu. Lütfen tekrar deneyin.")
       }
     } catch (error) {
       console.error("Error adding water log:", error)
