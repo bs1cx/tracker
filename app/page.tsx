@@ -66,15 +66,17 @@ async function getTrackables() {
   }
 
   // Filter trackables: show all daily habits and progress, but only active one-time tasks
-  const filteredTrackables = (trackables || []).filter((t) => {
-    if (t.type === "DAILY_HABIT" || t.type === "PROGRESS") {
-      return true // Always show daily habits and progress trackers
+  const filteredTrackables = (trackables || []).filter(
+    (t: Trackable & { is_completed_today: boolean }) => {
+      if (t.type === "DAILY_HABIT" || t.type === "PROGRESS") {
+        return true // Always show daily habits and progress trackers
+      }
+      if (t.type === "ONE_TIME") {
+        return t.status === "active" // Only show active one-time tasks
+      }
+      return true
     }
-    if (t.type === "ONE_TIME") {
-      return t.status === "active" // Only show active one-time tasks
-    }
-    return true
-  })
+  )
 
   return filteredTrackables as (Trackable & { is_completed_today: boolean })[]
 }
