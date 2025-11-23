@@ -51,8 +51,11 @@ export async function createTrackable(data: {
 export async function updateTrackable(data: {
   id: string
   title?: string
+  type?: "DAILY_HABIT" | "ONE_TIME" | "PROGRESS"
   status?: "active" | "completed" | "archived"
   current_value?: number
+  target_value?: number | null
+  reset_frequency?: "daily" | "weekly" | "none"
 }) {
   try {
     const validated = updateTrackableSchema.parse(data)
@@ -66,16 +69,23 @@ export async function updateTrackable(data: {
       throw new Error("Unauthorized")
     }
 
+    const updateData: any = {
+      updated_at: getCurrentISODate(),
+    }
+
+    if (validated.title) updateData.title = validated.title
+    if (validated.status) updateData.status = validated.status
+    if (validated.type) updateData.type = validated.type
+    if (validated.current_value !== undefined)
+      updateData.current_value = validated.current_value
+    if (validated.target_value !== undefined)
+      updateData.target_value = validated.target_value
+    if (validated.reset_frequency !== undefined)
+      updateData.reset_frequency = validated.reset_frequency
+
     const { error } = await supabase
       .from("trackables")
-      .update({
-        ...(validated.title && { title: validated.title }),
-        ...(validated.status && { status: validated.status }),
-        ...(validated.current_value !== undefined && {
-          current_value: validated.current_value,
-        }),
-        updated_at: getCurrentISODate(),
-      })
+      .update(updateData)
       .eq("id", validated.id)
       .eq("user_id", user.id)
 
@@ -271,6 +281,34 @@ export async function completeTrackable(data: { id: string }) {
     return { success: true }
   } catch (error) {
     console.error("Error completing trackable:", error)
+    throw error
+  }
+}
+
+export async function deleteTrackable(data: { id: string }) {
+  try {
+    const supabase = await createClient()
+
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+
+    if (!user) {
+      throw new Error("Unauthorized")
+    }
+
+    const { error } = await supabase
+      .from("trackables")
+      .delete()
+      .eq("id", data.id)
+      .eq("user_id", user.id)
+
+    if (error) throw error
+
+    revalidatePath("/")
+    return { success: true }
+  } catch (error) {
+    console.error("Error deleting trackable:", error)
     throw error
   }
 }

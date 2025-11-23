@@ -5,8 +5,10 @@ import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
 import { Plus, Minus } from "lucide-react"
 import type { Trackable } from "@/types/database"
-import { incrementProgress, decrementProgress } from "@/app/actions"
+import { incrementProgress, decrementProgress, updateTrackable, deleteTrackable } from "@/app/actions"
 import { useState } from "react"
+import { EditTrackableDialog } from "./edit-trackable-dialog"
+import { DeleteTrackableDialog } from "./delete-trackable-dialog"
 
 interface ProgressTrackerProps {
   trackable: Trackable
@@ -46,10 +48,28 @@ export function ProgressTracker({ trackable }: ProgressTrackerProps) {
       ? (currentValue / trackable.target_value) * 100
       : 0
 
+  const handleUpdate = async (id: string, data: Partial<Trackable>) => {
+    await updateTrackable({ id, ...data })
+  }
+
+  const handleDelete = async (id: string) => {
+    await deleteTrackable({ id })
+  }
+
   return (
-    <Card>
-      <CardHeader>
+    <Card className="group">
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-base">{trackable.title}</CardTitle>
+        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+          <EditTrackableDialog
+            trackable={trackable}
+            onUpdate={handleUpdate}
+          />
+          <DeleteTrackableDialog
+            trackable={trackable}
+            onDelete={handleDelete}
+          />
+        </div>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="flex items-center justify-between">
