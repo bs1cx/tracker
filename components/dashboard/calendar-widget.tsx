@@ -278,7 +278,7 @@ export function CalendarWidget({ trackables }: CalendarWidgetProps) {
                             key={trackable.id}
                             className={cn(
                               "p-2 rounded-lg border",
-                              trackable.is_completed_today
+                              (trackable as any).is_completed_on_date
                                 ? "bg-green-500/10 border-green-500/30"
                                 : "bg-slate-700/30 border-slate-700/50"
                             )}
@@ -294,7 +294,7 @@ export function CalendarWidget({ trackables }: CalendarWidgetProps) {
                                   <span
                                     className={cn(
                                       "text-sm font-medium truncate",
-                                      trackable.is_completed_today
+                                      (trackable as any).is_completed_on_date
                                         ? "text-green-400 line-through"
                                         : "text-slate-200"
                                     )}
