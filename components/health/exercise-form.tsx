@@ -63,7 +63,7 @@ export function ExerciseForm() {
     setIsLoading(true)
     
     try {
-      await addExerciseLog({
+      const result = await addExerciseLog({
         exercise_type: exerciseType,
         duration_minutes: parseInt(duration),
         intensity: intensity || undefined,
@@ -71,22 +71,25 @@ export function ExerciseForm() {
         distance_km: distance ? parseFloat(distance) : undefined,
         notes: notes || undefined,
       })
-      setExerciseType("")
-      setDuration("")
-      setIntensity("")
-      setCalories("")
-      setDistance("")
-      setNotes("")
-      setOpen(false)
-      // Delay refresh to avoid hydration mismatch
-      setTimeout(() => {
-        router.refresh()
-      }, 100)
+      
+      if (result?.success) {
+        setExerciseType("")
+        setDuration("")
+        setIntensity("")
+        setCalories("")
+        setDistance("")
+        setNotes("")
+        setOpen(false)
+        setIsLoading(false)
+        // Delay refresh to avoid hydration mismatch
+        setTimeout(() => {
+          router.refresh()
+        }, 100)
+      }
     } catch (error) {
       console.error("Error adding exercise log:", error)
-      alert("Egzersiz kaydı eklenirken bir hata oluştu. Lütfen tekrar deneyin.")
-    } finally {
       setIsLoading(false)
+      alert("Egzersiz kaydı eklenirken bir hata oluştu. Lütfen tekrar deneyin.")
     }
   }
 

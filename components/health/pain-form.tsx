@@ -65,7 +65,7 @@ export function PainForm() {
     setIsLoading(true)
     
     try {
-      await addPainLog({
+      const result = await addPainLog({
         pain_level: parseInt(painLevel),
         pain_type: painType || undefined,
         location: location,
@@ -74,23 +74,26 @@ export function PainForm() {
         relief_method: reliefMethod || undefined,
         notes: notes || undefined,
       })
-      setPainLevel("5")
-      setPainType("")
-      setLocation("")
-      setDuration("")
-      setTriggers("")
-      setReliefMethod("")
-      setNotes("")
-      setOpen(false)
-      // Delay refresh to avoid hydration mismatch
-      setTimeout(() => {
-        router.refresh()
-      }, 100)
+      
+      if (result?.success) {
+        setPainLevel("5")
+        setPainType("")
+        setLocation("")
+        setDuration("")
+        setTriggers("")
+        setReliefMethod("")
+        setNotes("")
+        setOpen(false)
+        setIsLoading(false)
+        // Delay refresh to avoid hydration mismatch
+        setTimeout(() => {
+          router.refresh()
+        }, 100)
+      }
     } catch (error) {
       console.error("Error adding pain log:", error)
-      alert("Ağrı kaydı eklenirken bir hata oluştu. Lütfen tekrar deneyin.")
-    } finally {
       setIsLoading(false)
+      alert("Ağrı kaydı eklenirken bir hata oluştu. Lütfen tekrar deneyin.")
     }
   }
 

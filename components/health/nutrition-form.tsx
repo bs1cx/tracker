@@ -42,7 +42,7 @@ export function NutritionForm() {
     setIsLoading(true)
     
     try {
-      await addNutritionLog({
+      const result = await addNutritionLog({
         calories: parseInt(calories),
         carbs_grams: carbs ? parseFloat(carbs) : undefined,
         protein_grams: protein ? parseFloat(protein) : undefined,
@@ -50,24 +50,27 @@ export function NutritionForm() {
         meal_type: mealType || undefined,
         food_name: foodName || undefined,
       })
-      // Reset form
-      setFoodName("")
-      setCalories("")
-      setCarbs("")
-      setProtein("")
-      setFat("")
-      setMealType("")
-      setBarcode("")
-      setOpen(false)
-      // Delay refresh to avoid hydration mismatch
-      setTimeout(() => {
-        router.refresh()
-      }, 100)
+      
+      if (result?.success) {
+        // Reset form
+        setFoodName("")
+        setCalories("")
+        setCarbs("")
+        setProtein("")
+        setFat("")
+        setMealType("")
+        setBarcode("")
+        setOpen(false)
+        setIsLoading(false)
+        // Delay refresh to avoid hydration mismatch
+        setTimeout(() => {
+          router.refresh()
+        }, 100)
+      }
     } catch (error) {
       console.error("Error adding nutrition log:", error)
-      alert("Beslenme kaydı eklenirken bir hata oluştu. Lütfen tekrar deneyin.")
-    } finally {
       setIsLoading(false)
+      alert("Beslenme kaydı eklenirken bir hata oluştu. Lütfen tekrar deneyin.")
     }
   }
 

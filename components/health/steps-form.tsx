@@ -29,20 +29,23 @@ export function StepsForm() {
     setIsLoading(true)
     
     try {
-      await addStepsLog({
+      const result = await addStepsLog({
         steps_count: parseInt(steps),
       })
-      setSteps("")
-      setOpen(false)
-      // Delay refresh to avoid hydration mismatch
-      setTimeout(() => {
-        router.refresh()
-      }, 100)
+      
+      if (result?.success) {
+        setSteps("")
+        setOpen(false)
+        setIsLoading(false)
+        // Delay refresh to avoid hydration mismatch
+        setTimeout(() => {
+          router.refresh()
+        }, 100)
+      }
     } catch (error) {
       console.error("Error adding steps log:", error)
-      alert("Adım kaydı eklenirken bir hata oluştu. Lütfen tekrar deneyin.")
-    } finally {
       setIsLoading(false)
+      alert("Adım kaydı eklenirken bir hata oluştu. Lütfen tekrar deneyin.")
     }
   }
 

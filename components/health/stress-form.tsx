@@ -48,26 +48,29 @@ export function StressForm() {
     setIsLoading(true)
     
     try {
-      await addStressLog({
+      const result = await addStressLog({
         stress_level: parseInt(stressLevel),
         stress_source: stressSource || undefined,
         coping_method: copingMethod || undefined,
         notes: notes || undefined,
       })
-      setStressLevel("5")
-      setStressSource("")
-      setCopingMethod("")
-      setNotes("")
-      setOpen(false)
-      // Delay refresh to avoid hydration mismatch
-      setTimeout(() => {
-        router.refresh()
-      }, 100)
+      
+      if (result?.success) {
+        setStressLevel("5")
+        setStressSource("")
+        setCopingMethod("")
+        setNotes("")
+        setOpen(false)
+        setIsLoading(false)
+        // Delay refresh to avoid hydration mismatch
+        setTimeout(() => {
+          router.refresh()
+        }, 100)
+      }
     } catch (error) {
       console.error("Error adding stress log:", error)
-      alert("Stres seviyesi kaydı eklenirken bir hata oluştu. Lütfen tekrar deneyin.")
-    } finally {
       setIsLoading(false)
+      alert("Stres seviyesi kaydı eklenirken bir hata oluştu. Lütfen tekrar deneyin.")
     }
   }
 

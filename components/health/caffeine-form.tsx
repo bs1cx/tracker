@@ -57,24 +57,27 @@ export function CaffeineForm() {
     setIsLoading(true)
     
     try {
-      await addCaffeineLog({
+      const result = await addCaffeineLog({
         source: source,
         caffeine_mg: parseFloat(caffeineMg),
         notes: notes || undefined,
       })
-      setSource("")
-      setCaffeineMg("")
-      setNotes("")
-      setOpen(false)
-      // Delay refresh to avoid hydration mismatch
-      setTimeout(() => {
-        router.refresh()
-      }, 100)
+      
+      if (result?.success) {
+        setSource("")
+        setCaffeineMg("")
+        setNotes("")
+        setOpen(false)
+        setIsLoading(false)
+        // Delay refresh to avoid hydration mismatch
+        setTimeout(() => {
+          router.refresh()
+        }, 100)
+      }
     } catch (error) {
       console.error("Error adding caffeine log:", error)
-      alert("Kafein kaydı eklenirken bir hata oluştu. Lütfen tekrar deneyin.")
-    } finally {
       setIsLoading(false)
+      alert("Kafein kaydı eklenirken bir hata oluştu. Lütfen tekrar deneyin.")
     }
   }
 

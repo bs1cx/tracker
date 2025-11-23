@@ -31,22 +31,25 @@ export function SmokingForm() {
     setIsLoading(true)
     
     try {
-      await addSmokingLog({
+      const result = await addSmokingLog({
         cigarettes_count: parseInt(count),
         notes: notes || undefined,
       })
-      setCount("1")
-      setNotes("")
-      setOpen(false)
-      // Delay refresh to avoid hydration mismatch
-      setTimeout(() => {
-        router.refresh()
-      }, 100)
+      
+      if (result?.success) {
+        setCount("1")
+        setNotes("")
+        setOpen(false)
+        setIsLoading(false)
+        // Delay refresh to avoid hydration mismatch
+        setTimeout(() => {
+          router.refresh()
+        }, 100)
+      }
     } catch (error) {
       console.error("Error adding smoking log:", error)
-      alert("Sigara kaydı eklenirken bir hata oluştu. Lütfen tekrar deneyin.")
-    } finally {
       setIsLoading(false)
+      alert("Sigara kaydı eklenirken bir hata oluştu. Lütfen tekrar deneyin.")
     }
   }
 

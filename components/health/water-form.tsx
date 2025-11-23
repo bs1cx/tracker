@@ -29,20 +29,23 @@ export function WaterForm() {
     setIsLoading(true)
     
     try {
-      await addWaterLog({
+      const result = await addWaterLog({
         amount_ml: parseInt(amount),
       })
-      setAmount("250")
-      setOpen(false)
-      // Delay refresh to avoid hydration mismatch
-      setTimeout(() => {
-        router.refresh()
-      }, 100)
+      
+      if (result?.success) {
+        setAmount("250")
+        setOpen(false)
+        setIsLoading(false)
+        // Delay refresh to avoid hydration mismatch
+        setTimeout(() => {
+          router.refresh()
+        }, 100)
+      }
     } catch (error) {
       console.error("Error adding water log:", error)
-      alert("Su kaydı eklenirken bir hata oluştu. Lütfen tekrar deneyin.")
-    } finally {
       setIsLoading(false)
+      alert("Su kaydı eklenirken bir hata oluştu. Lütfen tekrar deneyin.")
     }
   }
 

@@ -43,7 +43,7 @@ export function SleepForm() {
     setIsLoading(true)
     
     try {
-      await addSleepLog({
+      const result = await addSleepLog({
         sleep_duration: parseFloat(duration),
         sleep_quality: quality || undefined,
         rem_duration: rem ? parseFloat(rem) : undefined,
@@ -52,25 +52,28 @@ export function SleepForm() {
         sleep_efficiency: efficiency ? parseFloat(efficiency) : undefined,
         notes: notes || undefined,
       })
-      // Reset form
-      setDuration("")
-      setQuality("")
-      setRem("")
-      setLight("")
-      setDeep("")
-      setEfficiency("")
-      setWakeTimes("")
-      setNotes("")
-      setOpen(false)
-      // Delay refresh to avoid hydration mismatch
-      setTimeout(() => {
-        router.refresh()
-      }, 100)
+      
+      if (result?.success) {
+        // Reset form
+        setDuration("")
+        setQuality("")
+        setRem("")
+        setLight("")
+        setDeep("")
+        setEfficiency("")
+        setWakeTimes("")
+        setNotes("")
+        setOpen(false)
+        setIsLoading(false)
+        // Delay refresh to avoid hydration mismatch
+        setTimeout(() => {
+          router.refresh()
+        }, 100)
+      }
     } catch (error) {
       console.error("Error adding sleep log:", error)
-      alert("Uyku kaydı eklenirken bir hata oluştu. Lütfen tekrar deneyin.")
-    } finally {
       setIsLoading(false)
+      alert("Uyku kaydı eklenirken bir hata oluştu. Lütfen tekrar deneyin.")
     }
   }
 

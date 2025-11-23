@@ -48,26 +48,29 @@ export function MedicationForm() {
     setIsLoading(true)
     
     try {
-      await addMedicationLog({
+      const result = await addMedicationLog({
         medication_name: medicationName,
         dosage: dosage || undefined,
         frequency: frequency || undefined,
         notes: notes || undefined,
       })
-      setMedicationName("")
-      setDosage("")
-      setFrequency("")
-      setNotes("")
-      setOpen(false)
-      // Delay refresh to avoid hydration mismatch
-      setTimeout(() => {
-        router.refresh()
-      }, 100)
+      
+      if (result?.success) {
+        setMedicationName("")
+        setDosage("")
+        setFrequency("")
+        setNotes("")
+        setOpen(false)
+        setIsLoading(false)
+        // Delay refresh to avoid hydration mismatch
+        setTimeout(() => {
+          router.refresh()
+        }, 100)
+      }
     } catch (error) {
       console.error("Error adding medication log:", error)
-      alert("İlaç kaydı eklenirken bir hata oluştu. Lütfen tekrar deneyin.")
-    } finally {
       setIsLoading(false)
+      alert("İlaç kaydı eklenirken bir hata oluştu. Lütfen tekrar deneyin.")
     }
   }
 

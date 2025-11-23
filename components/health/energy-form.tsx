@@ -46,26 +46,29 @@ export function EnergyForm() {
     setIsLoading(true)
     
     try {
-      await addEnergyLog({
+      const result = await addEnergyLog({
         energy_level: parseInt(energyLevel),
         time_of_day: timeOfDay || undefined,
         factors: factors || undefined,
         notes: notes || undefined,
       })
-      setEnergyLevel("5")
-      setTimeOfDay("")
-      setFactors("")
-      setNotes("")
-      setOpen(false)
-      // Delay refresh to avoid hydration mismatch
-      setTimeout(() => {
-        router.refresh()
-      }, 100)
+      
+      if (result?.success) {
+        setEnergyLevel("5")
+        setTimeOfDay("")
+        setFactors("")
+        setNotes("")
+        setOpen(false)
+        setIsLoading(false)
+        // Delay refresh to avoid hydration mismatch
+        setTimeout(() => {
+          router.refresh()
+        }, 100)
+      }
     } catch (error) {
       console.error("Error adding energy log:", error)
-      alert("Enerji seviyesi kaydı eklenirken bir hata oluştu. Lütfen tekrar deneyin.")
-    } finally {
       setIsLoading(false)
+      alert("Enerji seviyesi kaydı eklenirken bir hata oluştu. Lütfen tekrar deneyin.")
     }
   }
 
