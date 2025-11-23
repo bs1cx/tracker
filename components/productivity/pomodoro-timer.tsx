@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Timer, Play, Pause, Square } from "lucide-react"
 import { tr } from "@/lib/i18n"
 import { addPomodoroSession } from "@/app/actions-productivity"
@@ -18,8 +19,12 @@ export function PomodoroTimer() {
   const [isPaused, setIsPaused] = useState(false)
   const [taskTitle, setTaskTitle] = useState("")
   const [showTaskInput, setShowTaskInput] = useState(false)
+  const [customMinutes, setCustomMinutes] = useState("")
+  const [showCustomInput, setShowCustomInput] = useState(false)
   const startTimeRef = useRef<Date | null>(null)
   const totalSecondsRef = useRef<number>(25 * 60)
+
+  const presetDurations = [5, 10, 15, 20, 25, 30, 45, 60, 90, 120]
 
   useEffect(() => {
     let interval: NodeJS.Timeout | null = null
@@ -85,12 +90,13 @@ export function PomodoroTimer() {
         }
         
         // Reset
-        setMinutes(25)
+        const defaultMinutes = 25
+        setMinutes(defaultMinutes)
         setSeconds(0)
         setTaskTitle("")
         setShowTaskInput(false)
         startTimeRef.current = null
-        totalSecondsRef.current = 25 * 60
+        totalSecondsRef.current = defaultMinutes * 60
         
         setTimeout(() => {
           router.refresh()
@@ -137,10 +143,27 @@ export function PomodoroTimer() {
       }
     }
     
-    setMinutes(25)
+    const defaultMinutes = 25
+    setMinutes(defaultMinutes)
     setSeconds(0)
     startTimeRef.current = null
-    totalSecondsRef.current = 25 * 60
+    totalSecondsRef.current = defaultMinutes * 60
+  }
+
+  const setDuration = (newMinutes: number) => {
+    if (isRunning) return
+    setMinutes(newMinutes)
+    setSeconds(0)
+    totalSecondsRef.current = newMinutes * 60
+    setCustomMinutes("")
+    setShowCustomInput(false)
+  }
+
+  const handleCustomDuration = () => {
+    const minutes = parseInt(customMinutes)
+    if (minutes > 0 && minutes <= 480) {
+      setDuration(minutes)
+    }
   }
 
   const formatTime = (min: number, sec: number) => {
@@ -191,43 +214,100 @@ export function PomodoroTimer() {
             )}
           </div>
         </div>
-        <div className="flex gap-2 justify-center">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => {
-              setMinutes(25)
-              setSeconds(0)
-              totalSecondsRef.current = 25 * 60
-            }}
-            disabled={isRunning}
-          >
-            25 dk
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => {
-              setMinutes(15)
-              setSeconds(0)
-              totalSecondsRef.current = 15 * 60
-            }}
-            disabled={isRunning}
-          >
-            15 dk
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => {
-              setMinutes(5)
-              setSeconds(0)
-              totalSecondsRef.current = 5 * 60
-            }}
-            disabled={isRunning}
-          >
-            5 dk
-          </Button>
+        <div className="space-y-3">
+          <div className="flex gap-2 justify-center flex-wrap">
+            <Button
+              variant={minutes === 25 ? "default" : "outline"}
+              size="sm"
+              onClick={() => setDuration(25)}
+              disabled={isRunning}
+            >
+              25 dk
+            </Button>
+            <Button
+              variant={minutes === 15 ? "default" : "outline"}
+              size="sm"
+              onClick={() => setDuration(15)}
+              disabled={isRunning}
+            >
+              15 dk
+            </Button>
+            <Button
+              variant={minutes === 5 ? "default" : "outline"}
+              size="sm"
+              onClick={() => setDuration(5)}
+              disabled={isRunning}
+            >
+              5 dk
+            </Button>
+          </div>
+          
+          <div className="flex gap-2 items-center justify-center">
+            <Select
+              value={minutes.toString()}
+              onValueChange={(value) => setDuration(parseInt(value))}
+              disabled={isRunning}
+            >
+              <SelectTrigger className="w-[140px]">
+                <SelectValue placeholder="Süre seç" />
+              </SelectTrigger>
+              <SelectContent>
+                {presetDurations.map((duration) => (
+                  <SelectItem key={duration} value={duration.toString()}>
+                    {duration} dakika
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            
+            {!showCustomInput ? (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowCustomInput(true)}
+                disabled={isRunning}
+              >
+                Özel Süre
+              </Button>
+            ) : (
+              <div className="flex gap-2">
+                <Input
+                  type="number"
+                  placeholder="Dakika"
+                  value={customMinutes}
+                  onChange={(e) => setCustomMinutes(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      handleCustomDuration()
+                    }
+                  }}
+                  disabled={isRunning}
+                  className="w-24"
+                  min="1"
+                  max="480"
+                />
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleCustomDuration}
+                  disabled={isRunning || !customMinutes}
+                >
+                  Ayarla
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setShowCustomInput(false)
+                    setCustomMinutes("")
+                  }}
+                  disabled={isRunning}
+                >
+                  İptal
+                </Button>
+              </div>
+            )}
+          </div>
         </div>
         <div className="mt-4">
           {showTaskInput ? (
