@@ -95,7 +95,7 @@ export function CalendarWidget({ trackables }: CalendarWidgetProps) {
           </Button>
         </div>
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-4">
         {/* Day names */}
         <div className="grid grid-cols-7 gap-1 mb-2">
           {DAY_NAMES.map((day) => (
@@ -143,11 +143,11 @@ export function CalendarWidget({ trackables }: CalendarWidgetProps) {
                       {format(date, "d")}
                     </div>
                     <div className="space-y-0.5">
-                      {dayTrackables.slice(0, 3).map((trackable) => (
+                      {dayTrackables.slice(0, 2).map((trackable) => (
                         <div
                           key={trackable.id}
                           className={cn(
-                            "text-[10px] px-1 py-0.5 rounded truncate",
+                            "text-[9px] px-1 py-0.5 rounded truncate",
                             trackable.is_completed_today
                               ? "bg-green-500/20 text-green-400"
                               : "bg-[#60a5fa]/20 text-[#60a5fa]"
@@ -157,9 +157,9 @@ export function CalendarWidget({ trackables }: CalendarWidgetProps) {
                           {trackable.title}
                         </div>
                       ))}
-                      {dayTrackables.length > 3 && (
-                        <div className="text-[10px] text-slate-400 px-1">
-                          +{dayTrackables.length - 3}
+                      {dayTrackables.length > 2 && (
+                        <div className="text-[9px] text-slate-400 px-1">
+                          +{dayTrackables.length - 2}
                         </div>
                       )}
                     </div>

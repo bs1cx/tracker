@@ -40,8 +40,22 @@ export function DashboardContent({
   }, [widgets])
 
   const handleAddWidget = (widgetId: string) => {
-    if (!widgets.includes(widgetId) && widgets.length < 2) {
-      setWidgets([...widgets, widgetId])
+    // Allow up to 3 widgets total (1 calendar + 2 other widgets)
+    const calendarCount = widgets.filter((id) => id === "calendar").length
+    const otherWidgetsCount = widgets.filter((id) => id !== "calendar").length
+    
+    if (!widgets.includes(widgetId)) {
+      if (widgetId === "calendar") {
+        // Only allow one calendar
+        if (calendarCount === 0) {
+          setWidgets([...widgets, widgetId])
+        }
+      } else {
+        // Allow up to 2 other widgets
+        if (otherWidgetsCount < 2) {
+          setWidgets([...widgets, widgetId])
+        }
+      }
     }
   }
 
@@ -209,36 +223,35 @@ export function DashboardContent({
   // Separate calendar from other widgets
   const calendarWidget = widgets.find((id) => id === "calendar")
   const otherWidgets = widgets.filter((id) => id !== "calendar")
+  const otherWidgetsCount = otherWidgets.length
 
   return (
     <div className="space-y-8">
-      {/* Calendar Widget - Full Width */}
+      {/* Calendar Widget - Smaller, centered */}
       {calendarWidget && (
-        <div className="w-full">
+        <div className="w-full max-w-4xl mx-auto">
           {renderWidget("calendar")}
         </div>
       )}
 
-      {/* Other Widgets Section */}
-      {otherWidgets.length > 0 && (
-        <div className="grid gap-6 md:grid-cols-2">
-          {otherWidgets.map((widgetId) => (
-            <div key={widgetId} className="w-full">
-              {renderWidget(widgetId)}
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* Widget Selector */}
-      {widgets.length < 2 && (
-        <div className="flex items-center justify-center min-h-[200px]">
-          <WidgetSelector
-            onAddWidget={handleAddWidget}
-            existingWidgets={widgets}
-          />
-        </div>
-      )}
+      {/* Other Widgets Section - 2 widgets side by side */}
+      <div className="grid gap-6 md:grid-cols-2">
+        {otherWidgets.map((widgetId) => (
+          <div key={widgetId} className="w-full">
+            {renderWidget(widgetId)}
+          </div>
+        ))}
+        
+        {/* Widget Selector in empty slots */}
+        {otherWidgetsCount < 2 && (
+          <div className="flex items-center justify-center min-h-[200px] border-2 border-dashed border-slate-700/50 rounded-lg">
+            <WidgetSelector
+              onAddWidget={handleAddWidget}
+              existingWidgets={widgets}
+            />
+          </div>
+        )}
+      </div>
 
       {/* Trackables Sections */}
       <div className="space-y-8">

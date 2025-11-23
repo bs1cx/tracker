@@ -66,9 +66,9 @@ export function WidgetSelector({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm" className="gap-2">
-          <Plus className="h-4 w-4" />
-          Widget Ekle
+        <Button variant="outline" size="lg" className="gap-2 border-slate-700/50 hover:border-[#60a5fa]/50 hover:bg-slate-700/30">
+          <Plus className="h-5 w-5 text-[#60a5fa]" />
+          <span className="text-slate-200">Widget Ekle</span>
         </Button>
       </DialogTrigger>
       <DialogContent>
