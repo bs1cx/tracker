@@ -14,7 +14,7 @@ export const trackableSchema = z.object({
       "Geçerli bir saat formatı giriniz (HH:MM)"
     ),
   priority: z.enum(["low", "medium", "high"]).optional(),
-  selected_days: z.array(z.string()).min(1, "En az 1 gün seçmelisiniz"),
+  selected_days: z.array(z.string()).optional().default([]),
   category: z.enum(["task", "habit"]).optional(),
 })
 

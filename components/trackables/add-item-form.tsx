@@ -85,8 +85,9 @@ export function AddItemForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    // Validate that at least one day is selected
-    if (formData.selected_days.length === 0) {
+    // Validate that at least one day is selected only if user manually creates one
+    // For templates, we might want to allow empty days initially
+    if (activeTab === "manual" && formData.selected_days.length === 0) {
       alert("Lütfen en az 1 gün seçiniz")
       return
     }
@@ -104,7 +105,7 @@ export function AddItemForm() {
         reset_frequency: formData.reset_frequency,
         scheduled_time: formData.scheduled_time || null,
         priority: formData.priority,
-        selected_days: formData.selected_days,
+        selected_days: formData.selected_days || [], // Ensure array is passed
         category: formData.category || "habit",
       })
 
@@ -153,6 +154,8 @@ export function AddItemForm() {
         reset_frequency: template.reset_frequency || "none",
         scheduled_time: null,
         priority: template.priority || "medium",
+        selected_days: ["Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma", "Cumartesi", "Pazar"], // Default to all days for templates
+        category: "habit",
       })
       setOpen(false)
       setSearchQuery("")
