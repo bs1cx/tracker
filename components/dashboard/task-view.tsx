@@ -11,6 +11,7 @@ import { CheckCircle2, Clock, Calendar as CalendarIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { isSameCalendarDay, formatDate, getStartOfDay } from "@/lib/date-utils"
 import { shouldTrackableAppearOnDate } from "@/lib/calendar-utils"
+import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card"
 import type { Trackable } from "@/types/database"
 
 interface TaskViewProps {
@@ -476,59 +477,159 @@ export function TaskView({
                 const isCurrentMonth = day.getMonth() === selectedDate.getMonth()
 
                 return (
-                  <div
-                    key={index}
-                    className={cn(
-                      "aspect-square p-2 rounded-lg border transition-colors cursor-pointer hover:bg-slate-700/30",
-                      isToday && "ring-2 ring-[#60a5fa] bg-[#60a5fa]/10",
-                      isPast && "opacity-50",
-                      !isCurrentMonth && "opacity-30",
-                      isCurrentMonth && "bg-slate-700/20 border-slate-600/30"
-                    )}
-                    onClick={() => {
-                      setSelectedDate(day)
-                      setViewType("daily")
-                    }}
-                  >
-                    <div className="flex flex-col h-full">
+                  <HoverCard key={index}>
+                    <HoverCardTrigger asChild>
                       <div
                         className={cn(
-                          "text-sm font-semibold mb-1",
-                          isToday ? "text-[#60a5fa]" : "text-slate-200"
+                          "aspect-square p-2 rounded-lg border transition-colors cursor-pointer hover:bg-slate-700/30",
+                          isToday && "ring-2 ring-[#60a5fa] bg-[#60a5fa]/10",
+                          isPast && "opacity-50",
+                          !isCurrentMonth && "opacity-30",
+                          isCurrentMonth && "bg-slate-700/20 border-slate-600/30"
                         )}
+                        onClick={() => {
+                          setSelectedDate(day)
+                          setViewType("daily")
+                        }}
                       >
-                        {day.getDate()}
+                        <div className="flex flex-col h-full">
+                          <div
+                            className={cn(
+                              "text-sm font-semibold mb-1",
+                              isToday ? "text-[#60a5fa]" : "text-slate-200"
+                            )}
+                          >
+                            {day.getDate()}
+                          </div>
+                          <div className="flex-1 flex flex-col gap-1">
+                            {totalCount > 0 && (
+                              <div className="flex items-center gap-1">
+                                <div className="flex-1 flex gap-0.5">
+                                  {dayTrackables.slice(0, 3).map((trackable) => {
+                                    const isCompleted = isTrackableCompletedOnDate(trackable, day)
+                                    return (
+                                      <div
+                                        key={trackable.id}
+                                        className={cn(
+                                          "h-1.5 flex-1 rounded",
+                                          isCompleted ? "bg-green-500" : "bg-[#60a5fa]"
+                                        )}
+                                      />
+                                    )
+                                  })}
+                                  {totalCount > 3 && (
+                                    <div className="h-1.5 w-1.5 rounded bg-slate-500" />
+                                  )}
+                                </div>
+                              </div>
+                            )}
+                            {totalCount > 0 && (
+                              <div className="text-xs text-slate-400">
+                                {completedCount}/{totalCount}
+                              </div>
+                            )}
+                          </div>
+                        </div>
                       </div>
-                      <div className="flex-1 flex flex-col gap-1">
-                        {totalCount > 0 && (
-                          <div className="flex items-center gap-1">
-                            <div className="flex-1 flex gap-0.5">
-                              {dayTrackables.slice(0, 3).map((trackable) => {
-                                const isCompleted = isTrackableCompletedOnDate(trackable, day)
-                                return (
-                                  <div
-                                    key={trackable.id}
-                                    className={cn(
-                                      "h-1.5 flex-1 rounded",
-                                      isCompleted ? "bg-green-500" : "bg-[#60a5fa]"
-                                    )}
-                                  />
-                                )
-                              })}
-                              {totalCount > 3 && (
-                                <div className="h-1.5 w-1.5 rounded bg-slate-500" />
-                              )}
-                            </div>
+                    </HoverCardTrigger>
+                    <HoverCardContent className="w-96">
+                      <div className="space-y-3">
+                        {/* Date Header */}
+                        <div className="flex items-center justify-between border-b border-slate-700/50 pb-2">
+                          <div>
+                            <h4 className="font-semibold text-slate-200">
+                              {formatDate(day, "d MMMM yyyy, EEEE")}
+                            </h4>
+                            {isToday && (
+                              <span className="text-xs text-[#60a5fa] font-medium">Bugün</span>
+                            )}
+                          </div>
+                          <div className="text-sm text-slate-400">
+                            {totalCount} görev
+                          </div>
+                        </div>
+
+                        {/* Tasks List */}
+                        {dayTrackables.length > 0 ? (
+                          <div className="space-y-2 max-h-[300px] overflow-y-auto">
+                            {dayTrackables.map((trackable) => {
+                              const isCompleted = isTrackableCompletedOnDate(trackable, day)
+                              return (
+                                <div
+                                  key={trackable.id}
+                                  className={cn(
+                                    "p-3 rounded-lg border",
+                                    isCompleted
+                                      ? "bg-green-500/10 border-green-500/30"
+                                      : "bg-slate-700/30 border-slate-600/30"
+                                  )}
+                                >
+                                  <div className="flex items-start gap-2">
+                                    <div className="mt-0.5">
+                                      {isCompleted ? (
+                                        <CheckCircle2 className="h-4 w-4 text-green-400" />
+                                      ) : (
+                                        <Clock className="h-4 w-4 text-slate-400" />
+                                      )}
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                      <div className="flex items-center gap-2 mb-1">
+                                        <span className="font-medium text-slate-200">
+                                          {trackable.title}
+                                        </span>
+                                        {trackable.priority && (
+                                          <span
+                                            className={cn(
+                                              "text-xs px-1.5 py-0.5 rounded",
+                                              trackable.priority === "high" &&
+                                                "bg-red-500/20 text-red-400",
+                                              trackable.priority === "medium" &&
+                                                "bg-yellow-500/20 text-yellow-400",
+                                              trackable.priority === "low" &&
+                                                "bg-blue-500/20 text-blue-400"
+                                            )}
+                                          >
+                                            {trackable.priority === "high"
+                                              ? "Yüksek"
+                                              : trackable.priority === "medium"
+                                              ? "Orta"
+                                              : "Düşük"}
+                                          </span>
+                                        )}
+                                      </div>
+                                      <div className="flex items-center gap-3 text-xs text-slate-400">
+                                        {trackable.scheduled_time && (
+                                          <div className="flex items-center gap-1">
+                                            <Clock className="h-3 w-3" />
+                                            {trackable.scheduled_time}
+                                          </div>
+                                        )}
+                                        {trackable.category && (
+                                          <div className="flex items-center gap-1">
+                                            <CalendarIcon className="h-3 w-3" />
+                                            {trackable.category === "task" ? "Görev" : "Alışkanlık"}
+                                          </div>
+                                        )}
+                                      </div>
+                                      {trackable.type === "PROGRESS" && trackable.target_value && (
+                                        <div className="mt-2 text-xs text-slate-400">
+                                          İlerleme: {trackable.current_value} / {trackable.target_value}
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+                              )
+                            })}
+                          </div>
+                        ) : (
+                          <div className="text-center py-6 text-slate-400 text-sm">
+                            Bu gün için görev yok
                           </div>
                         )}
-                        {totalCount > 0 && (
-                          <div className="text-xs text-slate-400">
-                            {completedCount}/{totalCount}
-                          </div>
-                        )}
                       </div>
-                    </div>
-                  </div>
+                    </HoverCardContent>
+                  </HoverCard>
                 )
               })}
             </div>
