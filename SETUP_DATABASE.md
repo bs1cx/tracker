@@ -15,8 +15,17 @@
 2. SQL Editor'de çalıştırın
 3. Tüm tablolar oluşturulmalı
 
-### 3. Migration Script (Sadece Gerekirse)
+### 3. Migration Scripts
 
+**3a. Priority, Scheduled Time ve Selected Days (Önerilen)**
+1. `supabase-migration-complete.sql` dosyasını çalıştırın
+2. Bu script priority, scheduled_time ve selected_days kolonlarını ekler
+
+**VEYA ayrı ayrı:**
+- `supabase-schema-priority-time.sql` (priority ve scheduled_time için)
+- `supabase-schema-calendar-days.sql` (selected_days için)
+
+**3b. Date Column Fix (Sadece Gerekirse)**
 **Sadece şu durumda çalıştırın:**
 - Tablolar zaten `date` kolonu ile oluşturulduysa
 - `log_date` kolonu bulunamıyor hatası alıyorsanız
