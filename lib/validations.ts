@@ -1,0 +1,25 @@
+import { z } from "zod"
+
+export const trackableSchema = z.object({
+  title: z.string().min(1, "Title is required").max(200, "Title is too long"),
+  type: z.enum(["DAILY_HABIT", "ONE_TIME", "PROGRESS"]),
+  target_value: z.number().int().positive().nullable().optional(),
+  reset_frequency: z.enum(["daily", "weekly", "none"]).default("none"),
+})
+
+export const updateTrackableSchema = z.object({
+  id: z.string().uuid(),
+  title: z.string().min(1).max(200).optional(),
+  status: z.enum(["active", "completed", "archived"]).optional(),
+  current_value: z.number().int().min(0).optional(),
+})
+
+export const incrementProgressSchema = z.object({
+  id: z.string().uuid(),
+  amount: z.number().int().min(1).max(100).default(1),
+})
+
+export const completeTrackableSchema = z.object({
+  id: z.string().uuid(),
+})
+
