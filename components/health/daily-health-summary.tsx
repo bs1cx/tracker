@@ -68,7 +68,17 @@ export function DailyHealthSummaryCard() {
   const loadSummary = async () => {
     try {
       setIsLoading(true)
+      console.log("[CLIENT] Loading daily health summary...")
+      
       const todaySummary = await getOrCreateTodaySummary()
+      console.log("[CLIENT] Summary loaded:", todaySummary?.id)
+      
+      if (!todaySummary) {
+        console.error("[CLIENT] No summary returned")
+        setIsLoading(false)
+        return
+      }
+      
       setSummary(todaySummary)
 
       // Check if we need to show carry-over dialog
@@ -77,33 +87,46 @@ export function DailyHealthSummaryCard() {
         setShowCarryOverDialog(true)
       }
 
-      // Auto-calculate from logs
-      await calculateTodaySummary()
-      const updated = await getOrCreateTodaySummary()
-      setSummary(updated)
-
-      // Set form values
-      setWellnessScore(updated.overall_wellness_score?.toString() || "")
-      setNotes(updated.notes || "")
-      setOngoingConditions(updated.ongoing_conditions || [])
-      setSymptoms(updated.symptoms || [])
-      setMedications(updated.medications_taken || [])
-      
-      // Set basic metrics form values
-      setTotalSteps(updated.total_steps?.toString() || "")
-      setTotalExercise(updated.total_exercise_minutes?.toString() || "")
-      setTotalWater(updated.total_water_ml?.toString() || "")
-      setTotalCalories(updated.total_calories?.toString() || "")
-      setSleepHours(updated.sleep_hours?.toString() || "")
-      setSleepQuality(updated.sleep_quality || "")
-      setAvgHeartRate(updated.avg_heart_rate?.toString() || "")
-      setAvgEnergy(updated.avg_energy_level?.toString() || "")
-      setAvgStress(updated.avg_stress_level?.toString() || "")
-      setCigarettesCount(updated.cigarettes_count?.toString() || "")
-      setAlcoholDrinks(updated.alcohol_drinks?.toString() || "")
-      setCaffeineMg(updated.caffeine_mg?.toString() || "")
-    } catch (error) {
-      console.error("Error loading summary:", error)
+      // Auto-calculate from logs (don't fail if this errors)
+      try {
+        await calculateTodaySummary()
+        const updated = await getOrCreateTodaySummary()
+        if (updated) {
+          setSummary(updated)
+          // Set form values from updated summary
+          setWellnessScore(updated.overall_wellness_score?.toString() || "")
+          setNotes(updated.notes || "")
+          setOngoingConditions(updated.ongoing_conditions || [])
+          setSymptoms(updated.symptoms || [])
+          setMedications(updated.medications_taken || [])
+          
+          // Set basic metrics form values
+          setTotalSteps(updated.total_steps?.toString() || "")
+          setTotalExercise(updated.total_exercise_minutes?.toString() || "")
+          setTotalWater(updated.total_water_ml?.toString() || "")
+          setTotalCalories(updated.total_calories?.toString() || "")
+          setSleepHours(updated.sleep_hours?.toString() || "")
+          setSleepQuality(updated.sleep_quality || "")
+          setAvgHeartRate(updated.avg_heart_rate?.toString() || "")
+          setAvgEnergy(updated.avg_energy_level?.toString() || "")
+          setAvgStress(updated.avg_stress_level?.toString() || "")
+          setCigarettesCount(updated.cigarettes_count?.toString() || "")
+          setAlcoholDrinks(updated.alcohol_drinks?.toString() || "")
+          setCaffeineMg(updated.caffeine_mg?.toString() || "")
+        }
+      } catch (calcError) {
+        console.error("[CLIENT] Error calculating summary (non-fatal):", calcError)
+        // Use original summary if calculation fails
+        setWellnessScore(todaySummary.overall_wellness_score?.toString() || "")
+        setNotes(todaySummary.notes || "")
+        setOngoingConditions(todaySummary.ongoing_conditions || [])
+        setSymptoms(todaySummary.symptoms || [])
+        setMedications(todaySummary.medications_taken || [])
+      }
+    } catch (error: any) {
+      console.error("[CLIENT] Error loading summary:", error)
+      const errorMessage = error?.message || "Günlük özet yüklenirken bir hata oluştu."
+      alert(errorMessage)
     } finally {
       setIsLoading(false)
     }

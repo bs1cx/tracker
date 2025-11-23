@@ -6,64 +6,112 @@ import { getCurrentISODate } from "@/lib/date-utils"
 
 // Get or create today's health summary
 export async function getOrCreateTodaySummary() {
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  try {
+    console.log("[SERVER ACTION] getOrCreateTodaySummary - START")
+    
+    const supabase = await createClient()
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser()
 
-  if (!user) {
-    throw new Error("Unauthorized")
+    if (authError || !user) {
+      console.error("[SERVER ACTION] getOrCreateTodaySummary - Auth error:", authError)
+      throw new Error("Kimlik doğrulama hatası. Lütfen tekrar giriş yapın.")
+    }
+
+    // Check if today's summary exists
+    const today = getCurrentISODate()
+    console.log("[SERVER ACTION] getOrCreateTodaySummary - Checking for existing summary for date:", today)
+    
+    const { data: existing, error: fetchError } = await supabase
+      .from("daily_health_summary")
+      .select("*")
+      .eq("user_id", user.id)
+      .eq("summary_date", today)
+      .maybeSingle()
+
+    if (fetchError) {
+      // Check if table doesn't exist
+      if (fetchError.code === "42P01") {
+        console.error("[SERVER ACTION] getOrCreateTodaySummary - Table doesn't exist:", fetchError)
+        throw new Error("Veritabanı tablosu bulunamadı. Lütfen Supabase SQL Editor'de 'supabase-schema-daily-health-summary.sql' dosyasını çalıştırın.")
+      }
+      // Check if column doesn't exist
+      if (fetchError.code === "42703") {
+        console.error("[SERVER ACTION] getOrCreateTodaySummary - Column doesn't exist:", fetchError)
+        throw new Error("Veritabanı kolonu bulunamadı. Lütfen Supabase SQL Editor'de 'supabase-schema-daily-health-summary.sql' dosyasını çalıştırın.")
+      }
+      // Only throw if it's not a "not found" error
+      if (fetchError.code !== "PGRST116") {
+        console.error("[SERVER ACTION] getOrCreateTodaySummary - Fetch error:", fetchError)
+        throw new Error(`Günlük özet getirilirken bir hata oluştu: ${fetchError.message || "Bilinmeyen hata"}`)
+      }
+    }
+
+    // If exists, return it
+    if (existing) {
+      console.log("[SERVER ACTION] getOrCreateTodaySummary - Found existing summary:", existing.id)
+      return existing
+    }
+
+    // Check if yesterday had ongoing conditions
+    const yesterday = new Date()
+    yesterday.setDate(yesterday.getDate() - 1)
+    const yesterdayStr = yesterday.toISOString().split("T")[0]
+
+    console.log("[SERVER ACTION] getOrCreateTodaySummary - Checking yesterday's summary:", yesterdayStr)
+    
+    const { data: yesterdaySummary, error: yesterdayError } = await supabase
+      .from("daily_health_summary")
+      .select("ongoing_conditions")
+      .eq("user_id", user.id)
+      .eq("summary_date", yesterdayStr)
+      .maybeSingle()
+
+    if (yesterdayError && yesterdayError.code !== "PGRST116" && yesterdayError.code !== "42703") {
+      console.error("[SERVER ACTION] getOrCreateTodaySummary - Error fetching yesterday's summary:", yesterdayError)
+      // Don't throw, just continue without carry-over
+    }
+
+    // Create new summary for today
+    console.log("[SERVER ACTION] getOrCreateTodaySummary - Creating new summary")
+    
+    const { data: newSummary, error: createError } = await supabase
+      .from("daily_health_summary")
+      .insert({
+        user_id: user.id,
+        summary_date: today,
+        ongoing_conditions: yesterdaySummary?.ongoing_conditions || null,
+        carried_over_conditions: !!yesterdaySummary?.ongoing_conditions?.length,
+      })
+      .select()
+      .single()
+
+    if (createError) {
+      console.error("[SERVER ACTION] getOrCreateTodaySummary - Create error:", createError)
+      console.error("Error code:", createError.code)
+      console.error("Error message:", createError.message)
+      
+      if (createError.code === "42P01") {
+        throw new Error("Veritabanı tablosu bulunamadı. Lütfen Supabase SQL Editor'de 'supabase-schema-daily-health-summary.sql' dosyasını çalıştırın.")
+      }
+      if (createError.code === "42703") {
+        throw new Error("Veritabanı kolonu bulunamadı. Lütfen Supabase SQL Editor'de 'supabase-schema-daily-health-summary.sql' dosyasını çalıştırın.")
+      }
+      if (createError.code === "42501") {
+        throw new Error("İzin hatası. RLS politikaları kontrol edilmeli.")
+      }
+      
+      throw new Error(`Günlük özet oluşturulurken bir hata oluştu: ${createError.message || "Bilinmeyen hata"}`)
+    }
+
+    console.log("[SERVER ACTION] getOrCreateTodaySummary - SUCCESS:", newSummary?.id)
+    return newSummary
+  } catch (error: any) {
+    console.error("[SERVER ACTION] getOrCreateTodaySummary - EXCEPTION:", error)
+    throw error // Re-throw to let client handle it
   }
-
-  // Check if today's summary exists
-  const today = getCurrentISODate()
-  const { data: existing, error: fetchError } = await supabase
-    .from("daily_health_summary")
-    .select("*")
-    .eq("user_id", user.id)
-    .eq("summary_date", today)
-    .maybeSingle()
-
-  if (fetchError && fetchError.code !== "PGRST116") {
-    console.error("Error fetching today's summary:", fetchError)
-    throw new Error("Günlük özet getirilirken bir hata oluştu")
-  }
-
-  // If exists, return it
-  if (existing) {
-    return existing
-  }
-
-  // Check if yesterday had ongoing conditions
-  const yesterday = new Date()
-  yesterday.setDate(yesterday.getDate() - 1)
-  const yesterdayStr = yesterday.toISOString().split("T")[0]
-
-  const { data: yesterdaySummary } = await supabase
-    .from("daily_health_summary")
-    .select("ongoing_conditions")
-    .eq("user_id", user.id)
-    .eq("summary_date", yesterdayStr)
-    .maybeSingle()
-
-  // Create new summary for today
-  const { data: newSummary, error: createError } = await supabase
-    .from("daily_health_summary")
-    .insert({
-      user_id: user.id,
-      summary_date: today,
-      ongoing_conditions: yesterdaySummary?.ongoing_conditions || null,
-      carried_over_conditions: !!yesterdaySummary?.ongoing_conditions?.length,
-    })
-    .select()
-    .single()
-
-  if (createError) {
-    console.error("Error creating today's summary:", createError)
-    throw new Error("Günlük özet oluşturulurken bir hata oluştu")
-  }
-
-  return newSummary
 }
 
 // Update daily health summary
