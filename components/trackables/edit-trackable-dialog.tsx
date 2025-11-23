@@ -22,6 +22,7 @@ import {
 import { Pencil } from "lucide-react"
 import { tr } from "@/lib/i18n"
 import type { Trackable } from "@/types/database"
+import { TimePicker } from "./time-picker"
 
 interface EditTrackableDialogProps {
   trackable: Trackable
@@ -37,10 +38,16 @@ export function EditTrackableDialog({
   const [title, setTitle] = useState(trackable.title)
   const [type, setType] = useState(trackable.type)
   const [resetFrequency, setResetFrequency] = useState(
-    trackable.reset_frequency || "NONE"
+    trackable.reset_frequency || "none"
   )
   const [targetValue, setTargetValue] = useState(
     trackable.target_value?.toString() || ""
+  )
+  const [priority, setPriority] = useState(
+    (trackable.priority as "low" | "medium" | "high") || "medium"
+  )
+  const [scheduledTime, setScheduledTime] = useState(
+    trackable.scheduled_time || ""
   )
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -52,6 +59,8 @@ export function EditTrackableDialog({
         type,
         reset_frequency: resetFrequency as any,
         target_value: targetValue ? parseInt(targetValue) : null,
+        priority: priority as any,
+        scheduled_time: scheduledTime || null,
       })
       setOpen(false)
     } catch (error) {
@@ -129,9 +138,9 @@ export function EditTrackableDialog({
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="NONE">{tr.trackables.noReset}</SelectItem>
-                      <SelectItem value="DAILY">{tr.trackables.daily}</SelectItem>
-                      <SelectItem value="WEEKLY">{tr.trackables.weekly}</SelectItem>
+                      <SelectItem value="none">{tr.trackables.noReset}</SelectItem>
+                      <SelectItem value="daily">{tr.trackables.daily}</SelectItem>
+                      <SelectItem value="weekly">{tr.trackables.weekly}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

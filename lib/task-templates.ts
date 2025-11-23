@@ -10,6 +10,7 @@ export interface TaskTemplate {
   target_value?: number
   category: string
   emoji?: string
+  priority?: "low" | "medium" | "high"
 }
 
 export const TASK_TEMPLATES: TaskTemplate[] = [
@@ -114,24 +115,56 @@ export const TASK_TEMPLATES: TaskTemplate[] = [
     type: "ONE_TIME",
     category: "İş & Verimlilik",
     emoji: "📅",
+    priority: "high",
   },
   {
     title: "Proje Tamamla",
     type: "ONE_TIME",
     category: "İş & Verimlilik",
     emoji: "✅",
+    priority: "high",
   },
   {
     title: "Rapor Hazırla",
     type: "ONE_TIME",
     category: "İş & Verimlilik",
     emoji: "📊",
+    priority: "medium",
   },
   {
     title: "Sunum Hazırla",
     type: "ONE_TIME",
     category: "İş & Verimlilik",
     emoji: "📝",
+    priority: "high",
+  },
+  {
+    title: "Doktor Randevusu",
+    type: "ONE_TIME",
+    category: "İş & Verimlilik",
+    emoji: "🏥",
+    priority: "high",
+  },
+  {
+    title: "Müşteri Toplantısı",
+    type: "ONE_TIME",
+    category: "İş & Verimlilik",
+    emoji: "🤝",
+    priority: "high",
+  },
+  {
+    title: "İş Görüşmesi",
+    type: "ONE_TIME",
+    category: "İş & Verimlilik",
+    emoji: "💼",
+    priority: "high",
+  },
+  {
+    title: "Fatura Ödeme",
+    type: "ONE_TIME",
+    category: "İş & Verimlilik",
+    emoji: "💳",
+    priority: "high",
   },
   {
     title: "Müşteri Arama",
@@ -154,6 +187,28 @@ export const TASK_TEMPLATES: TaskTemplate[] = [
     type: "ONE_TIME",
     category: "Eğitim & Öğrenme",
     emoji: "✏️",
+    priority: "high",
+  },
+  {
+    title: "Sınav Çalışması",
+    type: "ONE_TIME",
+    category: "Eğitim & Öğrenme",
+    emoji: "📝",
+    priority: "high",
+  },
+  {
+    title: "Proje Teslimi",
+    type: "ONE_TIME",
+    category: "Eğitim & Öğrenme",
+    emoji: "📦",
+    priority: "high",
+  },
+  {
+    title: "Ders Notlarını Gözden Geçir",
+    type: "ONE_TIME",
+    category: "Eğitim & Öğrenme",
+    emoji: "📋",
+    priority: "medium",
   },
   {
     title: "Kitap Oku",
@@ -218,6 +273,28 @@ export const TASK_TEMPLATES: TaskTemplate[] = [
     type: "ONE_TIME",
     category: "Ev İşleri",
     emoji: "🛒",
+    priority: "medium",
+  },
+  {
+    title: "Ev Temizliği (Derin)",
+    type: "ONE_TIME",
+    category: "Ev İşleri",
+    emoji: "🧽",
+    priority: "low",
+  },
+  {
+    title: "Eşya Tamiri",
+    type: "ONE_TIME",
+    category: "Ev İşleri",
+    emoji: "🔧",
+    priority: "medium",
+  },
+  {
+    title: "Dekorasyon Değişikliği",
+    type: "ONE_TIME",
+    category: "Ev İşleri",
+    emoji: "🖼️",
+    priority: "low",
   },
   {
     title: "Çöp At",
@@ -284,6 +361,28 @@ export const TASK_TEMPLATES: TaskTemplate[] = [
     type: "ONE_TIME",
     category: "Sosyal & İlişkiler",
     emoji: "👥",
+    priority: "medium",
+  },
+  {
+    title: "Doğum Günü Partisi",
+    type: "ONE_TIME",
+    category: "Sosyal & İlişkiler",
+    emoji: "🎉",
+    priority: "high",
+  },
+  {
+    title: "Aile Toplantısı",
+    type: "ONE_TIME",
+    category: "Sosyal & İlişkiler",
+    emoji: "👨‍👩‍👧‍👦",
+    priority: "high",
+  },
+  {
+    title: "Randevu",
+    type: "ONE_TIME",
+    category: "Sosyal & İlişkiler",
+    emoji: "📅",
+    priority: "high",
   },
   {
     title: "Sosyal Medya Kontrol Et",
@@ -313,6 +412,28 @@ export const TASK_TEMPLATES: TaskTemplate[] = [
     type: "ONE_TIME",
     category: "Finans",
     emoji: "💳",
+    priority: "high",
+  },
+  {
+    title: "Banka İşlemi",
+    type: "ONE_TIME",
+    category: "Finans",
+    emoji: "🏦",
+    priority: "medium",
+  },
+  {
+    title: "Vergi Ödemesi",
+    type: "ONE_TIME",
+    category: "Finans",
+    emoji: "📄",
+    priority: "high",
+  },
+  {
+    title: "Yatırım Araştırması",
+    type: "ONE_TIME",
+    category: "Finans",
+    emoji: "📈",
+    priority: "low",
   },
   {
     title: "Harcamaları Kaydet",
@@ -402,6 +523,28 @@ export const TASK_TEMPLATES: TaskTemplate[] = [
     type: "ONE_TIME",
     category: "Seyahat & Ulaşım",
     emoji: "🚗",
+    priority: "medium",
+  },
+  {
+    title: "Araç Muayenesi",
+    type: "ONE_TIME",
+    category: "Seyahat & Ulaşım",
+    emoji: "🔍",
+    priority: "high",
+  },
+  {
+    title: "Seyahat Planlaması",
+    type: "ONE_TIME",
+    category: "Seyahat & Ulaşım",
+    emoji: "✈️",
+    priority: "medium",
+  },
+  {
+    title: "Bilet Rezervasyonu",
+    type: "ONE_TIME",
+    category: "Seyahat & Ulaşım",
+    emoji: "🎫",
+    priority: "high",
   },
   {
     title: "Toplu Taşıma Kullan",

@@ -5,6 +5,8 @@ export const trackableSchema = z.object({
   type: z.enum(["DAILY_HABIT", "ONE_TIME", "PROGRESS"]),
   target_value: z.number().int().positive().nullable().optional(),
   reset_frequency: z.enum(["daily", "weekly", "none"]).default("none"),
+  scheduled_time: z.string().nullable().optional(),
+  priority: z.enum(["low", "medium", "high"]).optional(),
 })
 
 export const updateTrackableSchema = z.object({
@@ -15,6 +17,8 @@ export const updateTrackableSchema = z.object({
   current_value: z.number().int().min(0).optional(),
   target_value: z.number().int().positive().nullable().optional(),
   reset_frequency: z.enum(["daily", "weekly", "none"]).optional(),
+  priority: z.enum(["low", "medium", "high"]).optional(),
+  scheduled_time: z.string().nullable().optional(),
 })
 
 export const incrementProgressSchema = z.object({

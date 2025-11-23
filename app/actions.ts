@@ -15,6 +15,8 @@ export async function createTrackable(data: {
   type: "DAILY_HABIT" | "ONE_TIME" | "PROGRESS"
   target_value?: number | null
   reset_frequency?: "daily" | "weekly" | "none"
+  scheduled_time?: string | null
+  priority?: "low" | "medium" | "high"
 }) {
   try {
     const validated = trackableSchema.parse(data)
@@ -28,7 +30,7 @@ export async function createTrackable(data: {
       throw new Error("Unauthorized")
     }
 
-    const { error } = await supabase.from("trackables").insert({
+    const insertData: any = {
       user_id: user.id,
       title: validated.title,
       type: validated.type,
@@ -36,7 +38,12 @@ export async function createTrackable(data: {
       reset_frequency: validated.reset_frequency,
       status: "active",
       current_value: 0,
-    })
+    }
+
+    if (data.scheduled_time) insertData.scheduled_time = data.scheduled_time
+    if (data.priority) insertData.priority = data.priority
+
+    const { error } = await supabase.from("trackables").insert(insertData)
 
     if (error) throw error
 
@@ -56,6 +63,8 @@ export async function updateTrackable(data: {
   current_value?: number
   target_value?: number | null
   reset_frequency?: "daily" | "weekly" | "none"
+  priority?: "low" | "medium" | "high"
+  scheduled_time?: string | null
 }) {
   try {
     const validated = updateTrackableSchema.parse(data)
@@ -82,6 +91,9 @@ export async function updateTrackable(data: {
       updateData.target_value = validated.target_value
     if (validated.reset_frequency !== undefined)
       updateData.reset_frequency = validated.reset_frequency
+    if (data.priority !== undefined) updateData.priority = data.priority
+    if (data.scheduled_time !== undefined)
+      updateData.scheduled_time = data.scheduled_time
 
     const { error } = await supabase
       .from("trackables")

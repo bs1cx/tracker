@@ -10,6 +10,7 @@ import { formatDate } from "@/lib/date-utils"
 import { tr } from "@/lib/i18n"
 import { EditTrackableDialog } from "./edit-trackable-dialog"
 import { DeleteTrackableDialog } from "./delete-trackable-dialog"
+import { Clock } from "lucide-react"
 
 interface TaskCardProps {
   trackable: Trackable
@@ -56,20 +57,47 @@ export function TaskCard({ trackable }: TaskCardProps) {
           className="h-5 w-5"
         />
         <div className="flex-1 min-w-0">
-          <p
-            className={cn(
-              "text-sm font-medium",
-              isCompleted && "line-through text-muted-foreground"
-            )}
-          >
-            {trackable.title}
-          </p>
-          {trackable.last_completed_at && (
-            <p className="text-xs text-muted-foreground mt-1">
-              {tr.trackables.lastCompleted}{" "}
-              {formatDate(trackable.last_completed_at, "PP")}
+          <div className="flex items-center gap-2">
+            <p
+              className={cn(
+                "text-sm font-medium",
+                isCompleted && "line-through text-muted-foreground"
+              )}
+            >
+              {trackable.title}
             </p>
-          )}
+            {trackable.priority && (
+              <span
+                className={cn(
+                  "w-2 h-2 rounded-full",
+                  trackable.priority === "high" && "bg-red-500",
+                  trackable.priority === "medium" && "bg-yellow-500",
+                  trackable.priority === "low" && "bg-green-500"
+                )}
+                title={
+                  trackable.priority === "high"
+                    ? "Yüksek Öncelik"
+                    : trackable.priority === "medium"
+                    ? "Orta Öncelik"
+                    : "Düşük Öncelik"
+                }
+              />
+            )}
+          </div>
+          <div className="flex items-center gap-3 mt-1">
+            {trackable.last_completed_at && (
+              <p className="text-xs text-muted-foreground">
+                {tr.trackables.lastCompleted}{" "}
+                {formatDate(trackable.last_completed_at, "PP")}
+              </p>
+            )}
+            {trackable.scheduled_time && (
+              <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                <Clock className="h-3 w-3" />
+                {trackable.scheduled_time}
+              </div>
+            )}
+          </div>
         </div>
         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
           <EditTrackableDialog

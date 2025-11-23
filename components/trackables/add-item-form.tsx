@@ -44,6 +44,7 @@ export function AddItemForm() {
     target_value: "",
     reset_frequency: "none" as "daily" | "weekly" | "none",
     scheduled_time: "",
+    priority: "medium" as "low" | "medium" | "high",
   })
   const router = useRouter()
 
@@ -71,6 +72,7 @@ export function AddItemForm() {
       target_value: template.target_value?.toString() || "",
       reset_frequency: template.reset_frequency || "none",
       scheduled_time: "",
+      priority: template.priority || "medium",
     })
     setActiveTab("manual")
   }
@@ -88,6 +90,8 @@ export function AddItemForm() {
             ? parseInt(formData.target_value)
             : null,
         reset_frequency: formData.reset_frequency,
+        scheduled_time: formData.scheduled_time || null,
+        priority: formData.priority,
       })
 
       setFormData({
@@ -96,6 +100,7 @@ export function AddItemForm() {
         target_value: "",
         reset_frequency: "none",
         scheduled_time: "",
+        priority: "medium",
       })
       setSearchQuery("")
       setSelectedCategory("all")
@@ -118,6 +123,8 @@ export function AddItemForm() {
         type: template.type,
         target_value: template.target_value || null,
         reset_frequency: template.reset_frequency || "none",
+        scheduled_time: null,
+        priority: template.priority || "medium",
       })
       setOpen(false)
       setSearchQuery("")
@@ -336,6 +343,7 @@ export function AddItemForm() {
                     target_value: "",
                     reset_frequency: "none",
                     scheduled_time: "",
+                    priority: "medium",
                   })
                   setActiveTab("templates")
                 }}

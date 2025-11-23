@@ -12,6 +12,8 @@ export interface Trackable {
   target_value: number | null
   last_completed_at: string | null
   reset_frequency: ResetFrequency
+  priority?: "low" | "medium" | "high"
+  scheduled_time?: string | null
   created_at: string
   updated_at: string
   is_completed_today?: boolean
