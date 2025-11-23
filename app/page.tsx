@@ -5,6 +5,7 @@ import { ProgressTracker } from "@/components/trackables/progress-tracker"
 import { AddItemForm } from "@/components/trackables/add-item-form"
 import { LogoutButton } from "@/components/auth/logout-button"
 import { DashboardContent } from "@/components/dashboard/dashboard-content"
+import { DigitalClock } from "@/components/dashboard/digital-clock"
 import type { Trackable } from "@/types/database"
 import { isSameCalendarDay } from "@/lib/date-utils"
 import { tr } from "@/lib/i18n"
@@ -96,19 +97,26 @@ export default async function Dashboard() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
       <div className="container mx-auto px-4 py-8 max-w-7xl">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
-          <div>
-            <h1 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
-              {tr.dashboard.title}
-            </h1>
-            <p className="text-muted-foreground mt-2 text-lg">
-              {tr.dashboard.subtitle}
-            </p>
+        {/* Header with Clock */}
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">
+          {/* Digital Clock - Left Top */}
+          <div className="lg:col-span-1">
+            <DigitalClock />
           </div>
-          <div className="flex items-center gap-2">
-            <AddItemForm />
-            <LogoutButton />
+          {/* Header Content */}
+          <div className="lg:col-span-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div>
+              <h1 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+                {tr.dashboard.title}
+              </h1>
+              <p className="text-muted-foreground mt-2 text-lg">
+                {tr.dashboard.subtitle}
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              <AddItemForm />
+              <LogoutButton />
+            </div>
           </div>
         </div>
 

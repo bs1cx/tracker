@@ -23,6 +23,7 @@ import {
 import { Plus, Search, Sparkles } from "lucide-react"
 import { createTrackable } from "@/app/actions"
 import { useRouter } from "next/navigation"
+import { TimePicker } from "./time-picker"
 import {
   TASK_TEMPLATES,
   TASK_CATEGORIES,
@@ -42,6 +43,7 @@ export function AddItemForm() {
     type: "" as "DAILY_HABIT" | "ONE_TIME" | "PROGRESS" | "",
     target_value: "",
     reset_frequency: "none" as "daily" | "weekly" | "none",
+    scheduled_time: "",
   })
   const router = useRouter()
 
@@ -68,6 +70,7 @@ export function AddItemForm() {
       type: template.type,
       target_value: template.target_value?.toString() || "",
       reset_frequency: template.reset_frequency || "none",
+      scheduled_time: "",
     })
     setActiveTab("manual")
   }
@@ -92,6 +95,7 @@ export function AddItemForm() {
         type: "",
         target_value: "",
         reset_frequency: "none",
+        scheduled_time: "",
       })
       setSearchQuery("")
       setSelectedCategory("all")
@@ -308,6 +312,17 @@ export function AddItemForm() {
                 />
               </div>
             )}
+            {(formData.type === "DAILY_HABIT" || formData.type === "ONE_TIME") && (
+              <div className="grid gap-2">
+                <TimePicker
+                  label="Hatırlatma Saati (Opsiyonel)"
+                  value={formData.scheduled_time}
+                  onChange={(time) =>
+                    setFormData({ ...formData, scheduled_time: time })
+                  }
+                />
+              </div>
+            )}
             </div>
             <DialogFooter>
               <Button
@@ -320,6 +335,7 @@ export function AddItemForm() {
                     type: "",
                     target_value: "",
                     reset_frequency: "none",
+                    scheduled_time: "",
                   })
                   setActiveTab("templates")
                 }}
