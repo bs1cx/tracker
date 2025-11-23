@@ -37,13 +37,13 @@ CREATE INDEX IF NOT EXISTS idx_income_user_date ON income(user_id, log_date DESC
 CREATE INDEX IF NOT EXISTS idx_budget_categories_user_month ON budget_categories(user_id, month_year);
 
 -- Indexes for productivity module
-CREATE INDEX IF NOT EXISTS idx_pomodoro_sessions_user_date ON pomodoro_sessions(user_id, session_date DESC);
+CREATE INDEX IF NOT EXISTS idx_pomodoro_sessions_user_date ON pomodoro_sessions(user_id, log_date DESC);
 CREATE INDEX IF NOT EXISTS idx_focus_sessions_user_date ON focus_sessions(user_id, log_date DESC);
 
 -- Indexes for mental health module
 CREATE INDEX IF NOT EXISTS idx_mood_logs_user_date ON mood_logs(user_id, log_date DESC);
-CREATE INDEX IF NOT EXISTS idx_journal_entries_user_date ON journal_entries(user_id, entry_date DESC);
-CREATE INDEX IF NOT EXISTS idx_meditation_sessions_user_date ON meditation_sessions(user_id, session_date DESC);
+CREATE INDEX IF NOT EXISTS idx_journal_entries_user_date ON journal_entries(user_id, log_date DESC);
+CREATE INDEX IF NOT EXISTS idx_meditation_sessions_user_date ON meditation_sessions(user_id, log_date DESC);
 
 -- Analyze tables to update statistics (helps query planner)
 ANALYZE health_metrics;
