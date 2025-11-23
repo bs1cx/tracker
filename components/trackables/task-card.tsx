@@ -88,7 +88,7 @@ export function TaskCard({ trackable }: TaskCardProps) {
             {trackable.last_completed_at && (
               <p className="text-xs text-slate-400">
                 {tr.trackables.lastCompleted}{" "}
-                {formatDate(trackable.last_completed_at, "PP")}
+                {formatDate(trackable.last_completed_at, "d MMMM yyyy, HH:mm")}
               </p>
             )}
             {trackable.scheduled_time && (

@@ -14,6 +14,7 @@ import {
   parseISO,
   isValid,
 } from "date-fns"
+import { tr } from "date-fns/locale"
 
 /**
  * Adds days to a date using calendar math (DST-aware)
@@ -99,7 +100,7 @@ export function formatDate(
   if (!isValid(dateObj)) {
     return "Invalid Date"
   }
-  return format(dateObj, formatStr)
+  return format(dateObj, formatStr, { locale: tr })
 }
 
 /**
