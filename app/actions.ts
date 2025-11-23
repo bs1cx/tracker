@@ -41,14 +41,12 @@ export async function createTrackable(data: {
     }
 
     // Only add optional fields if they are provided
+    // Try to add priority and scheduled_time, but handle gracefully if columns don't exist
     if (data.scheduled_time && data.scheduled_time.trim() !== "") {
       insertData.scheduled_time = data.scheduled_time
     }
     if (data.priority) {
       insertData.priority = data.priority
-    } else {
-      // Default to medium if not provided
-      insertData.priority = "medium"
     }
 
     const { error, data: insertedData } = await supabase
@@ -59,12 +57,40 @@ export async function createTrackable(data: {
     if (error) {
       console.error("Supabase error creating trackable:", error)
       // Check if it's a column missing error
-      if (error.message?.includes("column") || error.code === "42703") {
-        throw new Error(
-          "Database schema güncel değil. Lütfen migration script'ini çalıştırın: supabase-schema-priority-time.sql"
+      if (
+        error.message?.includes("column") ||
+        error.code === "42703" ||
+        error.message?.includes("priority") ||
+        error.message?.includes("scheduled_time")
+      ) {
+        // Try again without priority and scheduled_time
+        const fallbackData: any = {
+          user_id: user.id,
+          title: validated.title,
+          type: validated.type,
+          target_value: validated.target_value ?? null,
+          reset_frequency: validated.reset_frequency,
+          status: "active",
+          current_value: 0,
+        }
+
+        const { error: fallbackError } = await supabase
+          .from("trackables")
+          .insert(fallbackData)
+
+        if (fallbackError) {
+          throw new Error(
+            `Database hatası: ${fallbackError.message}. Lütfen migration script'ini çalıştırın: supabase-schema-priority-time.sql`
+          )
+        }
+
+        // Success with fallback - warn user
+        console.warn(
+          "Trackable created without priority/scheduled_time. Please run migration script."
         )
+      } else {
+        throw new Error(error.message || "Görev oluşturulurken bir hata oluştu")
       }
-      throw new Error(error.message || "Görev oluşturulurken bir hata oluştu")
     }
 
     revalidatePath("/")
