@@ -8,6 +8,7 @@
 import {
   addDays,
   startOfDay,
+  endOfDay,
   isSameDay,
   isToday,
   format,
@@ -124,5 +125,19 @@ export function toISOString(date: Date | string): string {
     throw new Error("Invalid date provided")
   }
   return dateObj.toISOString()
+}
+
+/**
+ * Gets the end of a day (23:59:59) in the local timezone (DST-aware)
+ * 
+ * @param date - The date to get end of day for
+ * @returns Date object at end of day
+ */
+export function getEndOfDay(date: Date | string = new Date()): Date {
+  const dateObj = typeof date === "string" ? parseISO(date) : date
+  if (!isValid(dateObj)) {
+    throw new Error("Invalid date provided")
+  }
+  return endOfDay(dateObj)
 }
 
