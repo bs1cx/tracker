@@ -157,6 +157,48 @@ export function EditTrackableDialog({
                 </div>
               </>
             )}
+            {/* Priority */}
+            <div className="grid gap-2">
+              <Label htmlFor="priority">Öncelik</Label>
+              <Select
+                value={priority}
+                onValueChange={(value) =>
+                  setPriority(value as "low" | "medium" | "high")
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="low">
+                    <div className="flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-green-500"></span>
+                      Düşük
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="medium">
+                    <div className="flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-yellow-500"></span>
+                      Orta
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="high">
+                    <div className="flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-red-500"></span>
+                      Yüksek
+                    </div>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            {/* Scheduled Time */}
+            <div className="grid gap-2">
+              <TimePicker
+                label="Hatırlatma Saati (Opsiyonel)"
+                value={scheduledTime}
+                onChange={setScheduledTime}
+              />
+            </div>
           </div>
           <DialogFooter>
             <Button

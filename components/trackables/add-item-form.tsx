@@ -323,7 +323,8 @@ export function AddItemForm() {
                 />
               </div>
             )}
-            {(formData.type === "DAILY_HABIT" || formData.type === "ONE_TIME") && (
+            {/* Time Picker for all types */}
+            {formData.type && (
               <div className="grid gap-2">
                 <TimePicker
                   label="Hatırlatma Saati (Opsiyonel)"
