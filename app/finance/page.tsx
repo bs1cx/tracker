@@ -2,7 +2,7 @@ import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
 import { tr } from "@/lib/i18n"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
+import { ExpenseForm } from "@/components/finance/expense-form"
 import { TrendingDown, TrendingUp, Wallet, BarChart3 } from "lucide-react"
 
 export default async function FinancePage() {
@@ -90,7 +90,7 @@ export default async function FinancePage() {
               <CardTitle>Harcama Ekle</CardTitle>
             </CardHeader>
             <CardContent>
-              <Button className="w-full">Yeni Harcama</Button>
+              <ExpenseForm />
             </CardContent>
           </Card>
 

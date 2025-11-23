@@ -3,7 +3,8 @@ import { redirect } from "next/navigation"
 import { tr } from "@/lib/i18n"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { CheckSquare, Calendar, Timer, Focus, Target, FileText } from "lucide-react"
+import { PomodoroTimer } from "@/components/productivity/pomodoro-timer"
+import { CheckSquare, Calendar, Focus, Target, FileText } from "lucide-react"
 
 export default async function ProductivityPage() {
   const supabase = await createClient()
@@ -43,20 +44,7 @@ export default async function ProductivityPage() {
           </Card>
 
           {/* Pomodoro */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Timer className="h-5 w-5" />
-                {tr.productivity.pomodoro}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-2xl font-bold mb-2">25:00</p>
-              <Button className="w-full" size="sm">
-                Başlat
-              </Button>
-            </CardContent>
-          </Card>
+          <PomodoroTimer />
 
           {/* Focus Mode */}
           <Card>

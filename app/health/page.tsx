@@ -2,7 +2,10 @@ import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
 import { tr } from "@/lib/i18n"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
+import { HeartRateForm } from "@/components/health/heart-rate-form"
+import { SleepForm } from "@/components/health/sleep-form"
+import { WaterForm } from "@/components/health/water-form"
+import { NutritionForm } from "@/components/health/nutrition-form"
 import { Heart, Moon, Droplet, Utensils } from "lucide-react"
 
 export default async function HealthPage() {
@@ -38,9 +41,9 @@ export default async function HealthPage() {
             <CardContent>
               <p className="text-2xl font-bold">--</p>
               <p className="text-sm text-muted-foreground">BPM</p>
-              <Button className="mt-4 w-full" size="sm">
-                Kayıt Ekle
-              </Button>
+              <div className="mt-4">
+                <HeartRateForm />
+              </div>
             </CardContent>
           </Card>
 
@@ -55,9 +58,9 @@ export default async function HealthPage() {
             <CardContent>
               <p className="text-2xl font-bold">--</p>
               <p className="text-sm text-muted-foreground">Saat</p>
-              <Button className="mt-4 w-full" size="sm">
-                Uyku Kaydı
-              </Button>
+              <div className="mt-4">
+                <SleepForm />
+              </div>
             </CardContent>
           </Card>
 
@@ -72,9 +75,9 @@ export default async function HealthPage() {
             <CardContent>
               <p className="text-2xl font-bold">--</p>
               <p className="text-sm text-muted-foreground">ml</p>
-              <Button className="mt-4 w-full" size="sm">
-                Su Ekle
-              </Button>
+              <div className="mt-4">
+                <WaterForm />
+              </div>
             </CardContent>
           </Card>
 
@@ -89,9 +92,9 @@ export default async function HealthPage() {
             <CardContent>
               <p className="text-2xl font-bold">--</p>
               <p className="text-sm text-muted-foreground">kcal</p>
-              <Button className="mt-4 w-full" size="sm">
-                Yemek Ekle
-              </Button>
+              <div className="mt-4">
+                <NutritionForm />
+              </div>
             </CardContent>
           </Card>
         </div>

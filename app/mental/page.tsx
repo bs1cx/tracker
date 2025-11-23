@@ -2,7 +2,9 @@ import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
 import { tr } from "@/lib/i18n"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
+import { MoodForm } from "@/components/mental/mood-form"
+import { MeditationForm } from "@/components/mental/meditation-form"
+import { JournalForm } from "@/components/mental/journal-form"
 import { Smile, Brain, BookOpen, Wind } from "lucide-react"
 
 export default async function MentalHealthPage() {
@@ -38,9 +40,9 @@ export default async function MentalHealthPage() {
             <CardContent>
               <p className="text-2xl font-bold">--</p>
               <p className="text-sm text-muted-foreground">Bugünkü Ruh Hali</p>
-              <Button className="mt-4 w-full" size="sm">
-                Ruh Hali Ekle
-              </Button>
+              <div className="mt-4">
+                <MoodForm />
+              </div>
             </CardContent>
           </Card>
 
@@ -55,9 +57,9 @@ export default async function MentalHealthPage() {
             <CardContent>
               <p className="text-2xl font-bold">--</p>
               <p className="text-sm text-muted-foreground">/ 10</p>
-              <Button className="mt-4 w-full" size="sm">
-                Motivasyon Ekle
-              </Button>
+              <div className="mt-4">
+                <MoodForm />
+              </div>
             </CardContent>
           </Card>
 
@@ -72,9 +74,9 @@ export default async function MentalHealthPage() {
             <CardContent>
               <p className="text-2xl font-bold">--</p>
               <p className="text-sm text-muted-foreground">Dakika</p>
-              <Button className="mt-4 w-full" size="sm">
-                Meditasyon Başlat
-              </Button>
+              <div className="mt-4">
+                <MeditationForm />
+              </div>
             </CardContent>
           </Card>
 
@@ -89,9 +91,9 @@ export default async function MentalHealthPage() {
             <CardContent>
               <p className="text-2xl font-bold">--</p>
               <p className="text-sm text-muted-foreground">Günlük Girişi</p>
-              <Button className="mt-4 w-full" size="sm">
-                Günlük Yaz
-              </Button>
+              <div className="mt-4">
+                <JournalForm />
+              </div>
             </CardContent>
           </Card>
         </div>
