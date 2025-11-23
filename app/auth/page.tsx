@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useSupabase } from "@/components/providers/supabase-provider"
 import { useRouter } from "next/navigation"
 import { Loading } from "@/components/ui/loading"
+import { tr } from "@/lib/i18n"
 
 export default function AuthPage() {
   const [isSignUp, setIsSignUp] = useState(false)
@@ -37,7 +38,7 @@ export default function AuthPage() {
           password,
         })
         if (error) throw error
-        alert("Check your email to confirm your account!")
+        alert(tr.auth.checkEmail)
       } else {
         const { error } = await supabase.auth.signInWithPassword({
           email,
@@ -48,7 +49,7 @@ export default function AuthPage() {
         router.refresh()
       }
     } catch (error: any) {
-      alert(error.message || "An error occurred")
+      alert(error.message || tr.common.error)
     } finally {
       setIsLoading(false)
     }
@@ -62,17 +63,17 @@ export default function AuthPage() {
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle>{isSignUp ? "Sign Up" : "Sign In"}</CardTitle>
+          <CardTitle>{isSignUp ? tr.auth.signUp : tr.auth.signIn}</CardTitle>
           <CardDescription>
             {isSignUp
-              ? "Create an account to start tracking your life"
-              : "Enter your credentials to access your tracker"}
+              ? tr.auth.createAccount
+              : tr.auth.enterCredentials}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">{tr.auth.email}</Label>
               <Input
                 id="email"
                 type="email"
@@ -83,7 +84,7 @@ export default function AuthPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password">{tr.auth.password}</Label>
               <Input
                 id="password"
                 type="password"
@@ -95,10 +96,10 @@ export default function AuthPage() {
             </div>
             <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading
-                ? "Loading..."
+                ? tr.common.loading
                 : isSignUp
-                ? "Sign Up"
-                : "Sign In"}
+                ? tr.auth.signUp
+                : tr.auth.signIn}
             </Button>
             <Button
               type="button"
@@ -107,8 +108,8 @@ export default function AuthPage() {
               onClick={() => setIsSignUp(!isSignUp)}
             >
               {isSignUp
-                ? "Already have an account? Sign in"
-                : "Don't have an account? Sign up"}
+                ? tr.auth.alreadyHaveAccount
+                : tr.auth.dontHaveAccount}
             </Button>
           </form>
         </CardContent>

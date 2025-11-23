@@ -29,6 +29,7 @@ import {
   searchTemplates,
   type TaskTemplate,
 } from "@/lib/task-templates"
+import { tr } from "@/lib/i18n"
 
 export function AddItemForm() {
   const [open, setOpen] = useState(false)
@@ -99,7 +100,7 @@ export function AddItemForm() {
       router.refresh()
     } catch (error) {
       console.error("Error creating trackable:", error)
-      alert("Failed to create trackable. Please try again.")
+      alert(tr.trackables.failed)
     } finally {
       setIsLoading(false)
     }
@@ -120,7 +121,7 @@ export function AddItemForm() {
       router.refresh()
     } catch (error) {
       console.error("Error creating trackable:", error)
-      alert("Failed to create trackable. Please try again.")
+      alert(tr.trackables.failed)
     } finally {
       setIsLoading(false)
     }
@@ -131,14 +132,14 @@ export function AddItemForm() {
       <DialogTrigger asChild>
         <Button>
           <Plus className="mr-2 h-4 w-4" />
-          Add Item
+          {tr.dashboard.addItem}
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Add New Item</DialogTitle>
+          <DialogTitle>{tr.trackables.addNew}</DialogTitle>
           <DialogDescription>
-            Choose from templates or create a custom item.
+            {tr.trackables.createNew}
           </DialogDescription>
         </DialogHeader>
 
@@ -151,7 +152,7 @@ export function AddItemForm() {
             className="rounded-b-none"
           >
             <Sparkles className="mr-2 h-4 w-4" />
-            Templates
+            {tr.templates.title}
           </Button>
           <Button
             type="button"
@@ -160,7 +161,7 @@ export function AddItemForm() {
             className="rounded-b-none"
           >
             <Plus className="mr-2 h-4 w-4" />
-            Custom
+            {tr.templates.custom}
           </Button>
         </div>
 
@@ -170,7 +171,7 @@ export function AddItemForm() {
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Search templates..."
+                placeholder={tr.templates.searchPlaceholder}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10"
@@ -179,7 +180,7 @@ export function AddItemForm() {
 
             {/* Category Filter */}
             <div>
-              <Label className="text-sm mb-2 block">Category</Label>
+              <Label className="text-sm mb-2 block">{tr.templates.category}</Label>
               <Select
                 value={selectedCategory}
                 onValueChange={setSelectedCategory}
@@ -188,7 +189,7 @@ export function AddItemForm() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Categories</SelectItem>
+                  <SelectItem value="all">{tr.templates.allCategories}</SelectItem>
                   {TASK_CATEGORIES.map((category) => (
                     <SelectItem key={category} value={category}>
                       {category}
@@ -202,7 +203,7 @@ export function AddItemForm() {
             <div className="grid grid-cols-2 gap-2 max-h-[400px] overflow-y-auto">
               {filteredTemplates.length === 0 ? (
                 <div className="col-span-2 text-center text-muted-foreground py-8">
-                  No templates found. Try a different search.
+                  {tr.templates.noTemplates}
                 </div>
               ) : (
                 filteredTemplates.map((template) => (
@@ -236,10 +237,10 @@ export function AddItemForm() {
           <form onSubmit={handleSubmit}>
             <div className="grid gap-4 py-4">
             <div className="grid gap-2">
-              <Label htmlFor="title">Title</Label>
+              <Label htmlFor="title">{tr.trackables.title}</Label>
               <Input
                 id="title"
-                placeholder="e.g., Feed the dog"
+                placeholder="örn: Köpeği besle"
                 value={formData.title}
                 onChange={(e) =>
                   setFormData({ ...formData, title: e.target.value })
@@ -248,7 +249,7 @@ export function AddItemForm() {
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="type">Type</Label>
+              <Label htmlFor="type">{tr.trackables.type}</Label>
               <Select
                 value={formData.type}
                 onValueChange={(value) =>
@@ -260,18 +261,18 @@ export function AddItemForm() {
                 required
               >
                 <SelectTrigger id="type">
-                  <SelectValue placeholder="Select type" />
+                  <SelectValue placeholder="Tür seçin" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="DAILY_HABIT">Daily Habit</SelectItem>
-                  <SelectItem value="ONE_TIME">One-Time Task</SelectItem>
-                  <SelectItem value="PROGRESS">Progress Tracker</SelectItem>
+                  <SelectItem value="DAILY_HABIT">{tr.trackables.dailyHabit}</SelectItem>
+                  <SelectItem value="ONE_TIME">{tr.trackables.oneTimeTask}</SelectItem>
+                  <SelectItem value="PROGRESS">{tr.trackables.progressTracker}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             {formData.type === "DAILY_HABIT" && (
               <div className="grid gap-2">
-                <Label htmlFor="reset_frequency">Reset Frequency</Label>
+                <Label htmlFor="reset_frequency">{tr.trackables.resetFrequency}</Label>
                 <Select
                   value={formData.reset_frequency}
                   onValueChange={(value) =>
@@ -285,21 +286,21 @@ export function AddItemForm() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="none">No Reset</SelectItem>
-                    <SelectItem value="daily">Daily</SelectItem>
-                    <SelectItem value="weekly">Weekly</SelectItem>
+                    <SelectItem value="none">{tr.trackables.noReset}</SelectItem>
+                    <SelectItem value="daily">{tr.trackables.daily}</SelectItem>
+                    <SelectItem value="weekly">{tr.trackables.weekly}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
             )}
             {formData.type === "PROGRESS" && (
               <div className="grid gap-2">
-                <Label htmlFor="target_value">Target Value (Optional)</Label>
+                <Label htmlFor="target_value">{tr.trackables.targetValue}</Label>
                 <Input
                   id="target_value"
                   type="number"
                   min="1"
-                  placeholder="e.g., 24 (for 24 episodes)"
+                  placeholder="örn: 24 (24 bölüm için)"
                   value={formData.target_value}
                   onChange={(e) =>
                     setFormData({ ...formData, target_value: e.target.value })
@@ -323,10 +324,10 @@ export function AddItemForm() {
                   setActiveTab("templates")
                 }}
               >
-                Cancel
+                {tr.common.cancel}
               </Button>
               <Button type="submit" disabled={isLoading}>
-                {isLoading ? "Creating..." : "Create"}
+                {isLoading ? tr.trackables.creating : tr.common.create}
               </Button>
             </DialogFooter>
           </form>

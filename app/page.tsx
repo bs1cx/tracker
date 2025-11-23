@@ -6,6 +6,7 @@ import { AddItemForm } from "@/components/trackables/add-item-form"
 import { LogoutButton } from "@/components/auth/logout-button"
 import type { Trackable } from "@/types/database"
 import { isSameCalendarDay } from "@/lib/date-utils"
+import { tr } from "@/lib/i18n"
 
 async function getTrackables() {
   const supabase = await createClient()
@@ -94,9 +95,9 @@ export default async function Dashboard() {
       <div className="container mx-auto px-4 py-8 max-w-6xl">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Life Tracker</h1>
+            <h1 className="text-3xl font-bold tracking-tight">{tr.dashboard.title}</h1>
             <p className="text-muted-foreground mt-1">
-              Track your habits, tasks, and progress
+              {tr.dashboard.subtitle}
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -109,7 +110,7 @@ export default async function Dashboard() {
           {/* Daily Habits Section */}
           {dailyHabits.length > 0 && (
             <section>
-              <h2 className="text-2xl font-semibold mb-4">Daily Habits</h2>
+              <h2 className="text-2xl font-semibold mb-4">{tr.dashboard.dailyHabits}</h2>
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 {dailyHabits.map((trackable) => (
                   <TaskCard key={trackable.id} trackable={trackable} />
@@ -121,7 +122,7 @@ export default async function Dashboard() {
           {/* One-Time Tasks Section */}
           {oneTimeTasks.length > 0 && (
             <section>
-              <h2 className="text-2xl font-semibold mb-4">To-Do List</h2>
+              <h2 className="text-2xl font-semibold mb-4">{tr.dashboard.oneTimeTasks}</h2>
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 {oneTimeTasks.map((trackable) => (
                   <TaskCard key={trackable.id} trackable={trackable} />
@@ -134,7 +135,7 @@ export default async function Dashboard() {
           {progressTrackers.length > 0 && (
             <section>
               <h2 className="text-2xl font-semibold mb-4">
-                Watch/Read List
+                {tr.dashboard.progressTrackers}
               </h2>
               <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                 {progressTrackers.map((trackable) => (
@@ -148,7 +149,7 @@ export default async function Dashboard() {
           {trackables.length === 0 && (
             <div className="text-center py-12">
               <p className="text-muted-foreground text-lg mb-4">
-                No trackables yet. Get started by adding your first item!
+                {tr.dashboard.noTrackables}
               </p>
               <AddItemForm />
             </div>

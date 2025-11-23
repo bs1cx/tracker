@@ -7,6 +7,7 @@ import type { Trackable } from "@/types/database"
 import { completeTrackable } from "@/app/actions"
 import { useState } from "react"
 import { formatDate } from "@/lib/date-utils"
+import { tr } from "@/lib/i18n"
 
 interface TaskCardProps {
   trackable: Trackable
@@ -55,7 +56,7 @@ export function TaskCard({ trackable }: TaskCardProps) {
           </p>
           {trackable.last_completed_at && (
             <p className="text-xs text-muted-foreground mt-1">
-              Last completed:{" "}
+              {tr.trackables.lastCompleted}{" "}
               {formatDate(trackable.last_completed_at, "PP")}
             </p>
           )}

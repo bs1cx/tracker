@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button"
 import { LogOut } from "lucide-react"
 import { useSupabase } from "@/components/providers/supabase-provider"
 import { useRouter } from "next/navigation"
+import { tr } from "@/lib/i18n"
 
 export function LogoutButton() {
   const { supabase } = useSupabase()
@@ -18,7 +19,7 @@ export function LogoutButton() {
   return (
     <Button variant="ghost" size="sm" onClick={handleLogout}>
       <LogOut className="mr-2 h-4 w-4" />
-      Logout
+      {tr.auth.signOut}
     </Button>
   )
 }
