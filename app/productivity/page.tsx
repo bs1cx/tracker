@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button"
 import { PomodoroTimer } from "@/components/productivity/pomodoro-timer"
 import { CheckSquare, Calendar, Focus, Target, FileText } from "lucide-react"
 
+export const dynamic = 'force-dynamic'
+
 export default async function ProductivityPage() {
   const supabase = await createClient()
 

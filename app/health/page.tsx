@@ -8,6 +8,8 @@ import { WaterForm } from "@/components/health/water-form"
 import { NutritionForm } from "@/components/health/nutrition-form"
 import { Heart, Moon, Droplet, Utensils } from "lucide-react"
 
+export const dynamic = 'force-dynamic'
+
 export default async function HealthPage() {
   const supabase = await createClient()
 

@@ -4,6 +4,8 @@ import { tr } from "@/lib/i18n"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { BarChart3, TrendingUp, Calendar, Sparkles } from "lucide-react"
 
+export const dynamic = 'force-dynamic'
+
 export default async function StatisticsPage() {
   const supabase = await createClient()
 

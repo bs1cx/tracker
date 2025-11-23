@@ -7,6 +7,8 @@ import { MeditationForm } from "@/components/mental/meditation-form"
 import { JournalForm } from "@/components/mental/journal-form"
 import { Smile, Brain, BookOpen, Wind } from "lucide-react"
 
+export const dynamic = 'force-dynamic'
+
 export default async function MentalHealthPage() {
   const supabase = await createClient()
 

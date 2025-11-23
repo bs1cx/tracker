@@ -8,6 +8,8 @@ import type { Trackable } from "@/types/database"
 import { isSameCalendarDay } from "@/lib/date-utils"
 import { tr } from "@/lib/i18n"
 
+export const dynamic = 'force-dynamic'
+
 async function getTrackables() {
   const supabase = await createClient()
 

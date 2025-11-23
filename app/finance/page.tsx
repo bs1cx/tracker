@@ -2,8 +2,11 @@ import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
 import { tr } from "@/lib/i18n"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
 import { ExpenseForm } from "@/components/finance/expense-form"
 import { TrendingDown, TrendingUp, Wallet, BarChart3 } from "lucide-react"
+
+export const dynamic = 'force-dynamic'
 
 export default async function FinancePage() {
   const supabase = await createClient()
