@@ -6,6 +6,7 @@ import { MoodForm } from "@/components/mental/mood-form"
 import { MotivationForm } from "@/components/mental/motivation-form"
 import { MeditationForm } from "@/components/mental/meditation-form"
 import { JournalForm } from "@/components/mental/journal-form"
+import { MentalReports } from "@/components/mental/mental-reports"
 import { Smile, Brain, BookOpen, Wind } from "lucide-react"
 import { getTodayMood, getTodayMotivation, getTodayMeditationMinutes, getTodayJournalCount } from "@/app/actions-mental"
 import { getCurrentISODate } from "@/lib/date-utils"
@@ -121,6 +122,16 @@ export default async function MentalHealthPage() {
               </div>
             </CardContent>
           </Card>
+        </div>
+
+        {/* Reports Section */}
+        <div className="mt-8">
+          <MentalReports
+            todayMood={todayMood}
+            todayMotivation={todayMotivation}
+            todayMeditation={todayMeditation}
+            todayJournal={todayJournal}
+          />
         </div>
       </div>
     </div>

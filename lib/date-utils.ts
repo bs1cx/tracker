@@ -14,6 +14,11 @@ import {
   format,
   parseISO,
   isValid,
+  startOfWeek,
+  endOfWeek,
+  startOfMonth,
+  endOfMonth,
+  eachDayOfInterval,
 } from "date-fns"
 import { tr } from "date-fns/locale"
 
@@ -139,5 +144,63 @@ export function getEndOfDay(date: Date | string = new Date()): Date {
     throw new Error("Invalid date provided")
   }
   return endOfDay(dateObj)
+}
+
+/**
+ * Gets the start of the week (Monday) for a given date
+ */
+export function getStartOfWeek(date: Date | string = new Date()): Date {
+  const dateObj = typeof date === "string" ? parseISO(date) : date
+  if (!isValid(dateObj)) {
+    throw new Error("Invalid date provided")
+  }
+  return startOfWeek(dateObj, { weekStartsOn: 1 }) // Monday
+}
+
+/**
+ * Gets the end of the week (Sunday) for a given date
+ */
+export function getEndOfWeek(date: Date | string = new Date()): Date {
+  const dateObj = typeof date === "string" ? parseISO(date) : date
+  if (!isValid(dateObj)) {
+    throw new Error("Invalid date provided")
+  }
+  return endOfWeek(dateObj, { weekStartsOn: 1 }) // Monday
+}
+
+/**
+ * Gets the start of the month for a given date
+ */
+export function getStartOfMonth(date: Date | string = new Date()): Date {
+  const dateObj = typeof date === "string" ? parseISO(date) : date
+  if (!isValid(dateObj)) {
+    throw new Error("Invalid date provided")
+  }
+  return startOfMonth(dateObj)
+}
+
+/**
+ * Gets the end of the month for a given date
+ */
+export function getEndOfMonth(date: Date | string = new Date()): Date {
+  const dateObj = typeof date === "string" ? parseISO(date) : date
+  if (!isValid(dateObj)) {
+    throw new Error("Invalid date provided")
+  }
+  return endOfMonth(dateObj)
+}
+
+/**
+ * Gets all days in an interval
+ */
+export function getDaysInInterval(start: Date | string, end: Date | string): Date[] {
+  const startObj = typeof start === "string" ? parseISO(start) : start
+  const endObj = typeof end === "string" ? parseISO(end) : end
+  
+  if (!isValid(startObj) || !isValid(endObj)) {
+    throw new Error("Invalid date provided")
+  }
+  
+  return eachDayOfInterval({ start: startObj, end: endObj })
 }
 

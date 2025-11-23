@@ -3,7 +3,8 @@
 import { createClient } from "@/lib/supabase/server"
 import { revalidatePath } from "next/cache"
 import { z } from "zod"
-import { getCurrentISODate } from "@/lib/date-utils"
+import { format } from "date-fns"
+import { getCurrentISODate, getStartOfDay, getEndOfDay, getStartOfWeek, getEndOfWeek, getStartOfMonth, getEndOfMonth, getDaysInInterval } from "@/lib/date-utils"
 
 // Validation schemas
 const moodLogSchema = z.object({
@@ -518,3 +519,203 @@ export async function getTodayJournalCount() {
   }
 }
 
+// Get weekly data
+export async function getWeeklyMentalData() {
+  try {
+    const supabase = await createClient()
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+
+    if (!user) return null
+
+    const weekStart = getStartOfWeek(new Date())
+    const weekEnd = getEndOfWeek(new Date())
+    const startDate = format(weekStart, 'yyyy-MM-dd')
+    const endDate = format(weekEnd, 'yyyy-MM-dd')
+
+    // Fetch all data for the week
+    const [moodData, motivationData, meditationData, journalData] = await Promise.all([
+      supabase
+        .from("mood_logs")
+        .select("mood_score, log_date")
+        .eq("user_id", user.id)
+        .gte("log_date", startDate)
+        .lte("log_date", endDate)
+        .order("log_date", { ascending: true }),
+      supabase
+        .from("motivation_logs")
+        .select("motivation_score, log_date")
+        .eq("user_id", user.id)
+        .gte("log_date", startDate)
+        .lte("log_date", endDate)
+        .order("log_date", { ascending: true }),
+      supabase
+        .from("meditation_sessions")
+        .select("duration_minutes, log_date")
+        .eq("user_id", user.id)
+        .gte("log_date", startDate)
+        .lte("log_date", endDate)
+        .order("log_date", { ascending: true }),
+      supabase
+        .from("journal_entries")
+        .select("id, log_date")
+        .eq("user_id", user.id)
+        .gte("log_date", startDate)
+        .lte("log_date", endDate)
+        .order("log_date", { ascending: true }),
+    ])
+
+    // Group by date
+    const days = getDaysInInterval(weekStart, weekEnd)
+    const weeklyData = days.map(day => {
+      const dateStr = format(day, 'yyyy-MM-dd')
+      const dayMoods = moodData.data?.filter(m => m.log_date === dateStr) || []
+      const dayMotivations = motivationData.data?.filter(m => m.log_date === dateStr) || []
+      const dayMeditations = meditationData.data?.filter(m => m.log_date === dateStr) || []
+      const dayJournals = journalData.data?.filter(j => j.log_date === dateStr) || []
+
+      return {
+        date: dateStr,
+        dayName: format(day, 'EEE', { locale: require('date-fns/locale/tr') }),
+        mood: dayMoods.length > 0 ? dayMoods[dayMoods.length - 1].mood_score : null,
+        motivation: dayMotivations.length > 0 ? dayMotivations[dayMotivations.length - 1].motivation_score : null,
+        meditation: dayMeditations.reduce((sum, m) => sum + (m.duration_minutes || 0), 0),
+        journalCount: dayJournals.length,
+      }
+    })
+
+    return {
+      mood: weeklyData.map(d => ({ date: d.dayName, value: d.mood })),
+      motivation: weeklyData.map(d => ({ date: d.dayName, value: d.motivation })),
+      meditation: weeklyData.map(d => ({ date: d.dayName, value: d.meditation })),
+      journal: weeklyData.map(d => ({ date: d.dayName, value: d.journalCount })),
+      averages: {
+        mood: weeklyData.filter(d => d.mood !== null).reduce((sum, d) => sum + (d.mood || 0), 0) / Math.max(1, weeklyData.filter(d => d.mood !== null).length),
+        motivation: weeklyData.filter(d => d.motivation !== null).reduce((sum, d) => sum + (d.motivation || 0), 0) / Math.max(1, weeklyData.filter(d => d.motivation !== null).length),
+        meditation: weeklyData.reduce((sum, d) => sum + d.meditation, 0) / 7,
+        journal: weeklyData.reduce((sum, d) => sum + d.journalCount, 0) / 7,
+      }
+    }
+  } catch (error) {
+    console.error("Error in getWeeklyMentalData:", error)
+    return null
+  }
+}
+
+// Get monthly data
+export async function getMonthlyMentalData() {
+  try {
+    const supabase = await createClient()
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+
+    if (!user) return null
+
+    const monthStart = getStartOfMonth(new Date())
+    const monthEnd = getEndOfMonth(new Date())
+    const startDate = format(monthStart, 'yyyy-MM-dd')
+    const endDate = format(monthEnd, 'yyyy-MM-dd')
+
+    // Fetch all data for the month
+    const [moodData, motivationData, meditationData, journalData] = await Promise.all([
+      supabase
+        .from("mood_logs")
+        .select("mood_score, log_date")
+        .eq("user_id", user.id)
+        .gte("log_date", startDate)
+        .lte("log_date", endDate)
+        .order("log_date", { ascending: true }),
+      supabase
+        .from("motivation_logs")
+        .select("motivation_score, log_date")
+        .eq("user_id", user.id)
+        .gte("log_date", startDate)
+        .lte("log_date", endDate)
+        .order("log_date", { ascending: true }),
+      supabase
+        .from("meditation_sessions")
+        .select("duration_minutes, log_date")
+        .eq("user_id", user.id)
+        .gte("log_date", startDate)
+        .lte("log_date", endDate)
+        .order("log_date", { ascending: true }),
+      supabase
+        .from("journal_entries")
+        .select("id, log_date")
+        .eq("user_id", user.id)
+        .gte("log_date", startDate)
+        .lte("log_date", endDate)
+        .order("log_date", { ascending: true }),
+    ])
+
+    // Group by week
+    const days = getDaysInInterval(monthStart, monthEnd)
+    const weeks: { [key: string]: any } = {}
+
+    days.forEach(day => {
+      const weekKey = format(getStartOfWeek(day), 'yyyy-MM-dd')
+      if (!weeks[weekKey]) {
+        weeks[weekKey] = {
+          week: `Hafta ${Object.keys(weeks).length + 1}`,
+          moods: [] as number[],
+          motivations: [] as number[],
+          meditation: 0,
+          journalCount: 0,
+        }
+      }
+
+      const dateStr = format(day, 'yyyy-MM-dd')
+      const dayMoods = moodData.data?.filter(m => m.log_date === dateStr) || []
+      const dayMotivations = motivationData.data?.filter(m => m.log_date === dateStr) || []
+      const dayMeditations = meditationData.data?.filter(m => m.log_date === dateStr) || []
+      const dayJournals = journalData.data?.filter(j => j.log_date === dateStr) || []
+
+      if (dayMoods.length > 0) {
+        weeks[weekKey].moods.push(dayMoods[dayMoods.length - 1].mood_score)
+      }
+      if (dayMotivations.length > 0) {
+        weeks[weekKey].motivations.push(dayMotivations[dayMotivations.length - 1].motivation_score)
+      }
+      weeks[weekKey].meditation += dayMeditations.reduce((sum, m) => sum + (m.duration_minutes || 0), 0)
+      weeks[weekKey].journalCount += dayJournals.length
+    })
+
+    const weeklyArray = Object.values(weeks).map((week: any) => ({
+      week: week.week,
+      mood: week.moods.length > 0 ? week.moods.reduce((a: number, b: number) => a + b, 0) / week.moods.length : null,
+      motivation: week.motivations.length > 0 ? week.motivations.reduce((a: number, b: number) => a + b, 0) / week.motivations.length : null,
+      meditation: week.meditation,
+      journalCount: week.journalCount,
+    }))
+
+    return {
+      mood: weeklyArray.map(w => ({ week: w.week, value: w.mood })),
+      motivation: weeklyArray.map(w => ({ week: w.week, value: w.motivation })),
+      meditation: weeklyArray.map(w => ({ week: w.week, value: w.meditation })),
+      journal: weeklyArray.map(w => ({ week: w.week, value: w.journalCount })),
+      totals: {
+        mood: moodData.data?.length || 0,
+        motivation: motivationData.data?.length || 0,
+        meditation: meditationData.data?.reduce((sum, m) => sum + (m.duration_minutes || 0), 0) || 0,
+        journal: journalData.data?.length || 0,
+      },
+      averages: {
+        mood: moodData.data && moodData.data.length > 0 
+          ? moodData.data.reduce((sum, m) => sum + (m.mood_score || 0), 0) / moodData.data.length 
+          : null,
+        motivation: motivationData.data && motivationData.data.length > 0
+          ? motivationData.data.reduce((sum, m) => sum + (m.motivation_score || 0), 0) / motivationData.data.length
+          : null,
+        meditation: meditationData.data && meditationData.data.length > 0
+          ? meditationData.data.reduce((sum, m) => sum + (m.duration_minutes || 0), 0) / meditationData.data.length
+          : 0,
+        journal: journalData.data?.length || 0,
+      }
+    }
+  } catch (error) {
+    console.error("Error in getMonthlyMentalData:", error)
+    return null
+  }
+}
