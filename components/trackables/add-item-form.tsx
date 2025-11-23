@@ -105,7 +105,7 @@ export function AddItemForm() {
         scheduled_time: formData.scheduled_time || null,
         priority: formData.priority,
         selected_days: formData.selected_days,
-        category: formData.category,
+        category: formData.category || "habit",
       })
 
       setFormData({

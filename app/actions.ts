@@ -67,14 +67,18 @@ export async function createTrackable(data: {
 
     if (error) {
       console.error("Supabase error creating trackable:", error)
+      console.error("Error details:", JSON.stringify(error, null, 2))
+      
       // Check if it's a column missing error
       if (
         error.message?.includes("column") ||
         error.code === "42703" ||
         error.message?.includes("priority") ||
-        error.message?.includes("scheduled_time")
+        error.message?.includes("scheduled_time") ||
+        error.message?.includes("category") ||
+        error.message?.includes("selected_days")
       ) {
-        // Try again without priority and scheduled_time
+        // Try again without optional columns
         const fallbackData: any = {
           user_id: user.id,
           title: validated.title,
@@ -85,22 +89,33 @@ export async function createTrackable(data: {
           current_value: 0,
         }
 
+        // Only add selected_days if it exists and is valid
+        if (data.selected_days && data.selected_days.length > 0) {
+          try {
+            fallbackData.selected_days = data.selected_days
+          } catch (e) {
+            console.warn("Could not add selected_days, column may not exist")
+          }
+        }
+
         const { error: fallbackError } = await supabase
           .from("trackables")
           .insert(fallbackData)
 
         if (fallbackError) {
           throw new Error(
-            `Database hatası: ${fallbackError.message}. Lütfen migration script'ini çalıştırın: supabase-schema-priority-time.sql`
+            `Database hatası: ${fallbackError.message}. Lütfen migration script'lerini çalıştırın: supabase-migration-complete.sql ve supabase-schema-category.sql`
           )
         }
 
         // Success with fallback - warn user
         console.warn(
-          "Trackable created without priority/scheduled_time. Please run migration script."
+          "Trackable created without some optional fields. Please run migration scripts."
         )
       } else {
-        throw new Error(error.message || "Görev oluşturulurken bir hata oluştu")
+        // Return more detailed error message
+        const errorMessage = error.message || "Görev oluşturulurken bir hata oluştu"
+        throw new Error(`Database hatası: ${errorMessage}. Hata kodu: ${error.code || "bilinmiyor"}`)
       }
     }
 
@@ -108,11 +123,23 @@ export async function createTrackable(data: {
     return { success: true }
   } catch (error: any) {
     console.error("Error creating trackable:", error)
+    console.error("Error stack:", error.stack)
+    
     // Return a more user-friendly error message
     if (error instanceof Error) {
+      // Check if it's a Zod validation error
+      if (error.message?.includes("ZodError") || error.message?.includes("validation")) {
+        throw new Error(`Geçersiz veri: ${error.message}. Lütfen tüm alanları doğru doldurun.`)
+      }
+      // Check if it's a database column error
+      if (error.message?.includes("column") || error.message?.includes("42703")) {
+        throw new Error(
+          `Database kolonu eksik: ${error.message}. Lütfen migration script'lerini çalıştırın: supabase-migration-complete.sql ve supabase-schema-category.sql`
+        )
+      }
       throw new Error(error.message)
     }
-    throw new Error("Görev oluşturulurken beklenmeyen bir hata oluştu")
+    throw new Error("Görev oluşturulurken beklenmeyen bir hata oluştu. Lütfen konsolu kontrol edin.")
   }
 }
 
