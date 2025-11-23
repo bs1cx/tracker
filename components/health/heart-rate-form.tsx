@@ -30,28 +30,35 @@ export function HeartRateForm() {
     setIsLoading(true)
     
     try {
+      console.log("[CLIENT] Submitting heart rate log:", { heart_rate: bpm })
       const result = await addHeartRateLog({
         heart_rate: parseInt(bpm),
         notes: notes || undefined,
       })
       
+      console.log("[CLIENT] Heart rate log result:", result)
+      
       if (result?.success) {
+        console.log("[CLIENT] Success! Closing dialog and refreshing...")
         setBpm("")
         setNotes("")
-        setOpen(false)
         setIsLoading(false)
+        setOpen(false)
         // Delay refresh to avoid hydration mismatch
         setTimeout(() => {
           router.refresh()
         }, 100)
       } else {
+        console.error("[CLIENT] No success in result:", result)
         setIsLoading(false)
-        alert("Nabız kaydı eklenirken bir sorun oluştu. Lütfen tekrar deneyin.")
+        const errorMessage = result?.error || "Nabız kaydı eklenirken bir sorun oluştu. Lütfen tekrar deneyin."
+        alert(errorMessage)
       }
-    } catch (error) {
-      console.error("Error adding heart rate log:", error)
+    } catch (error: any) {
+      console.error("[CLIENT] Exception adding heart rate log:", error)
       setIsLoading(false)
-      alert("Nabız kaydı eklenirken bir hata oluştu. Lütfen tekrar deneyin.")
+      const errorMessage = error?.message || "Nabız kaydı eklenirken bir hata oluştu. Lütfen tekrar deneyin."
+      alert(errorMessage)
     }
   }
 

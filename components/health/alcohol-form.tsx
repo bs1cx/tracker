@@ -48,6 +48,7 @@ export function AlcoholForm() {
     setIsLoading(true)
     
     try {
+      console.log("[CLIENT] Submitting alcohol log:", { drink_type: drinkType, amount_ml: amount })
       const result = await addAlcoholLog({
         drink_type: drinkType,
         amount_ml: parseFloat(amount),
@@ -55,25 +56,31 @@ export function AlcoholForm() {
         notes: notes || undefined,
       })
       
+      console.log("[CLIENT] Alcohol log result:", result)
+      
       if (result?.success) {
+        console.log("[CLIENT] Success! Closing dialog and refreshing...")
         setDrinkType("")
         setAmount("")
         setAlcoholPercentage("")
         setNotes("")
-        setOpen(false)
         setIsLoading(false)
+        setOpen(false)
         // Delay refresh to avoid hydration mismatch
         setTimeout(() => {
           router.refresh()
         }, 100)
       } else {
+        console.error("[CLIENT] No success in result:", result)
         setIsLoading(false)
-        alert("Alkol kaydı eklenirken bir sorun oluştu. Lütfen tekrar deneyin.")
+        const errorMessage = result?.error || "Alkol kaydı eklenirken bir sorun oluştu. Lütfen tekrar deneyin."
+        alert(errorMessage)
       }
-    } catch (error) {
-      console.error("Error adding alcohol log:", error)
+    } catch (error: any) {
+      console.error("[CLIENT] Exception adding alcohol log:", error)
       setIsLoading(false)
-      alert("Alkol kaydı eklenirken bir hata oluştu. Lütfen tekrar deneyin.")
+      const errorMessage = error?.message || "Alkol kaydı eklenirken bir hata oluştu. Lütfen tekrar deneyin."
+      alert(errorMessage)
     }
   }
 
