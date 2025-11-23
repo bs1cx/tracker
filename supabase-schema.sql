@@ -235,3 +235,152 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
+-- Function to complete a trackable (handles both daily habits and one-time tasks)
+CREATE OR REPLACE FUNCTION complete_trackable(p_trackable_id UUID)
+RETURNS JSONB AS $$
+DECLARE
+    v_trackable RECORD;
+    v_user_id UUID;
+    v_is_completed BOOLEAN;
+BEGIN
+    -- Get current user
+    v_user_id := auth.uid();
+    IF v_user_id IS NULL THEN
+        RAISE EXCEPTION 'Unauthorized';
+    END IF;
+
+    -- Get trackable
+    SELECT * INTO v_trackable
+    FROM trackables
+    WHERE id = p_trackable_id AND user_id = v_user_id;
+
+    IF NOT FOUND THEN
+        RAISE EXCEPTION 'Trackable not found';
+    END IF;
+
+    -- Determine if currently completed
+    IF v_trackable.type = 'DAILY_HABIT' THEN
+        v_is_completed := v_trackable.last_completed_at >= DATE_TRUNC('day', NOW());
+    ELSIF v_trackable.type = 'ONE_TIME' THEN
+        v_is_completed := v_trackable.status = 'completed';
+    ELSE
+        RAISE EXCEPTION 'Invalid trackable type for completion';
+    END IF;
+
+    -- Update trackable
+    IF v_trackable.type = 'DAILY_HABIT' THEN
+        -- Toggle completion for daily habits
+        UPDATE trackables
+        SET last_completed_at = CASE 
+            WHEN v_is_completed THEN NULL 
+            ELSE NOW() 
+        END,
+        updated_at = NOW()
+        WHERE id = p_trackable_id AND user_id = v_user_id;
+    ELSIF v_trackable.type = 'ONE_TIME' THEN
+        -- Toggle completion for one-time tasks
+        UPDATE trackables
+        SET status = CASE 
+            WHEN v_is_completed THEN 'active' 
+            ELSE 'completed' 
+        END,
+        updated_at = NOW()
+        WHERE id = p_trackable_id AND user_id = v_user_id;
+    END IF;
+
+    -- Log the action
+    INSERT INTO logs (trackable_id, user_id, action, previous_value, new_value)
+    VALUES (p_trackable_id, v_user_id, 'completed', v_trackable.current_value, v_trackable.current_value);
+
+    RETURN jsonb_build_object('success', true);
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Function to increment progress
+CREATE OR REPLACE FUNCTION increment_progress(p_trackable_id UUID, p_amount INTEGER DEFAULT 1)
+RETURNS JSONB AS $$
+DECLARE
+    v_trackable RECORD;
+    v_user_id UUID;
+    v_new_value INTEGER;
+BEGIN
+    -- Get current user
+    v_user_id := auth.uid();
+    IF v_user_id IS NULL THEN
+        RAISE EXCEPTION 'Unauthorized';
+    END IF;
+
+    -- Get trackable
+    SELECT * INTO v_trackable
+    FROM trackables
+    WHERE id = p_trackable_id AND user_id = v_user_id;
+
+    IF NOT FOUND THEN
+        RAISE EXCEPTION 'Trackable not found';
+    END IF;
+
+    IF v_trackable.type != 'PROGRESS' THEN
+        RAISE EXCEPTION 'Trackable is not a progress type';
+    END IF;
+
+    -- Calculate new value
+    v_new_value := v_trackable.current_value + p_amount;
+
+    -- Update trackable
+    UPDATE trackables
+    SET current_value = v_new_value,
+        updated_at = NOW()
+    WHERE id = p_trackable_id AND user_id = v_user_id;
+
+    -- Log the action
+    INSERT INTO logs (trackable_id, user_id, action, previous_value, new_value)
+    VALUES (p_trackable_id, v_user_id, 'incremented', v_trackable.current_value, v_new_value);
+
+    RETURN jsonb_build_object('success', true, 'new_value', v_new_value);
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Function to decrement progress
+CREATE OR REPLACE FUNCTION decrement_progress(p_trackable_id UUID)
+RETURNS JSONB AS $$
+DECLARE
+    v_trackable RECORD;
+    v_user_id UUID;
+    v_new_value INTEGER;
+BEGIN
+    -- Get current user
+    v_user_id := auth.uid();
+    IF v_user_id IS NULL THEN
+        RAISE EXCEPTION 'Unauthorized';
+    END IF;
+
+    -- Get trackable
+    SELECT * INTO v_trackable
+    FROM trackables
+    WHERE id = p_trackable_id AND user_id = v_user_id;
+
+    IF NOT FOUND THEN
+        RAISE EXCEPTION 'Trackable not found';
+    END IF;
+
+    IF v_trackable.type != 'PROGRESS' THEN
+        RAISE EXCEPTION 'Trackable is not a progress type';
+    END IF;
+
+    -- Calculate new value (ensure it doesn't go below 0)
+    v_new_value := GREATEST(0, v_trackable.current_value - 1);
+
+    -- Update trackable
+    UPDATE trackables
+    SET current_value = v_new_value,
+        updated_at = NOW()
+    WHERE id = p_trackable_id AND user_id = v_user_id;
+
+    -- Log the action
+    INSERT INTO logs (trackable_id, user_id, action, previous_value, new_value)
+    VALUES (p_trackable_id, v_user_id, 'decremented', v_trackable.current_value, v_new_value);
+
+    RETURN jsonb_build_object('success', true, 'new_value', v_new_value);
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+

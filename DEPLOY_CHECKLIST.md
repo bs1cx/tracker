@@ -4,37 +4,37 @@ Projeyi Vercel'e deploy etmeden önce bu listeyi kontrol edin.
 
 ## 📋 Ön Hazırlık
 
-- [ ] `npm install` komutu çalıştırıldı ve bağımlılıklar yüklendi
-- [ ] `npm run build` komutu başarıyla çalıştı (local test)
-- [ ] Supabase projesi oluşturuldu
-- [ ] `supabase-schema.sql` dosyası Supabase SQL Editor'de çalıştırıldı
-- [ ] Supabase URL ve Anon Key alındı
+- [x] `npm install` komutu çalıştırıldı ve bağımlılıklar yüklendi
+- [x] `npm run build` komutu başarıyla çalıştı (local test)
+- [x] Supabase projesi oluşturuldu
+- [x] `supabase-schema.sql` dosyası Supabase SQL Editor'de çalıştırıldı
+- [x] Supabase URL ve Anon Key alındı
 
 ## 🔧 Vercel Kurulumu
 
-- [ ] GitHub repository oluşturuldu ve kod push edildi
-- [ ] Vercel hesabı oluşturuldu (GitHub ile giriş yapıldı)
-- [ ] Vercel'de yeni proje oluşturuldu
-- [ ] GitHub repository import edildi
+- [x] GitHub repository oluşturuldu ve kod push edildi
+- [x] Vercel hesabı oluşturuldu (GitHub ile giriş yapıldı)
+- [x] Vercel'de yeni proje oluşturuldu
+- [x] GitHub repository import edildi
 
 ## 🔐 Environment Variables
 
-- [ ] `NEXT_PUBLIC_SUPABASE_URL` eklendi (Production, Preview, Development)
-- [ ] `NEXT_PUBLIC_SUPABASE_ANON_KEY` eklendi (Production, Preview, Development)
-- [ ] Environment variable değerleri doğru kopyalandı
+- [x] `NEXT_PUBLIC_SUPABASE_URL` eklendi (Production, Preview, Development)
+- [x] `NEXT_PUBLIC_SUPABASE_ANON_KEY` eklendi (Production, Preview, Development)
+- [x] Environment variable değerleri doğru kopyalandı
 
 ## 🗄️ Database
 
-- [ ] Supabase'de `profiles` tablosu oluşturuldu
-- [ ] Supabase'de `trackables` tablosu oluşturuldu
-- [ ] Supabase'de `logs` tablosu oluşturuldu
-- [ ] RLS (Row Level Security) policy'leri aktif
-- [ ] Helper function'lar oluşturuldu
+- [x] Supabase'de `profiles` tablosu oluşturuldu
+- [x] Supabase'de `trackables` tablosu oluşturuldu
+- [x] Supabase'de `logs` tablosu oluşturuldu
+- [x] RLS (Row Level Security) policy'leri aktif
+- [x] Helper function'lar oluşturuldu
 
 ## 🚀 Deployment
 
-- [ ] Vercel'de "Deploy" butonuna tıklandı
-- [ ] Build başarıyla tamamlandı
+- [x] Vercel'de "Deploy" butonuna tıklandı
+- [x] Build başarıyla tamamlandı
 - [ ] Production URL çalışıyor
 - [ ] Sign up/Sign in sayfası açılıyor
 - [ ] Yeni kullanıcı kaydı yapılabiliyor
@@ -53,8 +53,7 @@ Projeyi Vercel'e deploy etmeden önce bu listeyi kontrol edin.
 
 Aşağıdaki dosyaların mevcut olduğundan emin olun:
 
-- [x] `vercel.json` - Vercel yapılandırması
-- [x] `.vercelignore` - Vercel ignore dosyası
+- [x] `.vercelignore` - Vercel ignore dosyası (opsiyonel)
 - [x] `next.config.js` - Next.js yapılandırması
 - [x] `package.json` - Dependencies tanımlı
 - [x] `tsconfig.json` - TypeScript yapılandırması
@@ -73,10 +72,19 @@ Aşağıdaki dosyaların mevcut olduğundan emin olun:
 
 Eğer bir sorunla karşılaşırsanız:
 
-1. **Build Hatası**: Environment variable'ları kontrol edin
-2. **Runtime Hatası**: Supabase connection'ı kontrol edin
-3. **CORS Hatası**: Supabase Allowed Origins'e Vercel URL'ini ekleyin
-4. **Database Hatası**: SQL schema'nın tamamen çalıştırıldığından emin olun
+1. **404 NOT_FOUND Hatası**:
+   - Vercel Dashboard > Deployments > Son deployment'ın build log'larını kontrol edin
+   - Build başarılı mı? Hata var mı?
+   - Environment variable'ların doğru ayarlandığından emin olun:
+     - `NEXT_PUBLIC_SUPABASE_URL` (Production, Preview, Development için)
+     - `NEXT_PUBLIC_SUPABASE_ANON_KEY` (Production, Preview, Development için)
+   - Vercel'de "Redeploy" butonuna tıklayın
+   - Eğer hala çalışmıyorsa, Vercel Dashboard > Settings > General > Framework Preset'in "Next.js" olduğundan emin olun
+
+2. **Build Hatası**: Environment variable'ları kontrol edin
+3. **Runtime Hatası**: Supabase connection'ı kontrol edin
+4. **CORS Hatası**: Supabase Allowed Origins'e Vercel URL'ini ekleyin
+5. **Database Hatası**: SQL schema'nın tamamen çalıştırıldığından emin olun
 
 ## 📚 Yardımcı Dokümanlar
 

@@ -17,42 +17,66 @@ async function getTrackables() {
     redirect("/auth")
   }
 
-  // Use the helper function if available, otherwise fallback to direct query
-  const { data: trackables, error } = await supabase
-    .from("trackables")
-    .select("*")
-    .eq("user_id", user.id)
-    .eq("status", "active")
-    .order("created_at", { ascending: false })
+  // Use the helper function to get trackables with reset logic and completion status
+  const { data: trackables, error } = await supabase.rpc(
+    "get_user_trackables",
+    {
+      p_user_id: user.id,
+    }
+  )
 
   if (error) {
     console.error("Error fetching trackables:", error)
-    return []
-  }
+    // Fallback to direct query if helper function fails
+    const { data: fallbackData, error: fallbackError } = await supabase
+      .from("trackables")
+      .select("*")
+      .eq("user_id", user.id)
+      .eq("status", "active")
+      .order("created_at", { ascending: false })
 
-  // Process trackables to determine completion status
-  const processedTrackables = (trackables || []).map((trackable) => {
-    let is_completed_today = false
-
-    if (trackable.type === "DAILY_HABIT") {
-      if (trackable.last_completed_at) {
-        const lastCompleted = new Date(trackable.last_completed_at)
-        const today = new Date()
-        today.setHours(0, 0, 0, 0)
-        lastCompleted.setHours(0, 0, 0, 0)
-        is_completed_today = lastCompleted.getTime() === today.getTime()
-      }
-    } else if (trackable.type === "ONE_TIME") {
-      is_completed_today = trackable.status === "completed"
+    if (fallbackError) {
+      console.error("Error in fallback query:", fallbackError)
+      return []
     }
 
-    return {
-      ...trackable,
-      is_completed_today,
-    } as Trackable & { is_completed_today: boolean }
+    // Process trackables to determine completion status
+    const processedTrackables = (fallbackData || []).map((trackable) => {
+      let is_completed_today = false
+
+      if (trackable.type === "DAILY_HABIT") {
+        if (trackable.last_completed_at) {
+          const lastCompleted = new Date(trackable.last_completed_at)
+          const today = new Date()
+          today.setHours(0, 0, 0, 0)
+          lastCompleted.setHours(0, 0, 0, 0)
+          is_completed_today = lastCompleted.getTime() === today.getTime()
+        }
+      } else if (trackable.type === "ONE_TIME") {
+        is_completed_today = trackable.status === "completed"
+      }
+
+      return {
+        ...trackable,
+        is_completed_today,
+      } as Trackable & { is_completed_today: boolean }
+    })
+
+    return processedTrackables
+  }
+
+  // Filter trackables: show all daily habits and progress, but only active one-time tasks
+  const filteredTrackables = (trackables || []).filter((t) => {
+    if (t.type === "DAILY_HABIT" || t.type === "PROGRESS") {
+      return true // Always show daily habits and progress trackers
+    }
+    if (t.type === "ONE_TIME") {
+      return t.status === "active" // Only show active one-time tasks
+    }
+    return true
   })
 
-  return processedTrackables
+  return filteredTrackables as (Trackable & { is_completed_today: boolean })[]
 }
 
 export default async function Dashboard() {
