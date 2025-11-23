@@ -110,9 +110,6 @@ export default async function HealthPage() {
       .select("cigarettes_count")
       .eq("user_id", user.id)
       .eq("log_date", today)
-      .then(({ data }) => data?.reduce((sum, log) => sum + (log.cigarettes_count || 0), 0) || 0),("cigarettes_count")
-      .eq("user_id", user.id)
-      .eq("log_date", today)
       .then(({ data }) => data?.reduce((sum, log) => sum + (log.cigarettes_count || 0), 0) || 0),
     
     // Steps - get today's
