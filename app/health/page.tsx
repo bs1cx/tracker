@@ -9,7 +9,14 @@ import { NutritionForm } from "@/components/health/nutrition-form"
 import { SmokingForm } from "@/components/health/smoking-form"
 import { StepsForm } from "@/components/health/steps-form"
 import { ExerciseForm } from "@/components/health/exercise-form"
-import { Heart, Moon, Droplet, Utensils, Cigarette, Footprints, Activity } from "lucide-react"
+import { AlcoholForm } from "@/components/health/alcohol-form"
+import { CaffeineForm } from "@/components/health/caffeine-form"
+import { EnergyForm } from "@/components/health/energy-form"
+import { StressForm } from "@/components/health/stress-form"
+import { MedicationForm } from "@/components/health/medication-form"
+import { PainForm } from "@/components/health/pain-form"
+import { WeeklyAnalysis } from "@/components/health/weekly-analysis"
+import { Heart, Moon, Droplet, Utensils, Cigarette, Footprints, Activity, Wine, Coffee, Battery, AlertTriangle, Pill, AlertCircle } from "lucide-react"
 
 export const dynamic = 'force-dynamic'
 
@@ -171,7 +178,127 @@ export default async function HealthPage() {
                   </div>
                 </CardContent>
               </Card>
+
+              {/* Alcohol */}
+              <Card className="border-slate-700/50 bg-gradient-to-br from-slate-800/80 to-slate-900/80 backdrop-blur-sm">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-slate-200">
+                    <Wine className="h-5 w-5 text-amber-500" />
+                    Alkol
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-2xl font-bold text-slate-200">--</p>
+                  <p className="text-sm text-slate-400">İçecek/Gün</p>
+                  <div className="mt-4">
+                    <AlcoholForm />
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Caffeine */}
+              <Card className="border-slate-700/50 bg-gradient-to-br from-slate-800/80 to-slate-900/80 backdrop-blur-sm">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-slate-200">
+                    <Coffee className="h-5 w-5 text-amber-600" />
+                    Kafein
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-2xl font-bold text-slate-200">--</p>
+                  <p className="text-sm text-slate-400">mg/Gün</p>
+                  <div className="mt-4">
+                    <CaffeineForm />
+                  </div>
+                </CardContent>
+              </Card>
             </div>
+          </div>
+
+          {/* Wellness & Vitality */}
+          <div>
+            <h2 className="text-xl font-semibold mb-4 text-slate-200">Wellness & Vitality</h2>
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {/* Energy */}
+              <Card className="border-slate-700/50 bg-gradient-to-br from-slate-800/80 to-slate-900/80 backdrop-blur-sm">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-slate-200">
+                    <Battery className="h-5 w-5 text-yellow-500" />
+                    Enerji Seviyesi
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-2xl font-bold text-slate-200">--</p>
+                  <p className="text-sm text-slate-400">1-10 Arası</p>
+                  <div className="mt-4">
+                    <EnergyForm />
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Stress */}
+              <Card className="border-slate-700/50 bg-gradient-to-br from-slate-800/80 to-slate-900/80 backdrop-blur-sm">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-slate-200">
+                    <AlertTriangle className="h-5 w-5 text-red-500" />
+                    Stres Seviyesi
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-2xl font-bold text-slate-200">--</p>
+                  <p className="text-sm text-slate-400">1-10 Arası</p>
+                  <div className="mt-4">
+                    <StressForm />
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+
+          {/* Sağlık & Tıbbi */}
+          <div>
+            <h2 className="text-xl font-semibold mb-4 text-slate-200">Sağlık & Tıbbi</h2>
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {/* Medication */}
+              <Card className="border-slate-700/50 bg-gradient-to-br from-slate-800/80 to-slate-900/80 backdrop-blur-sm">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-slate-200">
+                    <Pill className="h-5 w-5 text-blue-500" />
+                    İlaç Takibi
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-2xl font-bold text-slate-200">--</p>
+                  <p className="text-sm text-slate-400">İlaç Sayısı</p>
+                  <div className="mt-4">
+                    <MedicationForm />
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Pain */}
+              <Card className="border-slate-700/50 bg-gradient-to-br from-slate-800/80 to-slate-900/80 backdrop-blur-sm">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-slate-200">
+                    <AlertCircle className="h-5 w-5 text-red-600" />
+                    Ağrı Takibi
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-2xl font-bold text-slate-200">--</p>
+                  <p className="text-sm text-slate-400">0-10 Arası</p>
+                  <div className="mt-4">
+                    <PainForm />
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+
+          {/* Haftalık Analiz */}
+          <div>
+            <h2 className="text-xl font-semibold mb-4 text-slate-200">Haftalık Analiz</h2>
+            <WeeklyAnalysis />
           </div>
         </div>
       </div>

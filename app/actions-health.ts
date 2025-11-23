@@ -66,6 +66,234 @@ export async function getSmokingLogs(date?: string) {
 }
 
 // ============================================
+// GET FUNCTIONS FOR ALL HEALTH LOGS
+// ============================================
+
+export async function getAlcoholLogs(date?: string) {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) {
+    return []
+  }
+
+  let query = supabase
+    .from("alcohol_logs")
+    .select("*")
+    .eq("user_id", user.id)
+    .order("log_time", { ascending: false })
+
+  if (date) {
+    query = query.eq("log_date", date)
+  }
+
+  const { data, error } = await query
+  if (error) {
+    console.error("Error fetching alcohol logs:", error)
+    return []
+  }
+  return data || []
+}
+
+export async function getCaffeineLogs(date?: string) {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) {
+    return []
+  }
+
+  let query = supabase
+    .from("caffeine_logs")
+    .select("*")
+    .eq("user_id", user.id)
+    .order("log_time", { ascending: false })
+
+  if (date) {
+    query = query.eq("log_date", date)
+  }
+
+  const { data, error } = await query
+  if (error) {
+    console.error("Error fetching caffeine logs:", error)
+    return []
+  }
+  return data || []
+}
+
+export async function getStepsLogs(date?: string) {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) {
+    return []
+  }
+
+  let query = supabase
+    .from("steps_logs")
+    .select("*")
+    .eq("user_id", user.id)
+    .order("log_date", { ascending: false })
+
+  if (date) {
+    query = query.eq("log_date", date)
+  }
+
+  const { data, error } = await query
+  if (error) {
+    console.error("Error fetching steps logs:", error)
+    return []
+  }
+  return data || []
+}
+
+export async function getExerciseLogs(date?: string) {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) {
+    return []
+  }
+
+  let query = supabase
+    .from("exercise_logs")
+    .select("*")
+    .eq("user_id", user.id)
+    .order("log_time", { ascending: false })
+
+  if (date) {
+    query = query.eq("log_date", date)
+  }
+
+  const { data, error } = await query
+  if (error) {
+    console.error("Error fetching exercise logs:", error)
+    return []
+  }
+  return data || []
+}
+
+export async function getEnergyLogs(date?: string) {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) {
+    return []
+  }
+
+  let query = supabase
+    .from("energy_logs")
+    .select("*")
+    .eq("user_id", user.id)
+    .order("log_time", { ascending: false })
+
+  if (date) {
+    query = query.eq("log_date", date)
+  }
+
+  const { data, error } = await query
+  if (error) {
+    console.error("Error fetching energy logs:", error)
+    return []
+  }
+  return data || []
+}
+
+export async function getStressLogs(date?: string) {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) {
+    return []
+  }
+
+  let query = supabase
+    .from("stress_logs")
+    .select("*")
+    .eq("user_id", user.id)
+    .order("log_time", { ascending: false })
+
+  if (date) {
+    query = query.eq("log_date", date)
+  }
+
+  const { data, error } = await query
+  if (error) {
+    console.error("Error fetching stress logs:", error)
+    return []
+  }
+  return data || []
+}
+
+export async function getWaterLogs(date?: string) {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) {
+    return []
+  }
+
+  let query = supabase
+    .from("water_intake")
+    .select("*")
+    .eq("user_id", user.id)
+    .order("log_date", { ascending: false })
+
+  if (date) {
+    query = query.eq("log_date", date)
+  }
+
+  const { data, error } = await query
+  if (error) {
+    console.error("Error fetching water logs:", error)
+    return []
+  }
+  return data || []
+}
+
+export async function getSleepLogs(date?: string) {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) {
+    return []
+  }
+
+  let query = supabase
+    .from("sleep_logs")
+    .select("*")
+    .eq("user_id", user.id)
+    .order("log_date", { ascending: false })
+
+  if (date) {
+    query = query.eq("log_date", date)
+  }
+
+  const { data, error } = await query
+  if (error) {
+    console.error("Error fetching sleep logs:", error)
+    return []
+  }
+  return data || []
+}
+
+// ============================================
 // ALCOHOL TRACKING
 // ============================================
 
