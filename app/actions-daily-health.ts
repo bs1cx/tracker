@@ -76,6 +76,19 @@ export async function updateDailyHealthSummary(data: {
   medications_taken?: string[] | null
   is_completed?: boolean
   carried_over_conditions?: boolean
+  // Basic metrics
+  total_steps?: number
+  total_exercise_minutes?: number
+  total_water_ml?: number
+  total_calories?: number
+  sleep_hours?: number | null
+  sleep_quality?: "poor" | "fair" | "good" | "excellent" | null
+  avg_heart_rate?: number | null
+  avg_energy_level?: number | null
+  avg_stress_level?: number | null
+  cigarettes_count?: number
+  alcohol_drinks?: number
+  caffeine_mg?: number
 }) {
   const supabase = await createClient()
   const {
@@ -101,6 +114,20 @@ export async function updateDailyHealthSummary(data: {
   if (data.is_completed !== undefined) updateData.is_completed = data.is_completed
   if (data.carried_over_conditions !== undefined)
     updateData.carried_over_conditions = data.carried_over_conditions
+  
+  // Basic metrics
+  if (data.total_steps !== undefined) updateData.total_steps = data.total_steps
+  if (data.total_exercise_minutes !== undefined) updateData.total_exercise_minutes = data.total_exercise_minutes
+  if (data.total_water_ml !== undefined) updateData.total_water_ml = data.total_water_ml
+  if (data.total_calories !== undefined) updateData.total_calories = data.total_calories
+  if (data.sleep_hours !== undefined) updateData.sleep_hours = data.sleep_hours
+  if (data.sleep_quality !== undefined) updateData.sleep_quality = data.sleep_quality
+  if (data.avg_heart_rate !== undefined) updateData.avg_heart_rate = data.avg_heart_rate
+  if (data.avg_energy_level !== undefined) updateData.avg_energy_level = data.avg_energy_level
+  if (data.avg_stress_level !== undefined) updateData.avg_stress_level = data.avg_stress_level
+  if (data.cigarettes_count !== undefined) updateData.cigarettes_count = data.cigarettes_count
+  if (data.alcohol_drinks !== undefined) updateData.alcohol_drinks = data.alcohol_drinks
+  if (data.caffeine_mg !== undefined) updateData.caffeine_mg = data.caffeine_mg
 
   const { error } = await supabase
     .from("daily_health_summary")

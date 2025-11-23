@@ -46,6 +46,20 @@ export function DailyHealthSummaryCard() {
   const [newSymptom, setNewSymptom] = useState("")
   const [newMedication, setNewMedication] = useState("")
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  
+  // Basic metrics form state
+  const [totalSteps, setTotalSteps] = useState("")
+  const [totalExercise, setTotalExercise] = useState("")
+  const [totalWater, setTotalWater] = useState("")
+  const [totalCalories, setTotalCalories] = useState("")
+  const [sleepHours, setSleepHours] = useState("")
+  const [sleepQuality, setSleepQuality] = useState<"poor" | "fair" | "good" | "excellent" | "">("")
+  const [avgHeartRate, setAvgHeartRate] = useState("")
+  const [avgEnergy, setAvgEnergy] = useState("")
+  const [avgStress, setAvgStress] = useState("")
+  const [cigarettesCount, setCigarettesCount] = useState("")
+  const [alcoholDrinks, setAlcoholDrinks] = useState("")
+  const [caffeineMg, setCaffeineMg] = useState("")
 
   useEffect(() => {
     loadSummary()
@@ -74,6 +88,20 @@ export function DailyHealthSummaryCard() {
       setOngoingConditions(updated.ongoing_conditions || [])
       setSymptoms(updated.symptoms || [])
       setMedications(updated.medications_taken || [])
+      
+      // Set basic metrics form values
+      setTotalSteps(updated.total_steps?.toString() || "")
+      setTotalExercise(updated.total_exercise_minutes?.toString() || "")
+      setTotalWater(updated.total_water_ml?.toString() || "")
+      setTotalCalories(updated.total_calories?.toString() || "")
+      setSleepHours(updated.sleep_hours?.toString() || "")
+      setSleepQuality(updated.sleep_quality || "")
+      setAvgHeartRate(updated.avg_heart_rate?.toString() || "")
+      setAvgEnergy(updated.avg_energy_level?.toString() || "")
+      setAvgStress(updated.avg_stress_level?.toString() || "")
+      setCigarettesCount(updated.cigarettes_count?.toString() || "")
+      setAlcoholDrinks(updated.alcohol_drinks?.toString() || "")
+      setCaffeineMg(updated.caffeine_mg?.toString() || "")
     } catch (error) {
       console.error("Error loading summary:", error)
     } finally {
@@ -94,6 +122,19 @@ export function DailyHealthSummaryCard() {
         symptoms: symptoms.length > 0 ? symptoms : null,
         medications_taken: medications.length > 0 ? medications : null,
         is_completed: true,
+        // Basic metrics
+        total_steps: totalSteps ? parseInt(totalSteps) : undefined,
+        total_exercise_minutes: totalExercise ? parseInt(totalExercise) : undefined,
+        total_water_ml: totalWater ? parseInt(totalWater) : undefined,
+        total_calories: totalCalories ? parseInt(totalCalories) : undefined,
+        sleep_hours: sleepHours ? parseFloat(sleepHours) : null,
+        sleep_quality: sleepQuality || null,
+        avg_heart_rate: avgHeartRate ? parseInt(avgHeartRate) : null,
+        avg_energy_level: avgEnergy ? parseFloat(avgEnergy) : null,
+        avg_stress_level: avgStress ? parseFloat(avgStress) : null,
+        cigarettes_count: cigarettesCount ? parseInt(cigarettesCount) : undefined,
+        alcohol_drinks: alcoholDrinks ? parseInt(alcoholDrinks) : undefined,
+        caffeine_mg: caffeineMg ? parseFloat(caffeineMg) : undefined,
       })
 
       await loadSummary()
@@ -426,6 +467,179 @@ export function DailyHealthSummaryCard() {
                         onChange={(e) => setNotes(e.target.value)}
                         rows={4}
                       />
+                    </div>
+
+                    {/* Basic Metrics - Editable */}
+                    <div className="pt-4 border-t border-slate-700">
+                      <h3 className="text-lg font-semibold text-slate-200 mb-4">Temel Metrikler (Düzenlenebilir)</h3>
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                        {/* Steps */}
+                        <div className="grid gap-2">
+                          <Label htmlFor="steps">Adım</Label>
+                          <Input
+                            id="steps"
+                            type="number"
+                            min="0"
+                            placeholder="0"
+                            value={totalSteps}
+                            onChange={(e) => setTotalSteps(e.target.value)}
+                          />
+                        </div>
+
+                        {/* Water */}
+                        <div className="grid gap-2">
+                          <Label htmlFor="water">Su (ml)</Label>
+                          <Input
+                            id="water"
+                            type="number"
+                            min="0"
+                            placeholder="0"
+                            value={totalWater}
+                            onChange={(e) => setTotalWater(e.target.value)}
+                          />
+                        </div>
+
+                        {/* Calories */}
+                        <div className="grid gap-2">
+                          <Label htmlFor="calories">Kalori</Label>
+                          <Input
+                            id="calories"
+                            type="number"
+                            min="0"
+                            placeholder="0"
+                            value={totalCalories}
+                            onChange={(e) => setTotalCalories(e.target.value)}
+                          />
+                        </div>
+
+                        {/* Exercise */}
+                        <div className="grid gap-2">
+                          <Label htmlFor="exercise">Egzersiz (dk)</Label>
+                          <Input
+                            id="exercise"
+                            type="number"
+                            min="0"
+                            placeholder="0"
+                            value={totalExercise}
+                            onChange={(e) => setTotalExercise(e.target.value)}
+                          />
+                        </div>
+
+                        {/* Sleep Hours */}
+                        <div className="grid gap-2">
+                          <Label htmlFor="sleepHours">Uyku (saat)</Label>
+                          <Input
+                            id="sleepHours"
+                            type="number"
+                            min="0"
+                            max="24"
+                            step="0.1"
+                            placeholder="0"
+                            value={sleepHours}
+                            onChange={(e) => setSleepHours(e.target.value)}
+                          />
+                        </div>
+
+                        {/* Sleep Quality */}
+                        <div className="grid gap-2">
+                          <Label htmlFor="sleepQuality">Uyku Kalitesi</Label>
+                          <select
+                            id="sleepQuality"
+                            className="flex h-10 w-full rounded-md border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            value={sleepQuality}
+                            onChange={(e) => setSleepQuality(e.target.value as any)}
+                          >
+                            <option value="">Seçiniz</option>
+                            <option value="poor">Kötü</option>
+                            <option value="fair">Orta</option>
+                            <option value="good">İyi</option>
+                            <option value="excellent">Mükemmel</option>
+                          </select>
+                        </div>
+
+                        {/* Heart Rate */}
+                        <div className="grid gap-2">
+                          <Label htmlFor="heartRate">Nabız (BPM)</Label>
+                          <Input
+                            id="heartRate"
+                            type="number"
+                            min="30"
+                            max="220"
+                            placeholder="0"
+                            value={avgHeartRate}
+                            onChange={(e) => setAvgHeartRate(e.target.value)}
+                          />
+                        </div>
+
+                        {/* Energy Level */}
+                        <div className="grid gap-2">
+                          <Label htmlFor="energy">Enerji (0-10)</Label>
+                          <Input
+                            id="energy"
+                            type="number"
+                            min="0"
+                            max="10"
+                            step="0.1"
+                            placeholder="0"
+                            value={avgEnergy}
+                            onChange={(e) => setAvgEnergy(e.target.value)}
+                          />
+                        </div>
+
+                        {/* Stress Level */}
+                        <div className="grid gap-2">
+                          <Label htmlFor="stress">Stres (0-10)</Label>
+                          <Input
+                            id="stress"
+                            type="number"
+                            min="0"
+                            max="10"
+                            step="0.1"
+                            placeholder="0"
+                            value={avgStress}
+                            onChange={(e) => setAvgStress(e.target.value)}
+                          />
+                        </div>
+
+                        {/* Cigarettes */}
+                        <div className="grid gap-2">
+                          <Label htmlFor="cigarettes">Sigara (adet)</Label>
+                          <Input
+                            id="cigarettes"
+                            type="number"
+                            min="0"
+                            placeholder="0"
+                            value={cigarettesCount}
+                            onChange={(e) => setCigarettesCount(e.target.value)}
+                          />
+                        </div>
+
+                        {/* Alcohol */}
+                        <div className="grid gap-2">
+                          <Label htmlFor="alcohol">Alkol (içecek)</Label>
+                          <Input
+                            id="alcohol"
+                            type="number"
+                            min="0"
+                            placeholder="0"
+                            value={alcoholDrinks}
+                            onChange={(e) => setAlcoholDrinks(e.target.value)}
+                          />
+                        </div>
+
+                        {/* Caffeine */}
+                        <div className="grid gap-2">
+                          <Label htmlFor="caffeine">Kafein (mg)</Label>
+                          <Input
+                            id="caffeine"
+                            type="number"
+                            min="0"
+                            placeholder="0"
+                            value={caffeineMg}
+                            onChange={(e) => setCaffeineMg(e.target.value)}
+                          />
+                        </div>
+                      </div>
                     </div>
 
                     {/* All Health Data Summary */}
