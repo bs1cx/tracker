@@ -443,6 +443,7 @@ export function AddItemForm() {
                     priority: "medium",
                     selected_days: [],
                     category: "habit",
+                    start_date: new Date().toISOString().split("T")[0],
                   })
                   setActiveTab("templates")
                 }}
