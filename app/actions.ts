@@ -19,6 +19,7 @@ export async function createTrackable(data: {
   priority?: "low" | "medium" | "high"
   selected_days?: string[] | null
   category?: "task" | "habit"
+  start_date?: string
 }) {
   try {
     // Log incoming data
@@ -69,6 +70,11 @@ export async function createTrackable(data: {
     }
     if (data.category) {
       insertData.category = data.category
+    }
+    if (data.start_date) {
+      insertData.start_date = data.start_date
+    } else {
+      insertData.start_date = getCurrentISODate().split("T")[0] // Default to today
     }
     // selected_days is now required, so always include it
     if (data.selected_days && data.selected_days.length > 0) {
@@ -211,6 +217,9 @@ export async function updateTrackable(data: {
   reset_frequency?: "daily" | "weekly" | "none"
   priority?: "low" | "medium" | "high"
   scheduled_time?: string | null
+  selected_days?: string[] | null
+  category?: "task" | "habit"
+  start_date?: string
 }) {
   try {
     const validated = updateTrackableSchema.parse(data)
@@ -240,6 +249,8 @@ export async function updateTrackable(data: {
     if (data.priority !== undefined) updateData.priority = data.priority
     if (data.scheduled_time !== undefined)
       updateData.scheduled_time = data.scheduled_time
+    if (data.start_date !== undefined)
+      updateData.start_date = data.start_date
 
     const { error } = await supabase
       .from("trackables")

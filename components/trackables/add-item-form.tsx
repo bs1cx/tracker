@@ -48,6 +48,7 @@ export function AddItemForm() {
     priority: "medium" as "low" | "medium" | "high",
     selected_days: [] as string[],
     category: "habit" as "task" | "habit",
+    start_date: new Date().toISOString().split("T")[0],
   })
   const router = useRouter()
 
@@ -107,6 +108,7 @@ export function AddItemForm() {
         priority: formData.priority,
         selected_days: formData.selected_days || [], // Ensure array is passed
         category: formData.category || "habit",
+        start_date: formData.start_date,
       })
 
       setFormData({
@@ -118,6 +120,7 @@ export function AddItemForm() {
         priority: "medium",
         selected_days: [],
         category: "habit",
+        start_date: new Date().toISOString().split("T")[0],
       })
       setSearchQuery("")
       setSelectedCategory("all")
@@ -156,6 +159,7 @@ export function AddItemForm() {
         priority: template.priority || "medium",
         selected_days: ["Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma", "Cumartesi", "Pazar"], // Default to all days for templates
         category: "habit",
+        start_date: new Date().toISOString().split("T")[0],
       })
       setOpen(false)
       setSearchQuery("")
@@ -374,6 +378,18 @@ export function AddItemForm() {
                 />
               </div>
             )}
+            {/* Start Date Picker */}
+            <div className="grid gap-2">
+              <Label htmlFor="start_date">Başlangıç Tarihi</Label>
+              <Input
+                id="start_date"
+                type="date"
+                value={formData.start_date}
+                onChange={(e) =>
+                  setFormData({ ...formData, start_date: e.target.value })
+                }
+              />
+            </div>
             {/* Category Selector */}
             {formData.type && (
               <div className="grid gap-2">
