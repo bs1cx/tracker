@@ -1,10 +1,10 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon } from "lucide-react"
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths, getDay } from "date-fns"
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths, getDay, startOfDay } from "date-fns"
 import { tr } from "date-fns/locale"
 import type { Trackable } from "@/types/database"
 import { cn } from "@/lib/utils"
@@ -21,6 +21,16 @@ const DAY_NAMES = ["Pzt", "Sal", "Çar", "Per", "Cum", "Cmt", "Paz"]
 export function CalendarWidget({ trackables }: CalendarWidgetProps) {
   const [currentDate, setCurrentDate] = useState(new Date())
   const today = new Date()
+  
+  // Update today in real-time (refresh every minute)
+  useEffect(() => {
+    const interval = setInterval(() => {
+      // Force re-render to update "today" highlighting
+      setCurrentDate(new Date())
+    }, 60000) // Update every minute
+    
+    return () => clearInterval(interval)
+  }, [])
 
   const monthStart = startOfMonth(currentDate)
   const monthEnd = endOfMonth(currentDate)
@@ -45,21 +55,20 @@ export function CalendarWidget({ trackables }: CalendarWidgetProps) {
         Array.isArray(trackable.selected_days) &&
         trackable.selected_days.length > 0
       ) {
-        const dayName = format(date, "EEEE", { locale: tr }).toLowerCase()
-        // Map Turkish day names to English
-        const dayMap: Record<string, string> = {
-          pazartesi: "monday",
-          salı: "tuesday",
-          çarşamba: "wednesday",
-          perşembe: "thursday",
-          cuma: "friday",
-          cumartesi: "saturday",
-          pazar: "sunday",
-        }
-        const englishDay = dayMap[dayName] || dayName
-        return trackable.selected_days.includes(englishDay)
+        // Get day of week (0 = Sunday, 1 = Monday, ..., 6 = Saturday)
+        const dayOfWeek = getDay(date)
+        // Convert to our day name format (monday, tuesday, etc.)
+        const dayNames = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"]
+        const currentDayName = dayNames[dayOfWeek]
+        
+        // Check if this day is in the selected_days array
+        return trackable.selected_days.includes(currentDayName)
       }
-      // If no selected days, show for all days
+      // If no selected days, show for all days (only for DAILY_HABIT and PROGRESS types)
+      // ONE_TIME tasks without selected_days should not appear on calendar
+      if (trackable.type === "ONE_TIME") {
+        return false
+      }
       return true
     })
   }
@@ -120,6 +129,10 @@ export function CalendarWidget({ trackables }: CalendarWidgetProps) {
             const dayTrackables = getTrackablesForDay(date)
             const isToday = isSameDay(date, today)
             const isCurrentMonth = isSameMonth(date, currentDate)
+            // Check if date is in the past (before today, not including today)
+            const dateStart = startOfDay(date)
+            const todayStart = startOfDay(today)
+            const isPastDate = dateStart < todayStart
             const dateStr = format(date, "d MMMM yyyy", { locale: tr })
 
             return (
@@ -129,7 +142,8 @@ export function CalendarWidget({ trackables }: CalendarWidgetProps) {
                     className={cn(
                       "aspect-square p-1 rounded border transition-colors cursor-pointer hover:border-[#60a5fa]/50 hover:bg-slate-700/30",
                       isToday && "border-[#60a5fa] bg-[#60a5fa]/10",
-                      !isToday && "border-slate-700/50",
+                      isPastDate && "opacity-50 border-slate-600/30 bg-slate-800/30",
+                      !isToday && !isPastDate && "border-slate-700/50",
                       !isCurrentMonth && "opacity-30"
                     )}
                   >
@@ -137,7 +151,8 @@ export function CalendarWidget({ trackables }: CalendarWidgetProps) {
                       className={cn(
                         "text-xs font-medium mb-1",
                         isToday && "text-[#60a5fa]",
-                        !isToday && "text-slate-300"
+                        isPastDate && "text-slate-500",
+                        !isToday && !isPastDate && "text-slate-300"
                       )}
                     >
                       {format(date, "d")}
