@@ -31,10 +31,13 @@ export function SmokingForm() {
     setIsLoading(true)
     
     try {
+      console.log("Submitting smoking log:", { count, notes })
       const result = await addSmokingLog({
         cigarettes_count: parseInt(count),
         notes: notes || undefined,
       })
+      
+      console.log("Smoking log result:", result)
       
       if (result?.success) {
         setCount("1")
@@ -46,13 +49,17 @@ export function SmokingForm() {
           router.refresh()
         }, 100)
       } else {
+        console.error("No success in result:", result)
         setIsLoading(false)
         alert("Sigara kaydı eklenirken bir sorun oluştu. Lütfen tekrar deneyin.")
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error adding smoking log:", error)
+      console.error("Error message:", error?.message)
+      console.error("Error stack:", error?.stack)
       setIsLoading(false)
-      alert("Sigara kaydı eklenirken bir hata oluştu. Lütfen tekrar deneyin.")
+      const errorMessage = error?.message || "Sigara kaydı eklenirken bir hata oluştu. Lütfen tekrar deneyin."
+      alert(errorMessage)
     }
   }
 

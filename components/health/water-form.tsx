@@ -29,9 +29,12 @@ export function WaterForm() {
     setIsLoading(true)
     
     try {
+      console.log("Submitting water log:", { amount })
       const result = await addWaterLog({
         amount_ml: parseInt(amount),
       })
+      
+      console.log("Water log result:", result)
       
       if (result?.success) {
         setAmount("250")
@@ -42,13 +45,17 @@ export function WaterForm() {
           router.refresh()
         }, 100)
       } else {
+        console.error("No success in result:", result)
         setIsLoading(false)
         alert("Su kaydı eklenirken bir sorun oluştu. Lütfen tekrar deneyin.")
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error adding water log:", error)
+      console.error("Error message:", error?.message)
+      console.error("Error stack:", error?.stack)
       setIsLoading(false)
-      alert("Su kaydı eklenirken bir hata oluştu. Lütfen tekrar deneyin.")
+      const errorMessage = error?.message || "Su kaydı eklenirken bir hata oluştu. Lütfen tekrar deneyin."
+      alert(errorMessage)
     }
   }
 

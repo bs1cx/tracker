@@ -20,16 +20,21 @@ export async function addSmokingLog(data: {
     throw new Error("Unauthorized")
   }
 
-  const { error } = await supabase.from("smoking_logs").insert({
+  const { error, data: insertedData } = await supabase.from("smoking_logs").insert({
     user_id: user.id,
     cigarettes_count: data.cigarettes_count,
     notes: data.notes || null,
-  })
+  }).select()
 
   if (error) {
     console.error("Error adding smoking log:", error)
-    throw new Error("Sigara kaydı eklenirken bir hata oluştu")
+    console.error("Error code:", error.code)
+    console.error("Error message:", error.message)
+    console.error("Error details:", error.details)
+    throw new Error(`Sigara kaydı eklenirken bir hata oluştu: ${error.message || error.code || "Bilinmeyen hata"}`)
   }
+
+  console.log("Smoking log inserted successfully:", insertedData)
 
   revalidatePath("/health")
   return { success: true }
@@ -309,15 +314,19 @@ export async function addWaterLog(data: {
     throw new Error("Unauthorized")
   }
 
-  const { error } = await supabase.from("water_intake").insert({
+  const { error, data: insertedData } = await supabase.from("water_intake").insert({
     user_id: user.id,
     amount_ml: data.amount_ml,
-  })
+  }).select()
 
   if (error) {
     console.error("Error adding water log:", error)
-    throw new Error("Su kaydı eklenirken bir hata oluştu")
+    console.error("Error code:", error.code)
+    console.error("Error message:", error.message)
+    throw new Error(`Su kaydı eklenirken bir hata oluştu: ${error.message || error.code || "Bilinmeyen hata"}`)
   }
+
+  console.log("Water log inserted successfully:", insertedData)
 
   revalidatePath("/health")
   return { success: true }
