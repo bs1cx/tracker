@@ -208,8 +208,17 @@ export async function updateDailyHealthSummary(data: {
     if (data.sleep_hours !== undefined) updateData.sleep_hours = data.sleep_hours
     if (data.sleep_quality !== undefined) updateData.sleep_quality = data.sleep_quality
     if (data.avg_heart_rate !== undefined) updateData.avg_heart_rate = data.avg_heart_rate
-    if (data.avg_energy_level !== undefined) updateData.avg_energy_level = data.avg_energy_level
-    if (data.avg_stress_level !== undefined) updateData.avg_stress_level = data.avg_stress_level
+    // Round decimal values to 1 decimal place for energy and stress levels
+    if (data.avg_energy_level !== undefined) {
+      updateData.avg_energy_level = data.avg_energy_level != null 
+        ? Math.round(Number(data.avg_energy_level) * 10) / 10 
+        : null
+    }
+    if (data.avg_stress_level !== undefined) {
+      updateData.avg_stress_level = data.avg_stress_level != null 
+        ? Math.round(Number(data.avg_stress_level) * 10) / 10 
+        : null
+    }
     if (data.cigarettes_count !== undefined) updateData.cigarettes_count = data.cigarettes_count
     if (data.alcohol_drinks !== undefined) updateData.alcohol_drinks = data.alcohol_drinks
     if (data.caffeine_mg !== undefined) updateData.caffeine_mg = data.caffeine_mg
@@ -485,8 +494,9 @@ export async function calculateTodaySummary() {
     sleep_hours: sleepResult?.hours != null ? Number(sleepResult.hours) : null,
     sleep_quality: sleepResult?.quality || null,
     avg_heart_rate: heartRateResult?.avg != null ? Number(heartRateResult.avg) : null,
-    avg_energy_level: energyResult?.avg != null ? Number(energyResult.avg) : null,
-    avg_stress_level: stressResult?.avg != null ? Number(stressResult.avg) : null,
+    // Round to 1 decimal place for energy and stress levels
+    avg_energy_level: energyResult?.avg != null ? Math.round(Number(energyResult.avg) * 10) / 10 : null,
+    avg_stress_level: stressResult?.avg != null ? Math.round(Number(stressResult.avg) * 10) / 10 : null,
     cigarettes_count: Number(smokingResult?.total ?? 0) || 0,
     alcohol_drinks: Number(alcoholResult?.total ?? 0) || 0,
     caffeine_mg: Number(caffeineResult?.total ?? 0) || 0,
