@@ -5,17 +5,17 @@ import { Label } from "@/components/ui/label"
 import { cn } from "@/lib/utils"
 
 const DAYS = [
-  { value: "monday", label: "Pazartesi", short: "Pzt" },
-  { value: "tuesday", label: "Salı", short: "Sal" },
-  { value: "wednesday", label: "Çarşamba", short: "Çar" },
-  { value: "thursday", label: "Perşembe", short: "Per" },
-  { value: "friday", label: "Cuma", short: "Cum" },
-  { value: "saturday", label: "Cumartesi", short: "Cmt" },
-  { value: "sunday", label: "Pazar", short: "Paz" },
+  { value: "Pazartesi", label: "Pazartesi", short: "Pzt" },
+  { value: "Salı", label: "Salı", short: "Sal" },
+  { value: "Çarşamba", label: "Çarşamba", short: "Çar" },
+  { value: "Perşembe", label: "Perşembe", short: "Per" },
+  { value: "Cuma", label: "Cuma", short: "Cum" },
+  { value: "Cumartesi", label: "Cumartesi", short: "Cmt" },
+  { value: "Pazar", label: "Pazar", short: "Paz" },
 ] as const
 
-const WEEKDAYS = ["monday", "tuesday", "wednesday", "thursday", "friday"]
-const WEEKENDS = ["saturday", "sunday"]
+const WEEKDAYS = ["Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma"]
+const WEEKENDS = ["Cumartesi", "Pazar"]
 const ALL_DAYS = DAYS.map((d) => d.value)
 
 interface DaySelectorProps {
