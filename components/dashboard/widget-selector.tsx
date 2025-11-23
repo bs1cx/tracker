@@ -29,12 +29,6 @@ const availableWidgets: WidgetOption[] = [
     icon: <BarChart3 className="h-5 w-5" />,
   },
   {
-    id: "calendar",
-    title: "Takvim",
-    description: "Aylık takvim görünümü",
-    icon: <Calendar className="h-5 w-5" />,
-  },
-  {
     id: "goals",
     title: "Hedefler",
     description: "Aktif hedeflerinizi görüntüle",

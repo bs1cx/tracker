@@ -8,7 +8,7 @@ import { WidgetSelector } from "./widget-selector"
 import { AddItemForm } from "@/components/trackables/add-item-form"
 import { Card, CardContent } from "@/components/ui/card"
 import { BarChart3, Calendar, Target, TrendingUp, CheckCircle2, Clock } from "lucide-react"
-import { CalendarWidget } from "./calendar-widget"
+import { TaskView } from "./task-view"
 import { tr } from "@/lib/i18n"
 import type { Trackable } from "@/types/database"
 
@@ -51,22 +51,9 @@ export function DashboardContent({
   }, [widgets, mounted])
 
   const handleAddWidget = (widgetId: string) => {
-    // Allow up to 3 widgets total (1 calendar + 2 other widgets)
-    const calendarCount = widgets.filter((id) => id === "calendar").length
-    const otherWidgetsCount = widgets.filter((id) => id !== "calendar").length
-    
-    if (!widgets.includes(widgetId)) {
-      if (widgetId === "calendar") {
-        // Only allow one calendar
-        if (calendarCount === 0) {
-          setWidgets([...widgets, widgetId])
-        }
-      } else {
-        // Allow up to 2 other widgets
-        if (otherWidgetsCount < 2) {
-          setWidgets([...widgets, widgetId])
-        }
-      }
+    // Allow up to 2 widgets
+    if (!widgets.includes(widgetId) && widgets.length < 2) {
+      setWidgets([...widgets, widgetId])
     }
   }
 
@@ -175,10 +162,6 @@ export function DashboardContent({
             </div>
           </Widget>
         )
-      case "calendar":
-        return (
-          <CalendarWidget trackables={allTrackables} />
-        )
       case "progress":
         return (
           <Widget
@@ -231,34 +214,26 @@ export function DashboardContent({
     }
   }
 
-  // Separate calendar from other widgets
-  const calendarWidget = widgets.find((id) => id === "calendar")
-  const otherWidgets = widgets.filter((id) => id !== "calendar")
-  const otherWidgetsCount = otherWidgets.length
-
   return (
     <div className="space-y-8">
-      {/* Calendar Widget - Same width as 2 widgets below */}
-      {calendarWidget && (
-        <div className="w-full">
-          <div className="grid gap-6 md:grid-cols-2">
-            <div className="md:col-span-2">
-              {renderWidget("calendar")}
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Task View - Günlük/Haftalık/Aylık */}
+      <TaskView
+        allTrackables={allTrackables}
+        dailyHabits={dailyHabits}
+        oneTimeTasks={oneTimeTasks}
+        progressTrackers={progressTrackers}
+      />
 
-      {/* Other Widgets Section - 2 widgets side by side */}
+      {/* Widgets Section - 2 widgets side by side */}
       <div className="grid gap-6 md:grid-cols-2">
-        {otherWidgets.map((widgetId) => (
+        {widgets.map((widgetId) => (
           <div key={widgetId} className="w-full">
             {renderWidget(widgetId)}
           </div>
         ))}
         
         {/* Widget Selector in empty slots */}
-        {otherWidgetsCount < 2 && (
+        {widgets.length < 2 && (
           <div className="flex items-center justify-center min-h-[200px] border-2 border-dashed border-slate-700/50 rounded-lg">
             <WidgetSelector
               onAddWidget={handleAddWidget}
