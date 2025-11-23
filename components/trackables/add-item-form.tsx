@@ -24,6 +24,7 @@ import { Plus, Search, Sparkles } from "lucide-react"
 import { createTrackable } from "@/app/actions"
 import { useRouter } from "next/navigation"
 import { TimePicker } from "./time-picker"
+import { DaySelector } from "./day-selector"
 import {
   TASK_TEMPLATES,
   TASK_CATEGORIES,
@@ -45,6 +46,7 @@ export function AddItemForm() {
     reset_frequency: "none" as "daily" | "weekly" | "none",
     scheduled_time: "",
     priority: "medium" as "low" | "medium" | "high",
+    selected_days: [] as string[],
   })
   const router = useRouter()
 
@@ -73,6 +75,7 @@ export function AddItemForm() {
       reset_frequency: template.reset_frequency || "none",
       scheduled_time: "",
       priority: template.priority || "medium",
+      selected_days: [],
     })
     setActiveTab("manual")
   }
@@ -92,6 +95,7 @@ export function AddItemForm() {
         reset_frequency: formData.reset_frequency,
         scheduled_time: formData.scheduled_time || null,
         priority: formData.priority,
+        selected_days: formData.selected_days.length > 0 ? formData.selected_days : null,
       })
 
       setFormData({
@@ -101,6 +105,7 @@ export function AddItemForm() {
         reset_frequency: "none",
         scheduled_time: "",
         priority: "medium",
+        selected_days: [],
       })
       setSearchQuery("")
       setSelectedCategory("all")
@@ -335,6 +340,18 @@ export function AddItemForm() {
                 />
               </div>
             )}
+            {/* Day Selector for all types */}
+            {formData.type && (
+              <div className="grid gap-2">
+                <DaySelector
+                  label="Haftanın Günleri (Opsiyonel - Boş bırakılırsa tüm günler)"
+                  value={formData.selected_days}
+                  onChange={(days) =>
+                    setFormData({ ...formData, selected_days: days })
+                  }
+                />
+              </div>
+            )}
             </div>
             <DialogFooter>
               <Button
@@ -349,6 +366,7 @@ export function AddItemForm() {
                     reset_frequency: "none",
                     scheduled_time: "",
                     priority: "medium",
+                    selected_days: [],
                   })
                   setActiveTab("templates")
                 }}

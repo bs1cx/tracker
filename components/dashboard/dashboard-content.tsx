@@ -8,6 +8,7 @@ import { WidgetSelector } from "./widget-selector"
 import { AddItemForm } from "@/components/trackables/add-item-form"
 import { Card, CardContent } from "@/components/ui/card"
 import { BarChart3, Calendar, Target, TrendingUp, CheckCircle2, Clock } from "lucide-react"
+import { CalendarWidget } from "./calendar-widget"
 import { tr } from "@/lib/i18n"
 import type { Trackable } from "@/types/database"
 
@@ -151,15 +152,7 @@ export function DashboardContent({
         )
       case "calendar":
         return (
-          <Widget
-            id="calendar"
-            title="Takvim"
-            onRemove={handleRemoveWidget}
-          >
-            <div className="text-sm text-muted-foreground text-center py-8">
-              Takvim görünümü yakında eklenecek
-            </div>
-          </Widget>
+          <CalendarWidget trackables={allTrackables} />
         )
       case "progress":
         return (

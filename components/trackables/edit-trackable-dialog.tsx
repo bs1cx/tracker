@@ -23,6 +23,7 @@ import { Pencil } from "lucide-react"
 import { tr } from "@/lib/i18n"
 import type { Trackable } from "@/types/database"
 import { TimePicker } from "./time-picker"
+import { DaySelector } from "./day-selector"
 
 interface EditTrackableDialogProps {
   trackable: Trackable
@@ -48,6 +49,9 @@ export function EditTrackableDialog({
   )
   const [scheduledTime, setScheduledTime] = useState(
     trackable.scheduled_time || ""
+  )
+  const [selectedDays, setSelectedDays] = useState<string[]>(
+    (trackable.selected_days as string[]) || []
   )
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -197,6 +201,14 @@ export function EditTrackableDialog({
                 label="Hatırlatma Saati (Opsiyonel)"
                 value={scheduledTime}
                 onChange={setScheduledTime}
+              />
+            </div>
+            {/* Day Selector */}
+            <div className="grid gap-2">
+              <DaySelector
+                label="Haftanın Günleri (Opsiyonel - Boş bırakılırsa tüm günler)"
+                value={selectedDays}
+                onChange={setSelectedDays}
               />
             </div>
           </div>

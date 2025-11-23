@@ -14,6 +14,7 @@ export interface Trackable {
   reset_frequency: ResetFrequency
   priority?: "low" | "medium" | "high"
   scheduled_time?: string | null
+  selected_days?: string[] | null
   created_at: string
   updated_at: string
   is_completed_today?: boolean

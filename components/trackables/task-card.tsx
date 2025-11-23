@@ -10,7 +10,7 @@ import { formatDate } from "@/lib/date-utils"
 import { tr } from "@/lib/i18n"
 import { EditTrackableDialog } from "./edit-trackable-dialog"
 import { DeleteTrackableDialog } from "./delete-trackable-dialog"
-import { Clock } from "lucide-react"
+import { Clock, Calendar } from "lucide-react"
 
 interface TaskCardProps {
   trackable: Trackable
@@ -95,6 +95,14 @@ export function TaskCard({ trackable }: TaskCardProps) {
               <div className="flex items-center gap-1 text-xs text-slate-400">
                 <Clock className="h-3 w-3 text-[#60a5fa]" />
                 {trackable.scheduled_time}
+              </div>
+            )}
+            {trackable.selected_days && trackable.selected_days.length > 0 && (
+              <div className="flex items-center gap-1 text-xs text-slate-400">
+                <Calendar className="h-3 w-3 text-[#60a5fa]" />
+                <span className="truncate max-w-[100px]">
+                  {trackable.selected_days.length} gün
+                </span>
               </div>
             )}
           </div>

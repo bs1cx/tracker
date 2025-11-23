@@ -17,6 +17,7 @@ export async function createTrackable(data: {
   reset_frequency?: "daily" | "weekly" | "none"
   scheduled_time?: string | null
   priority?: "low" | "medium" | "high"
+  selected_days?: string[] | null
 }) {
   try {
     const validated = trackableSchema.parse(data)
@@ -47,6 +48,9 @@ export async function createTrackable(data: {
     }
     if (data.priority) {
       insertData.priority = data.priority
+    }
+    if (data.selected_days && data.selected_days.length > 0) {
+      insertData.selected_days = data.selected_days
     }
 
     const { error, data: insertedData } = await supabase
