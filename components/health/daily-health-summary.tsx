@@ -114,7 +114,9 @@ export function DailyHealthSummaryCard() {
       if (!summary) return
 
       setIsLoading(true)
-      await updateDailyHealthSummary({
+      console.log("Saving daily health summary...")
+      
+      const result = await updateDailyHealthSummary({
         id: summary.id,
         overall_wellness_score: wellnessScore ? parseInt(wellnessScore) : null,
         notes: notes || null,
@@ -137,14 +139,27 @@ export function DailyHealthSummaryCard() {
         caffeine_mg: caffeineMg ? parseFloat(caffeineMg) : undefined,
       })
 
-      await loadSummary()
-      setIsEditing(false)
-      setOpen(false)
-    } catch (error) {
+      console.log("Update result:", result)
+
+      if (result?.success) {
+        setIsEditing(false)
+        setOpen(false)
+        setIsLoading(false)
+        // Delay refresh to avoid hydration mismatch
+        setTimeout(() => {
+          router.refresh()
+          loadSummary()
+        }, 100)
+      } else {
+        setIsLoading(false)
+        const errorMessage = result?.error || "Özet kaydedilirken bir sorun oluştu. Lütfen tekrar deneyin."
+        alert(errorMessage)
+      }
+    } catch (error: any) {
       console.error("Error saving summary:", error)
-      alert("Özet kaydedilirken bir hata oluştu. Lütfen tekrar deneyin.")
-    } finally {
       setIsLoading(false)
+      const errorMessage = error?.message || "Özet kaydedilirken bir hata oluştu. Lütfen tekrar deneyin."
+      alert(errorMessage)
     }
   }
 
@@ -153,18 +168,25 @@ export function DailyHealthSummaryCard() {
       if (!summary) return
 
       setIsLoading(true)
-      await updateDailyHealthSummary({
+      const result = await updateDailyHealthSummary({
         id: summary.id,
         ongoing_conditions: keepConditions ? yesterdayConditions : null,
         carried_over_conditions: keepConditions,
       })
 
-      setShowCarryOverDialog(false)
-      await loadSummary()
-    } catch (error) {
+      if (result?.success) {
+        setShowCarryOverDialog(false)
+        setIsLoading(false)
+        await loadSummary()
+      } else {
+        setIsLoading(false)
+        const errorMessage = result?.error || "Durumlar güncellenirken bir sorun oluştu."
+        alert(errorMessage)
+      }
+    } catch (error: any) {
       console.error("Error updating carry-over:", error)
-    } finally {
       setIsLoading(false)
+      alert(error?.message || "Durumlar güncellenirken bir hata oluştu.")
     }
   }
 

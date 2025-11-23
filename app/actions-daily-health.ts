@@ -90,58 +90,92 @@ export async function updateDailyHealthSummary(data: {
   alcohol_drinks?: number
   caffeine_mg?: number
 }) {
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  try {
+    const supabase = await createClient()
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser()
 
-  if (!user) {
-    throw new Error("Unauthorized")
+    if (authError || !user) {
+      console.error("Auth error:", authError)
+      return { 
+        success: false, 
+        error: "Kimlik doğrulama hatası. Lütfen tekrar giriş yapın." 
+      }
+    }
+
+    const updateData: any = {
+      updated_at: new Date().toISOString(),
+    }
+
+    if (data.overall_wellness_score !== undefined)
+      updateData.overall_wellness_score = data.overall_wellness_score
+    if (data.notes !== undefined) updateData.notes = data.notes
+    if (data.ongoing_conditions !== undefined)
+      updateData.ongoing_conditions = data.ongoing_conditions
+    if (data.symptoms !== undefined) updateData.symptoms = data.symptoms
+    if (data.medications_taken !== undefined)
+      updateData.medications_taken = data.medications_taken
+    if (data.is_completed !== undefined) updateData.is_completed = data.is_completed
+    if (data.carried_over_conditions !== undefined)
+      updateData.carried_over_conditions = data.carried_over_conditions
+    
+    // Basic metrics
+    if (data.total_steps !== undefined) updateData.total_steps = data.total_steps
+    if (data.total_exercise_minutes !== undefined) updateData.total_exercise_minutes = data.total_exercise_minutes
+    if (data.total_water_ml !== undefined) updateData.total_water_ml = data.total_water_ml
+    if (data.total_calories !== undefined) updateData.total_calories = data.total_calories
+    if (data.sleep_hours !== undefined) updateData.sleep_hours = data.sleep_hours
+    if (data.sleep_quality !== undefined) updateData.sleep_quality = data.sleep_quality
+    if (data.avg_heart_rate !== undefined) updateData.avg_heart_rate = data.avg_heart_rate
+    if (data.avg_energy_level !== undefined) updateData.avg_energy_level = data.avg_energy_level
+    if (data.avg_stress_level !== undefined) updateData.avg_stress_level = data.avg_stress_level
+    if (data.cigarettes_count !== undefined) updateData.cigarettes_count = data.cigarettes_count
+    if (data.alcohol_drinks !== undefined) updateData.alcohol_drinks = data.alcohol_drinks
+    if (data.caffeine_mg !== undefined) updateData.caffeine_mg = data.caffeine_mg
+
+    const { data: updatedData, error } = await supabase
+      .from("daily_health_summary")
+      .update(updateData)
+      .eq("id", data.id)
+      .eq("user_id", user.id)
+      .select()
+
+    if (error) {
+      console.error("Error updating daily health summary:", error)
+      console.error("Error code:", error.code)
+      console.error("Error message:", error.message)
+      
+      if (error.code === "42P01") {
+        return { 
+          success: false, 
+          error: "Veritabanı tablosu bulunamadı. Lütfen Supabase SQL Editor'de 'supabase-schema-daily-health-summary.sql' dosyasını çalıştırın." 
+        }
+      }
+      if (error.code === "42501") {
+        return { 
+          success: false, 
+          error: "İzin hatası. RLS politikaları kontrol edilmeli." 
+        }
+      }
+      
+      return { 
+        success: false, 
+        error: `Günlük özet güncellenirken bir hata oluştu: ${error.message || "Bilinmeyen hata"}` 
+      }
+    }
+
+    console.log("Daily health summary updated successfully:", updatedData)
+    revalidatePath("/health")
+    return { success: true }
+  } catch (error: any) {
+    console.error("Error in updateDailyHealthSummary:", error)
+    return { 
+      success: false, 
+      error: error?.message || "Günlük özet güncellenirken beklenmeyen bir hata oluştu" 
+    }
   }
-
-  const updateData: any = {
-    updated_at: new Date().toISOString(),
-  }
-
-  if (data.overall_wellness_score !== undefined)
-    updateData.overall_wellness_score = data.overall_wellness_score
-  if (data.notes !== undefined) updateData.notes = data.notes
-  if (data.ongoing_conditions !== undefined)
-    updateData.ongoing_conditions = data.ongoing_conditions
-  if (data.symptoms !== undefined) updateData.symptoms = data.symptoms
-  if (data.medications_taken !== undefined)
-    updateData.medications_taken = data.medications_taken
-  if (data.is_completed !== undefined) updateData.is_completed = data.is_completed
-  if (data.carried_over_conditions !== undefined)
-    updateData.carried_over_conditions = data.carried_over_conditions
-  
-  // Basic metrics
-  if (data.total_steps !== undefined) updateData.total_steps = data.total_steps
-  if (data.total_exercise_minutes !== undefined) updateData.total_exercise_minutes = data.total_exercise_minutes
-  if (data.total_water_ml !== undefined) updateData.total_water_ml = data.total_water_ml
-  if (data.total_calories !== undefined) updateData.total_calories = data.total_calories
-  if (data.sleep_hours !== undefined) updateData.sleep_hours = data.sleep_hours
-  if (data.sleep_quality !== undefined) updateData.sleep_quality = data.sleep_quality
-  if (data.avg_heart_rate !== undefined) updateData.avg_heart_rate = data.avg_heart_rate
-  if (data.avg_energy_level !== undefined) updateData.avg_energy_level = data.avg_energy_level
-  if (data.avg_stress_level !== undefined) updateData.avg_stress_level = data.avg_stress_level
-  if (data.cigarettes_count !== undefined) updateData.cigarettes_count = data.cigarettes_count
-  if (data.alcohol_drinks !== undefined) updateData.alcohol_drinks = data.alcohol_drinks
-  if (data.caffeine_mg !== undefined) updateData.caffeine_mg = data.caffeine_mg
-
-  const { error } = await supabase
-    .from("daily_health_summary")
-    .update(updateData)
-    .eq("id", data.id)
-    .eq("user_id", user.id)
-
-  if (error) {
-    console.error("Error updating daily health summary:", error)
-    throw new Error("Günlük özet güncellenirken bir hata oluştu")
-  }
-
-  revalidatePath("/health")
-  return { success: true }
 }
 
 // Auto-calculate and update today's summary from logs
