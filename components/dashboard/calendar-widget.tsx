@@ -20,11 +20,17 @@ const DAY_NAMES = ["Pzt", "Sal", "Çar", "Per", "Cum", "Cmt", "Paz"]
 
 export function CalendarWidget({ trackables }: CalendarWidgetProps) {
   const [currentDate, setCurrentDate] = useState(new Date())
-  const today = new Date()
+  const [today, setToday] = useState(new Date())
+  const [mounted, setMounted] = useState(false)
   
-  // Update today in real-time (refresh every minute)
+  // Only set today after component mounts to avoid hydration mismatch
   useEffect(() => {
+    setMounted(true)
+    setToday(new Date())
+    
+    // Update today in real-time (refresh every minute)
     const interval = setInterval(() => {
+      setToday(new Date())
       // Force re-render to update "today" highlighting
       setCurrentDate(new Date())
     }, 60000) // Update every minute
@@ -138,12 +144,13 @@ export function CalendarWidget({ trackables }: CalendarWidgetProps) {
           {/* Days of the month */}
           {daysInMonth.map((date) => {
             const dayTrackables = getTrackablesForDay(date)
-            const isToday = isSameDay(date, today)
+            // Only check isToday after component is mounted to avoid hydration mismatch
+            const isToday = mounted && isSameDay(date, today)
             const isCurrentMonth = isSameMonth(date, currentDate)
             // Check if date is in the past (before today, not including today)
             const dateStart = startOfDay(date)
-            const todayStart = startOfDay(today)
-            const isPastDate = dateStart < todayStart
+            const todayStart = mounted ? startOfDay(today) : startOfDay(new Date())
+            const isPastDate = mounted && dateStart < todayStart
             const dateStr = format(date, "d MMMM yyyy", { locale: tr })
 
             return (

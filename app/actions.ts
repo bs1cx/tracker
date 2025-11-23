@@ -139,28 +139,28 @@ export async function createTrackable(data: {
     console.error("Error name:", error?.name)
     console.error("Error code:", error?.code)
     
-    // Return a more user-friendly error message
+    // For server actions, we need to throw errors, not return them
+    // But we'll make the error message more user-friendly
     if (error instanceof Error) {
       const errorMsg = error.message || "Bilinmeyen hata"
       
       // Check if it's a Zod validation error
       if (errorMsg.includes("ZodError") || errorMsg.includes("validation") || errorMsg.includes("Geçersiz veri")) {
-        return { success: false, error: errorMsg }
+        throw new Error(errorMsg)
       }
       
       // Check if it's a database column error
       if (errorMsg.includes("column") || errorMsg.includes("42703") || errorMsg.includes("Database")) {
-        return { 
-          success: false, 
-          error: `Database kolonu eksik. Lütfen migration script'lerini çalıştırın:\n1. supabase-migration-complete.sql\n2. supabase-schema-category.sql` 
-        }
+        throw new Error(
+          `Database kolonu eksik. Lütfen migration script'lerini çalıştırın:\n1. supabase-migration-complete.sql\n2. supabase-schema-category.sql`
+        )
       }
       
-      // Return error message
-      return { success: false, error: errorMsg }
+      // Throw the error message
+      throw new Error(errorMsg)
     }
     
-    return { success: false, error: "Görev oluşturulurken beklenmeyen bir hata oluştu. Lütfen konsolu kontrol edin (F12)." }
+    throw new Error("Görev oluşturulurken beklenmeyen bir hata oluştu. Lütfen konsolu kontrol edin (F12).")
   }
 }
 
