@@ -2,12 +2,14 @@ import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import "./globals.css"
 import { SupabaseProvider } from "@/components/providers/supabase-provider"
+import { MainNav } from "@/components/navigation/main-nav"
+import { tr } from "@/lib/i18n"
 
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "Life Tracker",
-  description: "Track your daily habits, tasks, and progress",
+  title: tr.dashboard.title,
+  description: tr.dashboard.subtitle,
 }
 
 export default function RootLayout({
@@ -16,9 +18,12 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en">
+    <html lang="tr">
       <body className={inter.className}>
-        <SupabaseProvider>{children}</SupabaseProvider>
+        <SupabaseProvider>
+          <MainNav />
+          {children}
+        </SupabaseProvider>
       </body>
     </html>
   )
