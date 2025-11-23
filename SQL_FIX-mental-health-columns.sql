@@ -5,7 +5,47 @@
 -- Fix meditation_sessions table
 -- ============================================
 
--- Check if 'type' column exists, if not add it
+-- Check if 'session_type' column exists and is NOT NULL, make it nullable or set default
+DO $$
+BEGIN
+    IF EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_schema = 'public' 
+        AND table_name = 'meditation_sessions' 
+        AND column_name = 'session_type'
+        AND is_nullable = 'NO'
+    ) THEN
+        -- Make session_type nullable or add default
+        ALTER TABLE meditation_sessions 
+        ALTER COLUMN session_type DROP NOT NULL;
+        
+        -- Set default value for existing NULL rows
+        UPDATE meditation_sessions 
+        SET session_type = 'other' 
+        WHERE session_type IS NULL;
+        
+        RAISE NOTICE 'Made session_type nullable in meditation_sessions';
+    ELSIF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_schema = 'public' 
+        AND table_name = 'meditation_sessions' 
+        AND column_name = 'session_type'
+    ) THEN
+        -- Add session_type column if it doesn't exist
+        ALTER TABLE meditation_sessions ADD COLUMN session_type TEXT DEFAULT 'other';
+        
+        -- Add check constraint
+        ALTER TABLE meditation_sessions 
+        ADD CONSTRAINT meditation_sessions_session_type_check 
+        CHECK (session_type IS NULL OR session_type IN ('breathing', 'mindfulness', 'guided', 'other'));
+        
+        RAISE NOTICE 'Added session_type column to meditation_sessions';
+    ELSE
+        RAISE NOTICE 'session_type column already exists in meditation_sessions';
+    END IF;
+END $$;
+
+-- Check if 'type' column exists, if not add it (for backward compatibility)
 DO $$
 BEGIN
     IF NOT EXISTS (

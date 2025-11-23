@@ -238,22 +238,19 @@ export async function addMeditationSession(data: {
     }
 
     // Map type to match database schema
+    // Database uses 'session_type' column (NOT NULL)
     const sessionType = validated.type === "breathing" ? "breathing" 
       : validated.type === "mindfulness" ? "mindfulness"
       : validated.type === "guided" ? "guided"
       : "other"
 
-    // Build insert data, only include type if it's provided
+    // Build insert data - use session_type (required column)
     const insertData: any = {
       user_id: user.id,
       duration_minutes: validated.duration_minutes,
+      session_type: sessionType, // Required column, always set a value
       notes: validated.notes || null,
       log_date: getCurrentISODate(),
-    }
-
-    // Only add type if it's provided and column exists
-    if (validated.type) {
-      insertData.type = sessionType
     }
 
     const { data: insertedData, error } = await supabase
