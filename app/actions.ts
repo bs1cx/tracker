@@ -214,7 +214,7 @@ export async function completeTrackable(data: { id: string }) {
     // Get trackable
     const { data: trackable, error: fetchError } = await supabase
       .from("trackables")
-      .select("type, status, current_value")
+      .select("type, status, current_value, last_completed_at")
       .eq("id", validated.id)
       .eq("user_id", user.id)
       .single()
