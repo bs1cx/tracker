@@ -21,10 +21,14 @@ export async function createTrackable(data: {
   category?: "task" | "habit"
 }) {
   try {
+    // Log incoming data
+    console.log("createTrackable called with data:", JSON.stringify(data, null, 2))
+    
     // Validate data first
     let validated
     try {
       validated = trackableSchema.parse(data)
+      console.log("Validation successful:", JSON.stringify(validated, null, 2))
     } catch (validationError: any) {
       console.error("Validation error:", validationError)
       if (validationError.errors) {
@@ -35,6 +39,7 @@ export async function createTrackable(data: {
     }
     
     const supabase = await createClient()
+    console.log("Supabase client created successfully")
 
     const {
       data: { user },
@@ -72,6 +77,9 @@ export async function createTrackable(data: {
       throw new Error("En az 1 gün seçmelisiniz")
     }
 
+    // Log the data we're trying to insert (for debugging)
+    console.log("Attempting to insert trackable with data:", JSON.stringify(insertData, null, 2))
+
     const { error, data: insertedData } = await supabase
       .from("trackables")
       .insert(insertData)
@@ -79,7 +87,11 @@ export async function createTrackable(data: {
 
     if (error) {
       console.error("Supabase error creating trackable:", error)
-      console.error("Error details:", JSON.stringify(error, null, 2))
+      console.error("Error code:", error.code)
+      console.error("Error message:", error.message)
+      console.error("Error details:", error.details)
+      console.error("Error hint:", error.hint)
+      console.error("Full error object:", JSON.stringify(error, null, 2))
       
       // Check if it's a column missing error
       if (
