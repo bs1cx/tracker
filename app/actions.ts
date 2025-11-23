@@ -228,7 +228,7 @@ export async function completeTrackable(data: { id: string }) {
 
     const updateData: {
       status?: string
-      last_completed_at?: string
+      last_completed_at?: string | null
       current_value?: number
     } = {}
 
