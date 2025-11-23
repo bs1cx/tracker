@@ -350,3 +350,29 @@ export async function getRecentSummaries(limit: number = 7) {
   return data || []
 }
 
+// Delete daily health summary
+export async function deleteDailyHealthSummary(id: string) {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) {
+    throw new Error("Unauthorized")
+  }
+
+  const { error } = await supabase
+    .from("daily_health_summary")
+    .delete()
+    .eq("id", id)
+    .eq("user_id", user.id)
+
+  if (error) {
+    console.error("Error deleting daily health summary:", error)
+    throw new Error("Günlük özet silinirken bir hata oluştu")
+  }
+
+  revalidatePath("/health")
+  return { success: true }
+}
+
