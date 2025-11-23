@@ -58,7 +58,7 @@ Aşağıdaki dosyaların mevcut olduğundan emin olun:
 - [x] `package.json` - Dependencies tanımlı
 - [x] `tsconfig.json` - TypeScript yapılandırması
 - [x] `tailwind.config.ts` - Tailwind yapılandırması
-- [x] `middleware.ts` - Supabase session middleware
+- [x] Middleware kullanılmıyor (Supabase session yönetimi server component'lerde yapılıyor)
 - [x] `supabase-schema.sql` - Database schema
 
 ## 🎯 Deployment Sonrası
