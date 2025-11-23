@@ -32,8 +32,8 @@ CREATE INDEX IF NOT EXISTS idx_trackables_user_scheduled ON trackables(user_id, 
 CREATE INDEX IF NOT EXISTS idx_trackables_user_start_date ON trackables(user_id, start_date) WHERE start_date IS NOT NULL;
 
 -- Indexes for finance module
-CREATE INDEX IF NOT EXISTS idx_expenses_user_date ON expenses(user_id, expense_date DESC);
-CREATE INDEX IF NOT EXISTS idx_income_user_date ON income(user_id, income_date DESC);
+CREATE INDEX IF NOT EXISTS idx_expenses_user_date ON expenses(user_id, log_date DESC);
+CREATE INDEX IF NOT EXISTS idx_income_user_date ON income(user_id, log_date DESC);
 CREATE INDEX IF NOT EXISTS idx_budget_categories_user_month ON budget_categories(user_id, month_year);
 
 -- Indexes for productivity module
