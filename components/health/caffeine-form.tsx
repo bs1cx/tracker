@@ -62,11 +62,14 @@ export function CaffeineForm() {
         caffeine_mg: parseFloat(caffeineMg),
         notes: notes || undefined,
       })
-      setOpen(false)
       setSource("")
       setCaffeineMg("")
       setNotes("")
-      router.refresh()
+      setOpen(false)
+      // Delay refresh to avoid hydration mismatch
+      setTimeout(() => {
+        router.refresh()
+      }, 100)
     } catch (error) {
       console.error("Error adding caffeine log:", error)
       alert("Kafein kaydı eklenirken bir hata oluştu. Lütfen tekrar deneyin.")

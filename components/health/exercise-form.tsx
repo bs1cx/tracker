@@ -71,14 +71,17 @@ export function ExerciseForm() {
         distance_km: distance ? parseFloat(distance) : undefined,
         notes: notes || undefined,
       })
-      setOpen(false)
       setExerciseType("")
       setDuration("")
       setIntensity("")
       setCalories("")
       setDistance("")
       setNotes("")
-      router.refresh()
+      setOpen(false)
+      // Delay refresh to avoid hydration mismatch
+      setTimeout(() => {
+        router.refresh()
+      }, 100)
     } catch (error) {
       console.error("Error adding exercise log:", error)
       alert("Egzersiz kaydı eklenirken bir hata oluştu. Lütfen tekrar deneyin.")

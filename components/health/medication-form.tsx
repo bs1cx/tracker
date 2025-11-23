@@ -54,12 +54,15 @@ export function MedicationForm() {
         frequency: frequency || undefined,
         notes: notes || undefined,
       })
-      setOpen(false)
       setMedicationName("")
       setDosage("")
       setFrequency("")
       setNotes("")
-      router.refresh()
+      setOpen(false)
+      // Delay refresh to avoid hydration mismatch
+      setTimeout(() => {
+        router.refresh()
+      }, 100)
     } catch (error) {
       console.error("Error adding medication log:", error)
       alert("İlaç kaydı eklenirken bir hata oluştu. Lütfen tekrar deneyin.")

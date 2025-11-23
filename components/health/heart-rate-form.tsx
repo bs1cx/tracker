@@ -34,10 +34,13 @@ export function HeartRateForm() {
         heart_rate: parseInt(bpm),
         notes: notes || undefined,
       })
-      setOpen(false)
       setBpm("")
       setNotes("")
-      router.refresh()
+      setOpen(false)
+      // Delay refresh to avoid hydration mismatch
+      setTimeout(() => {
+        router.refresh()
+      }, 100)
     } catch (error) {
       console.error("Error adding heart rate log:", error)
       alert("Nabız kaydı eklenirken bir hata oluştu. Lütfen tekrar deneyin.")

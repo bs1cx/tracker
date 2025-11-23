@@ -32,9 +32,12 @@ export function StepsForm() {
       await addStepsLog({
         steps_count: parseInt(steps),
       })
-      setOpen(false)
       setSteps("")
-      router.refresh()
+      setOpen(false)
+      // Delay refresh to avoid hydration mismatch
+      setTimeout(() => {
+        router.refresh()
+      }, 100)
     } catch (error) {
       console.error("Error adding steps log:", error)
       alert("Adım kaydı eklenirken bir hata oluştu. Lütfen tekrar deneyin.")

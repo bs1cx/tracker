@@ -50,7 +50,6 @@ export function NutritionForm() {
         meal_type: mealType || undefined,
         food_name: foodName || undefined,
       })
-      setOpen(false)
       // Reset form
       setFoodName("")
       setCalories("")
@@ -59,7 +58,11 @@ export function NutritionForm() {
       setFat("")
       setMealType("")
       setBarcode("")
-      router.refresh()
+      setOpen(false)
+      // Delay refresh to avoid hydration mismatch
+      setTimeout(() => {
+        router.refresh()
+      }, 100)
     } catch (error) {
       console.error("Error adding nutrition log:", error)
       alert("Beslenme kaydı eklenirken bir hata oluştu. Lütfen tekrar deneyin.")

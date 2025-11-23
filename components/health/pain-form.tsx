@@ -74,7 +74,6 @@ export function PainForm() {
         relief_method: reliefMethod || undefined,
         notes: notes || undefined,
       })
-      setOpen(false)
       setPainLevel("5")
       setPainType("")
       setLocation("")
@@ -82,7 +81,11 @@ export function PainForm() {
       setTriggers("")
       setReliefMethod("")
       setNotes("")
-      router.refresh()
+      setOpen(false)
+      // Delay refresh to avoid hydration mismatch
+      setTimeout(() => {
+        router.refresh()
+      }, 100)
     } catch (error) {
       console.error("Error adding pain log:", error)
       alert("Ağrı kaydı eklenirken bir hata oluştu. Lütfen tekrar deneyin.")

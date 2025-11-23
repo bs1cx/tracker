@@ -54,12 +54,15 @@ export function AlcoholForm() {
         alcohol_percentage: alcoholPercentage ? parseFloat(alcoholPercentage) : undefined,
         notes: notes || undefined,
       })
-      setOpen(false)
       setDrinkType("")
       setAmount("")
       setAlcoholPercentage("")
       setNotes("")
-      router.refresh()
+      setOpen(false)
+      // Delay refresh to avoid hydration mismatch
+      setTimeout(() => {
+        router.refresh()
+      }, 100)
     } catch (error) {
       console.error("Error adding alcohol log:", error)
       alert("Alkol kaydı eklenirken bir hata oluştu. Lütfen tekrar deneyin.")

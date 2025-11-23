@@ -52,7 +52,6 @@ export function SleepForm() {
         sleep_efficiency: efficiency ? parseFloat(efficiency) : undefined,
         notes: notes || undefined,
       })
-      setOpen(false)
       // Reset form
       setDuration("")
       setQuality("")
@@ -62,7 +61,11 @@ export function SleepForm() {
       setEfficiency("")
       setWakeTimes("")
       setNotes("")
-      router.refresh()
+      setOpen(false)
+      // Delay refresh to avoid hydration mismatch
+      setTimeout(() => {
+        router.refresh()
+      }, 100)
     } catch (error) {
       console.error("Error adding sleep log:", error)
       alert("Uyku kaydı eklenirken bir hata oluştu. Lütfen tekrar deneyin.")

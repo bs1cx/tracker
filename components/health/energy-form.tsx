@@ -52,12 +52,15 @@ export function EnergyForm() {
         factors: factors || undefined,
         notes: notes || undefined,
       })
-      setOpen(false)
       setEnergyLevel("5")
       setTimeOfDay("")
       setFactors("")
       setNotes("")
-      router.refresh()
+      setOpen(false)
+      // Delay refresh to avoid hydration mismatch
+      setTimeout(() => {
+        router.refresh()
+      }, 100)
     } catch (error) {
       console.error("Error adding energy log:", error)
       alert("Enerji seviyesi kaydı eklenirken bir hata oluştu. Lütfen tekrar deneyin.")

@@ -32,9 +32,12 @@ export function WaterForm() {
       await addWaterLog({
         amount_ml: parseInt(amount),
       })
-      setOpen(false)
       setAmount("250")
-      router.refresh()
+      setOpen(false)
+      // Delay refresh to avoid hydration mismatch
+      setTimeout(() => {
+        router.refresh()
+      }, 100)
     } catch (error) {
       console.error("Error adding water log:", error)
       alert("Su kaydı eklenirken bir hata oluştu. Lütfen tekrar deneyin.")

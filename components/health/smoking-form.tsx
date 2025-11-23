@@ -35,10 +35,13 @@ export function SmokingForm() {
         cigarettes_count: parseInt(count),
         notes: notes || undefined,
       })
-      setOpen(false)
       setCount("1")
       setNotes("")
-      router.refresh()
+      setOpen(false)
+      // Delay refresh to avoid hydration mismatch
+      setTimeout(() => {
+        router.refresh()
+      }, 100)
     } catch (error) {
       console.error("Error adding smoking log:", error)
       alert("Sigara kaydı eklenirken bir hata oluştu. Lütfen tekrar deneyin.")
