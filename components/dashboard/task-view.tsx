@@ -6,9 +6,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { TaskCard } from "@/components/trackables/task-card"
 import { ProgressTracker } from "@/components/trackables/progress-tracker"
+import { CalendarSidebar } from "@/components/calendar/calendar-sidebar"
 import { CheckCircle2, Clock, Calendar as CalendarIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { isSameCalendarDay, formatDate, getStartOfDay } from "@/lib/date-utils"
+import { shouldTrackableAppearOnDate } from "@/lib/calendar-utils"
 import type { Trackable } from "@/types/database"
 
 interface TaskViewProps {
@@ -27,6 +29,7 @@ export function TaskView({
   progressTrackers,
 }: TaskViewProps) {
   const [viewType, setViewType] = useState<ViewType>("daily")
+  const [selectedDate, setSelectedDate] = useState(new Date())
   const [today, setToday] = useState(new Date())
 
   // Update today's date in real-time (every minute)
@@ -44,49 +47,15 @@ export function TaskView({
     return () => clearInterval(interval)
   }, [])
 
-  // Filter trackables based on view type - only show today's trackables
+  // Filter trackables based on view type - STRICT DATE FILTERING
+  // Use the calendar-utils function for consistent filtering
   const getFilteredTrackables = () => {
-    const now = new Date()
-    const todayStart = getStartOfDay(today)
-
+    // For daily view, use selectedDate; for weekly/monthly, we'll filter by range
+    const targetDate = viewType === "daily" ? selectedDate : today
+    
     return allTrackables.filter((trackable) => {
-      // Check start_date - only show if start_date is today or in the past
-      if (trackable.start_date) {
-        const startDate = new Date(trackable.start_date)
-        const startDateStart = getStartOfDay(startDate)
-        
-        // If start_date is in the future, don't show
-        if (startDateStart > todayStart) {
-          return false
-        }
-      } else if (trackable.created_at) {
-        // Fallback to created_at if start_date doesn't exist
-        const createdDate = new Date(trackable.created_at)
-        const createdDateStart = getStartOfDay(createdDate)
-        
-        // If created_at is in the future (shouldn't happen, but just in case), don't show
-        if (createdDateStart > todayStart) {
-          return false
-        }
-      }
-
-      // Check if trackable should be shown based on selected_days
-      if (trackable.selected_days && trackable.selected_days.length > 0) {
-        const dayOfWeek = now.getDay()
-        const dayNames = ["Pazar", "Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma", "Cumartesi"]
-        const englishDayNames = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"]
-        const currentDayName = dayNames[dayOfWeek]
-        const currentEnglishDayName = englishDayNames[dayOfWeek]
-
-        if (
-          !trackable.selected_days.includes(currentDayName) &&
-          !trackable.selected_days.includes(currentEnglishDayName)
-        ) {
-          return false
-        }
-      }
-
-      return true
+      // Use the strict filtering function from calendar-utils
+      return shouldTrackableAppearOnDate(trackable, targetDate)
     })
   }
 
@@ -111,9 +80,9 @@ export function TaskView({
         // For daily habits, check if completed today using is_completed_today
         isCompletedToday = trackable.is_completed_today
       } else if (trackable.type === "ONE_TIME") {
-        // For one-time tasks, check if completed today by checking last_completed_at
+        // For one-time tasks, check if completed on selected date
         if (trackable.status === "completed" && trackable.last_completed_at) {
-          isCompletedToday = isSameCalendarDay(trackable.last_completed_at, today)
+          isCompletedToday = isSameCalendarDay(trackable.last_completed_at, selectedDate)
         }
       } else if (trackable.type === "PROGRESS") {
         // Progress trackers are considered completed if they reached target
@@ -122,9 +91,9 @@ export function TaskView({
           trackable.target_value !== null &&
           trackable.current_value >= trackable.target_value
         
-        // If reached target and has last_completed_at, check if it was today
+        // If reached target and has last_completed_at, check if it was on selected date
         if (reachedTarget && trackable.last_completed_at) {
-          isCompletedToday = isSameCalendarDay(trackable.last_completed_at, today)
+          isCompletedToday = isSameCalendarDay(trackable.last_completed_at, selectedDate)
         }
       }
 
@@ -289,8 +258,23 @@ export function TaskView({
         </Tabs>
       </div>
 
-      {/* View Content */}
-      {viewType === "daily" && renderDailyView()}
+      {/* View Content with Calendar Sidebar for Daily View */}
+      {viewType === "daily" && (
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          {/* Calendar Sidebar */}
+          <div className="lg:col-span-1">
+            <CalendarSidebar
+              selectedDate={selectedDate}
+              onDateSelect={setSelectedDate}
+            />
+          </div>
+          {/* Daily View Content */}
+          <div className="lg:col-span-3">
+            {renderDailyView()}
+          </div>
+        </div>
+      )}
+      
       {viewType === "weekly" && renderWeeklyView()}
       {viewType === "monthly" && renderMonthlyView()}
     </div>

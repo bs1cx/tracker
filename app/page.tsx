@@ -1,7 +1,5 @@
 import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
-import { TaskCard } from "@/components/trackables/task-card"
-import { ProgressTracker } from "@/components/trackables/progress-tracker"
 import { AddItemForm } from "@/components/trackables/add-item-form"
 import { LogoutButton } from "@/components/auth/logout-button"
 import { DashboardContent } from "@/components/dashboard/dashboard-content"
@@ -23,68 +21,41 @@ async function getTrackables() {
     redirect("/auth")
   }
 
-  // Use the helper function to get trackables with reset logic and completion status
-  const { data: trackables, error } = await supabase.rpc(
-    "get_user_trackables",
-    {
-      p_user_id: user.id,
-    }
-  )
+  // Fetch all trackables with all fields including calendar system fields
+  const { data: trackables, error } = await supabase
+    .from("trackables")
+    .select("*")
+    .eq("user_id", user.id)
+    .order("created_at", { ascending: false })
 
   if (error) {
     console.error("Error fetching trackables:", error)
-    // Fallback to direct query if helper function fails
-    const { data: fallbackData, error: fallbackError } = await supabase
-      .from("trackables")
-      .select("*")
-      .eq("user_id", user.id)
-      .eq("status", "active")
-      .order("created_at", { ascending: false })
-
-    if (fallbackError) {
-      console.error("Error in fallback query:", fallbackError)
-      return []
-    }
-
-    // Process trackables to determine completion status
-    const processedTrackables = (fallbackData || []).map((trackable) => {
-      let is_completed_today = false
-
-      if (trackable.type === "DAILY_HABIT") {
-        if (trackable.last_completed_at) {
-          // Use DST-aware calendar math to check if completed today
-          is_completed_today = isSameCalendarDay(
-            trackable.last_completed_at,
-            new Date()
-          )
-        }
-      } else if (trackable.type === "ONE_TIME") {
-        is_completed_today = trackable.status === "completed"
-      }
-
-      return {
-        ...trackable,
-        is_completed_today,
-      } as Trackable & { is_completed_today: boolean }
-    })
-
-    return processedTrackables
+    return []
   }
 
-  // Filter trackables: show all daily habits and progress, but only active one-time tasks
-  const filteredTrackables = (trackables || []).filter(
-    (t: Trackable & { is_completed_today: boolean }) => {
-      if (t.type === "DAILY_HABIT" || t.type === "PROGRESS") {
-        return true // Always show daily habits and progress trackers
-      }
-      if (t.type === "ONE_TIME") {
-        return t.status === "active" // Only show active one-time tasks
-      }
-      return true
-    }
-  )
+  // Process trackables to determine completion status
+  const processedTrackables = (trackables || []).map((trackable) => {
+    let is_completed_today = false
 
-  return filteredTrackables as (Trackable & { is_completed_today: boolean })[]
+    if (trackable.type === "DAILY_HABIT") {
+      if (trackable.last_completed_at) {
+        // Use DST-aware calendar math to check if completed today
+        is_completed_today = isSameCalendarDay(
+          trackable.last_completed_at,
+          new Date()
+        )
+      }
+    } else if (trackable.type === "ONE_TIME") {
+      is_completed_today = trackable.status === "completed"
+    }
+
+    return {
+      ...trackable,
+      is_completed_today,
+    } as Trackable & { is_completed_today: boolean }
+  })
+
+  return processedTrackables
 }
 
 export default async function Dashboard() {
@@ -120,7 +91,7 @@ export default async function Dashboard() {
           </div>
         </div>
 
-        {/* Dashboard Content with Widgets */}
+        {/* Dashboard Content with Task View and Widgets */}
         <DashboardContent
           dailyHabits={dailyHabits}
           oneTimeTasks={oneTimeTasks}
