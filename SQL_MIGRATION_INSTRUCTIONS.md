@@ -1,49 +1,51 @@
-# SQL Migration Instructions - ÖNEMLİ!
+# ⚠️ SQL Migration Talimatları
 
-## ⚠️ KRİTİK UYARI
+## ❌ HATA: "use server" Hatası
 
-**SQL Editor'e SADECE `.sql` dosyalarının içeriğini yapıştırın!**
+Bu hata, **TypeScript/JavaScript dosyasını** SQL Editor'e yapıştırdığınızda oluşur!
 
-**TypeScript/JavaScript dosyalarını (`app/actions.ts`, `lib/*.ts`, vb.) ASLA yapıştırmayın!**
+## ✅ DOĞRU KULLANIM
 
-## ✅ Doğru Kullanım
+### Adım 1: Doğru Dosyayı Kullanın
 
-1. `supabase-schema-complete.sql` dosyasını açın
-2. **TÜM İÇERİĞİNİ** kopyalayın (Ctrl+A, Ctrl+C)
-3. Supabase Dashboard > SQL Editor'e gidin
-4. Yeni bir query oluşturun
-5. Kopyaladığınız SQL kodunu yapıştırın
-6. "Run" butonuna tıklayın
+**✅ KULLANIN:**
+- `SQL_ONLY-performance-indexes.sql` (Sadece SQL içeriği)
+- `supabase-performance-indexes.sql` (Ama sadece SQL kısmını kopyalayın)
 
-## ❌ Yanlış Kullanım
+**❌ KULLANMAYIN:**
+- `app/actions-daily-health.ts` (TypeScript dosyası!)
+- `components/**/*.tsx` (React dosyaları!)
+- `lib/**/*.ts` (TypeScript dosyaları!)
 
-- `app/actions.ts` dosyasını kopyalayıp SQL Editor'e yapıştırmak ❌
-- `lib/calendar-utils.ts` dosyasını kopyalayıp SQL Editor'e yapıştırmak ❌
-- Herhangi bir TypeScript/JavaScript dosyasını SQL Editor'e yapıştırmak ❌
+### Adım 2: Supabase SQL Editor'de Çalıştırma
 
-## 📝 Migration Sırası
+1. **Supabase Dashboard** → **SQL Editor**'e gidin
+2. **New Query** butonuna tıklayın
+3. **VS Code veya text editor**'de `SQL_ONLY-performance-indexes.sql` dosyasını açın
+4. **TÜM SQL KODUNU** kopyalayın (yorumlar dahil)
+5. SQL Editor'e yapıştırın
+6. **Run** butonuna tıklayın
 
-### Yeni Kurulum (Temiz Database)
-1. `supabase-schema-complete.sql` - Tüm şemayı oluşturur
+### Adım 3: Başarı Kontrolü
 
-### Mevcut Database'e Ekleme
-Eğer zaten `supabase-schema.sql` çalıştırdıysanız:
+Başarılı olursa şu mesajı göreceksiniz:
+```
+Success. No rows returned
+```
 
-1. `supabase-schema-complete.sql` - Tüm tabloları ve alanları ekler (IF NOT EXISTS kullanır, güvenli)
+### Önemli Notlar
 
-## 🔍 Dosya Kontrolü
+- ❌ **YAPMAYIN:** `"use server"` veya `"use client"` gibi JavaScript kodlarını SQL Editor'e yapıştırmayın
+- ✅ **YAPIN:** Sadece SQL kodunu kopyalayın (örneğin: `CREATE INDEX IF NOT EXISTS...`)
+- Her migration script'ini ayrı ayrı çalıştırın
+- Hata alırsanız, önceki migration'ların başarılı olup olmadığını kontrol edin
 
-SQL dosyası olduğundan emin olmak için:
-- Dosya uzantısı `.sql` olmalı
-- İçinde `CREATE TABLE`, `ALTER TABLE`, `CREATE FUNCTION` gibi SQL komutları olmalı
-- `"use server"` veya `"use client"` gibi TypeScript direktifleri OLMAMALI
+## 🔍 Hata Kontrolü
 
-## 🆘 Hata Alırsanız
+### "use server" hatası alıyorsanız:
+- ❌ TypeScript dosyası yapıştırmışsınız
+- ✅ `SQL_ONLY-performance-indexes.sql` dosyasını kullanın
 
-Eğer `"use server"` hatası alırsanız:
-1. SQL Editor'deki tüm kodu silin
-2. `supabase-schema-complete.sql` dosyasını açın
-3. İçeriğini tekrar kopyalayın
-4. SQL Editor'e yapıştırın
-5. Tekrar çalıştırın
-
+### "relation does not exist" hatası alıyorsanız:
+- Önce `supabase-schema-complete.sql` dosyasını çalıştırın
+- Sonra index'leri çalıştırın
