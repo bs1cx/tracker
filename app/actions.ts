@@ -134,10 +134,23 @@ export async function createTrackable(data: {
     revalidatePath("/")
     return { success: true }
   } catch (error: any) {
+    // Log detailed error information
     console.error("Error creating trackable:", error)
     console.error("Error stack:", error?.stack)
     console.error("Error name:", error?.name)
     console.error("Error code:", error?.code)
+    console.error("Error message:", error?.message)
+    
+    // Try to extract more details from Supabase errors
+    if (error?.code) {
+      console.error("Supabase error code:", error.code)
+    }
+    if (error?.details) {
+      console.error("Supabase error details:", error.details)
+    }
+    if (error?.hint) {
+      console.error("Supabase error hint:", error.hint)
+    }
     
     // For server actions, we need to throw errors, not return them
     // But we'll make the error message more user-friendly
@@ -146,21 +159,32 @@ export async function createTrackable(data: {
       
       // Check if it's a Zod validation error
       if (errorMsg.includes("ZodError") || errorMsg.includes("validation") || errorMsg.includes("Geçersiz veri")) {
-        throw new Error(errorMsg)
+        throw new Error(`Doğrulama hatası: ${errorMsg}`)
       }
       
       // Check if it's a database column error
-      if (errorMsg.includes("column") || errorMsg.includes("42703") || errorMsg.includes("Database")) {
+      if (errorMsg.includes("column") || errorMsg.includes("42703") || error?.code === "42703") {
         throw new Error(
-          `Database kolonu eksik. Lütfen migration script'lerini çalıştırın:\n1. supabase-migration-complete.sql\n2. supabase-schema-category.sql`
+          `Database kolonu eksik (Hata kodu: ${error?.code || "42703"}). Lütfen Supabase SQL Editor'de şu migration script'lerini sırayla çalıştırın:\n\n1. supabase-migration-complete.sql\n2. supabase-schema-category.sql\n\nNot: Sadece SQL içeriğini kopyalayın, "use server" veya "use client" gibi JavaScript kodlarını eklemeyin.`
         )
       }
       
-      // Throw the error message
-      throw new Error(errorMsg)
+      // Check for other common Supabase errors
+      if (error?.code === "23505") {
+        throw new Error("Bu öğe zaten mevcut. Lütfen farklı bir isim deneyin.")
+      }
+      if (error?.code === "23503") {
+        throw new Error("Geçersiz referans. Lütfen verilerinizi kontrol edin.")
+      }
+      
+      // Include error code in message for debugging
+      const errorCode = error?.code ? ` (Kod: ${error.code})` : ""
+      throw new Error(`${errorMsg}${errorCode}`)
     }
     
-    throw new Error("Görev oluşturulurken beklenmeyen bir hata oluştu. Lütfen konsolu kontrol edin (F12).")
+    // For non-Error objects, try to stringify
+    const errorString = typeof error === "object" ? JSON.stringify(error, null, 2) : String(error)
+    throw new Error(`Görev oluşturulurken beklenmeyen bir hata oluştu: ${errorString}`)
   }
 }
 
