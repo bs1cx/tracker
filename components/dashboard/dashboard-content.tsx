@@ -25,19 +25,30 @@ export function DashboardContent({
   progressTrackers,
   allTrackables,
 }: DashboardContentProps) {
-  const [widgets, setWidgets] = useState<string[]>(() => {
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("dashboard-widgets")
-      return saved ? JSON.parse(saved) : ["stats", "goals"]
+  const [widgets, setWidgets] = useState<string[]>(["stats", "goals"])
+  const [mounted, setMounted] = useState(false)
+
+  // Load from localStorage after mount to avoid hydration mismatch
+  useEffect(() => {
+    setMounted(true)
+    const saved = localStorage.getItem("dashboard-widgets")
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved)
+        if (Array.isArray(parsed)) {
+          setWidgets(parsed)
+        }
+      } catch (e) {
+        console.error("Error parsing saved widgets:", e)
+      }
     }
-    return ["stats", "goals"]
-  })
+  }, [])
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
+    if (mounted) {
       localStorage.setItem("dashboard-widgets", JSON.stringify(widgets))
     }
-  }, [widgets])
+  }, [widgets, mounted])
 
   const handleAddWidget = (widgetId: string) => {
     // Allow up to 3 widgets total (1 calendar + 2 other widgets)

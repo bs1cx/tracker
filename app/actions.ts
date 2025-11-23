@@ -132,7 +132,7 @@ export async function createTrackable(data: {
     }
 
     revalidatePath("/")
-    return { success: true, error: null }
+    return { success: true }
   } catch (error: any) {
     console.error("Error creating trackable:", error)
     console.error("Error stack:", error?.stack)
