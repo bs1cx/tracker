@@ -70,7 +70,15 @@ export function DailyHealthSummaryCard() {
       setIsLoading(true)
       console.log("[CLIENT] Loading daily health summary...")
       
-      const todaySummary = await getOrCreateTodaySummary()
+      // Fetch summary and calculate in parallel for better performance
+      const [todaySummary] = await Promise.all([
+        getOrCreateTodaySummary(),
+        // Calculate in background - don't wait for it
+        calculateTodaySummary().catch((err) => {
+          console.error("[CLIENT] Background calculation error (non-fatal):", err)
+        })
+      ])
+      
       console.log("[CLIENT] Summary loaded:", todaySummary?.id)
       
       if (!todaySummary) {
@@ -87,42 +95,50 @@ export function DailyHealthSummaryCard() {
         setShowCarryOverDialog(true)
       }
 
-      // Auto-calculate from logs (don't fail if this errors)
-      try {
-        await calculateTodaySummary()
-        const updated = await getOrCreateTodaySummary()
-        if (updated) {
-          setSummary(updated)
-          // Set form values from updated summary
-          setWellnessScore(updated.overall_wellness_score?.toString() || "")
-          setNotes(updated.notes || "")
-          setOngoingConditions(updated.ongoing_conditions || [])
-          setSymptoms(updated.symptoms || [])
-          setMedications(updated.medications_taken || [])
-          
-          // Set basic metrics form values
-          setTotalSteps(updated.total_steps?.toString() || "")
-          setTotalExercise(updated.total_exercise_minutes?.toString() || "")
-          setTotalWater(updated.total_water_ml?.toString() || "")
-          setTotalCalories(updated.total_calories?.toString() || "")
-          setSleepHours(updated.sleep_hours?.toString() || "")
-          setSleepQuality(updated.sleep_quality || "")
-          setAvgHeartRate(updated.avg_heart_rate?.toString() || "")
-          setAvgEnergy(updated.avg_energy_level?.toString() || "")
-          setAvgStress(updated.avg_stress_level?.toString() || "")
-          setCigarettesCount(updated.cigarettes_count?.toString() || "")
-          setAlcoholDrinks(updated.alcohol_drinks?.toString() || "")
-          setCaffeineMg(updated.caffeine_mg?.toString() || "")
+      // Set form values from summary
+      setWellnessScore(todaySummary.overall_wellness_score?.toString() || "")
+      setNotes(todaySummary.notes || "")
+      setOngoingConditions(todaySummary.ongoing_conditions || [])
+      setSymptoms(todaySummary.symptoms || [])
+      setMedications(todaySummary.medications_taken || [])
+      
+      // Set basic metrics form values
+      setTotalSteps(todaySummary.total_steps?.toString() || "")
+      setTotalExercise(todaySummary.total_exercise_minutes?.toString() || "")
+      setTotalWater(todaySummary.total_water_ml?.toString() || "")
+      setTotalCalories(todaySummary.total_calories?.toString() || "")
+      setSleepHours(todaySummary.sleep_hours?.toString() || "")
+      setSleepQuality(todaySummary.sleep_quality || "")
+      setAvgHeartRate(todaySummary.avg_heart_rate?.toString() || "")
+      setAvgEnergy(todaySummary.avg_energy_level?.toString() || "")
+      setAvgStress(todaySummary.avg_stress_level?.toString() || "")
+      setCigarettesCount(todaySummary.cigarettes_count?.toString() || "")
+      setAlcoholDrinks(todaySummary.alcohol_drinks?.toString() || "")
+      setCaffeineMg(todaySummary.caffeine_mg?.toString() || "")
+
+      // Refresh summary after calculation completes (in background)
+      setTimeout(async () => {
+        try {
+          const updated = await getOrCreateTodaySummary()
+          if (updated && updated.id === todaySummary.id) {
+            setSummary(updated)
+            // Update form values if they changed
+            setTotalSteps(updated.total_steps?.toString() || "")
+            setTotalExercise(updated.total_exercise_minutes?.toString() || "")
+            setTotalWater(updated.total_water_ml?.toString() || "")
+            setTotalCalories(updated.total_calories?.toString() || "")
+            setSleepHours(updated.sleep_hours?.toString() || "")
+            setAvgHeartRate(updated.avg_heart_rate?.toString() || "")
+            setAvgEnergy(updated.avg_energy_level?.toString() || "")
+            setAvgStress(updated.avg_stress_level?.toString() || "")
+            setCigarettesCount(updated.cigarettes_count?.toString() || "")
+            setAlcoholDrinks(updated.alcohol_drinks?.toString() || "")
+            setCaffeineMg(updated.caffeine_mg?.toString() || "")
+          }
+        } catch (err) {
+          console.error("[CLIENT] Error refreshing summary:", err)
         }
-      } catch (calcError) {
-        console.error("[CLIENT] Error calculating summary (non-fatal):", calcError)
-        // Use original summary if calculation fails
-        setWellnessScore(todaySummary.overall_wellness_score?.toString() || "")
-        setNotes(todaySummary.notes || "")
-        setOngoingConditions(todaySummary.ongoing_conditions || [])
-        setSymptoms(todaySummary.symptoms || [])
-        setMedications(todaySummary.medications_taken || [])
-      }
+      }, 500) // Wait 500ms for calculation to complete
     } catch (error: any) {
       console.error("[CLIENT] Error loading summary:", error)
       const errorMessage = error?.message || "Günlük özet yüklenirken bir hata oluştu."

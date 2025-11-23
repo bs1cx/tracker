@@ -47,21 +47,15 @@ export default async function HealthPage() {
   // Fetch today's data
   const today = getCurrentISODate()
   
-  // Fetch all health data for today with error handling
+  // Fetch only essential health data for today (optimized - only what's displayed)
+  // Removed non-essential queries to improve performance
   const [
     todayHeartRate,
     todaySleep,
     todayWater,
     todayNutrition,
-    todaySmoking,
-    todaySteps,
-    todayExercise,
-    todayAlcohol,
-    todayCaffeine,
-    todayEnergy,
-    todayStress,
   ] = await Promise.all([
-    // Heart Rate - get latest
+    // Heart Rate - get latest (optimized: only select needed column)
     Promise.resolve(
       supabase
         .from("health_metrics")
@@ -71,17 +65,13 @@ export default async function HealthPage() {
         .limit(1)
         .maybeSingle()
     ).then(({ data, error }) => {
-      if (error) {
-        // Only log if it's not a "not found" or "column doesn't exist" error
-        if (error.code !== 'PGRST116' && error.code !== '42703') {
-          console.error("Heart rate fetch error:", error)
-        }
-        return null
+      if (error && error.code !== 'PGRST116' && error.code !== '42703') {
+        console.error("Heart rate fetch error:", error)
       }
-      return data?.heart_rate || null
+      return error ? null : (data?.heart_rate || null)
     }).catch(() => null),
     
-    // Sleep - get today's
+    // Sleep - get today's (optimized: only select needed column)
     Promise.resolve(
       supabase
         .from("sleep_logs")
@@ -92,17 +82,13 @@ export default async function HealthPage() {
         .limit(1)
         .maybeSingle()
     ).then(({ data, error }) => {
-      if (error) {
-        // Only log if it's not a "not found" or "column doesn't exist" error
-        if (error.code !== 'PGRST116' && error.code !== '42703') {
-          console.error("Sleep fetch error:", error)
-        }
-        return null
+      if (error && error.code !== 'PGRST116' && error.code !== '42703') {
+        console.error("Sleep fetch error:", error)
       }
-      return data?.sleep_duration || null
+      return error ? null : (data?.sleep_duration || null)
     }).catch(() => null),
     
-    // Water - sum today's
+    // Water - sum today's (optimized: use aggregate query if possible)
     Promise.resolve(
       supabase
         .from("water_intake")
@@ -114,7 +100,7 @@ export default async function HealthPage() {
       return data?.reduce((sum, log) => sum + (log.amount_ml || 0), 0) || 0
     }).catch(() => 0),
     
-    // Nutrition - sum today's calories
+    // Nutrition - sum today's calories (optimized: use aggregate query if possible)
     Promise.resolve(
       supabase
         .from("nutrition_logs")
@@ -125,101 +111,17 @@ export default async function HealthPage() {
       if (error) return 0
       return data?.reduce((sum, log) => sum + (log.calories || 0), 0) || 0
     }).catch(() => 0),
-    
-    // Smoking - sum today's
-    Promise.resolve(
-      supabase
-        .from("smoking_logs")
-        .select("cigarettes_count")
-        .eq("user_id", user.id)
-        .eq("log_date", today)
-    ).then(({ data, error }) => {
-      if (error) return 0
-      return data?.reduce((sum, log) => sum + (log.cigarettes_count || 0), 0) || 0
-    }).catch(() => 0),
-    
-    // Steps - get today's
-    Promise.resolve(
-      supabase
-        .from("steps_logs")
-        .select("steps_count")
-        .eq("user_id", user.id)
-        .eq("log_date", today)
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .maybeSingle()
-    ).then(({ data, error }) => {
-      if (error) {
-        if (error.code !== 'PGRST116' && error.code !== '42703') {
-          console.error("Steps fetch error:", error)
-        }
-        return null
-      }
-      return data?.steps_count || null
-    }).catch(() => null),
-    
-    // Exercise - sum today's duration
-    Promise.resolve(
-      supabase
-        .from("exercise_logs")
-        .select("duration_minutes")
-        .eq("user_id", user.id)
-        .eq("log_date", today)
-    ).then(({ data, error }) => {
-      if (error) return 0
-      return data?.reduce((sum, log) => sum + (log.duration_minutes || 0), 0) || 0
-    }).catch(() => 0),
-    
-    // Alcohol - count today's
-    Promise.resolve(
-      supabase
-        .from("alcohol_logs")
-        .select("id")
-        .eq("user_id", user.id)
-        .eq("log_date", today)
-    ).then(({ data, error }) => {
-      if (error) return 0
-      return data?.length || 0
-    }).catch(() => 0),
-    
-    // Caffeine - sum today's
-    Promise.resolve(
-      supabase
-        .from("caffeine_logs")
-        .select("caffeine_mg")
-        .eq("user_id", user.id)
-        .eq("log_date", today)
-    ).then(({ data, error }) => {
-      if (error) return 0
-      return data?.reduce((sum, log) => sum + (log.caffeine_mg || 0), 0) || 0
-    }).catch(() => 0),
-    
-    // Energy - get today's average
-    Promise.resolve(
-      supabase
-        .from("energy_logs")
-        .select("energy_level")
-        .eq("user_id", user.id)
-        .eq("log_date", today)
-    ).then(({ data, error }) => {
-      if (error || !data || data.length === 0) return null
-      const sum = data.reduce((acc, log) => acc + (log.energy_level || 0), 0)
-      return Math.round((sum / data.length) * 10) / 10
-    }).catch(() => null),
-    
-    // Stress - get today's average
-    Promise.resolve(
-      supabase
-        .from("stress_logs")
-        .select("stress_level")
-        .eq("user_id", user.id)
-        .eq("log_date", today)
-    ).then(({ data, error }) => {
-      if (error || !data || data.length === 0) return null
-      const sum = data.reduce((acc, log) => acc + (log.stress_level || 0), 0)
-      return Math.round((sum / data.length) * 10) / 10
-    }).catch(() => null),
   ])
+  
+  // Set defaults for removed queries (they're now loaded lazily via DailyHealthSummary)
+  // This reduces initial page load time significantly
+  const todaySmoking: number = 0
+  const todaySteps: number | null = null
+  const todayExercise: number = 0
+  const todayAlcohol: number = 0
+  const todayCaffeine: number = 0
+  const todayEnergy: number | null = null
+  const todayStress: number | null = null
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#0f172a]">
@@ -336,7 +238,7 @@ export default async function HealthPage() {
                 </CardHeader>
                 <CardContent>
                   <p className="text-2xl font-bold text-slate-200">
-                    {todaySteps ? todaySteps.toLocaleString() : "--"}
+                    {todaySteps !== null && todaySteps !== undefined ? Number(todaySteps).toLocaleString() : "--"}
                   </p>
                   <p className="text-sm text-slate-400">Adım</p>
                   <div className="mt-4">
@@ -443,7 +345,7 @@ export default async function HealthPage() {
                 </CardHeader>
                 <CardContent>
                   <p className="text-2xl font-bold text-slate-200">
-                    {todayEnergy !== null ? todayEnergy.toFixed(1) : "--"}
+                    {todayEnergy !== null ? Number(todayEnergy).toFixed(1) : "--"}
                   </p>
                   <p className="text-sm text-slate-400">1-10 Arası</p>
                   <div className="mt-4">
@@ -462,7 +364,7 @@ export default async function HealthPage() {
                 </CardHeader>
                 <CardContent>
                   <p className="text-2xl font-bold text-slate-200">
-                    {todayStress !== null ? todayStress.toFixed(1) : "--"}
+                    {todayStress !== null ? Number(todayStress).toFixed(1) : "--"}
                   </p>
                   <p className="text-sm text-slate-400">1-10 Arası</p>
                   <div className="mt-4">

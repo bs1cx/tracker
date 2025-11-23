@@ -47,14 +47,24 @@ const COLORS = {
 export function WeeklyAnalysis({ selectedDate = new Date() }: WeeklyAnalysisProps) {
   const [loading, setLoading] = useState(true)
   const [weekData, setWeekData] = useState<any>(null)
+  const [cacheKey, setCacheKey] = useState<string>("")
 
   useEffect(() => {
     const fetchWeekData = async () => {
-      setLoading(true)
       const weekStart = startOfWeek(selectedDate, { weekStartsOn: 1 })
       const weekEnd = endOfWeek(selectedDate, { weekStartsOn: 1 })
+      const newCacheKey = `${weekStart.toISOString()}-${weekEnd.toISOString()}`
+      
+      // Check cache first to avoid unnecessary re-fetches
+      if (cacheKey === newCacheKey && weekData) {
+        return
+      }
+      
+      setLoading(true)
+      setCacheKey(newCacheKey)
       
       try {
+        // Fetch logs in parallel (optimized: only fetch what's needed)
         const [
           smokingLogs,
           stepsLogs,
