@@ -22,8 +22,11 @@ import {
 } from "@/components/ui/select"
 import { Wind, Play } from "lucide-react"
 import { tr } from "@/lib/i18n"
+import { addMeditationSession } from "@/app/actions-mental"
+import { useRouter } from "next/navigation"
 
 export function MeditationForm() {
+  const router = useRouter()
   const [open, setOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [sessionType, setSessionType] = useState("")
@@ -32,15 +35,48 @@ export function MeditationForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    
+    if (!sessionType) {
+      alert("Lütfen bir seans türü seçin.")
+      return
+    }
+    
+    if (!duration || isNaN(parseFloat(duration)) || parseFloat(duration) <= 0) {
+      alert("Lütfen geçerli bir süre girin (0'dan büyük bir sayı).")
+      return
+    }
+    
     setIsLoading(true)
-    // TODO: Implement API call
-    setTimeout(() => {
+    
+    try {
+      const result = await addMeditationSession({
+        duration_minutes: parseInt(duration),
+        type: sessionType as "breathing" | "mindfulness" | "guided" | "other",
+        notes: notes || undefined,
+      })
+      
+      if (result?.success) {
+        // Reset form
+        setSessionType("")
+        setDuration("")
+        setNotes("")
+        setOpen(false)
+        setIsLoading(false)
+        // Delay refresh to avoid hydration mismatch
+        setTimeout(() => {
+          router.refresh()
+        }, 100)
+      } else {
+        setIsLoading(false)
+        const errorMessage = result?.error || "Meditasyon kaydı eklenirken bir sorun oluştu. Lütfen tekrar deneyin."
+        alert(errorMessage)
+      }
+    } catch (error: any) {
+      console.error("Error adding meditation session:", error)
       setIsLoading(false)
-      setOpen(false)
-      setSessionType("")
-      setDuration("")
-      setNotes("")
-    }, 1000)
+      const errorMessage = error?.message || error?.error || "Meditasyon kaydı eklenirken bir hata oluştu. Lütfen tekrar deneyin."
+      alert(errorMessage)
+    }
   }
 
   return (
@@ -68,8 +104,9 @@ export function MeditationForm() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="breathing">Nefes Egzersizi</SelectItem>
-                  <SelectItem value="meditation">Meditasyon</SelectItem>
                   <SelectItem value="mindfulness">Mindfulness</SelectItem>
+                  <SelectItem value="guided">Rehberli Meditasyon</SelectItem>
+                  <SelectItem value="other">Diğer</SelectItem>
                 </SelectContent>
               </Select>
             </div>

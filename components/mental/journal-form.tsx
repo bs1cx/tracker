@@ -15,8 +15,12 @@ import {
 } from "@/components/ui/dialog"
 import { BookOpen } from "lucide-react"
 import { tr } from "@/lib/i18n"
+import { addJournalEntry } from "@/app/actions-mental"
+import { useRouter } from "next/navigation"
+import { Textarea } from "@/components/ui/textarea"
 
 export function JournalForm() {
+  const router = useRouter()
   const [open, setOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [title, setTitle] = useState("")
@@ -25,15 +29,43 @@ export function JournalForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    
+    if (!content.trim()) {
+      alert("Lütfen günlük içeriğini girin.")
+      return
+    }
+    
     setIsLoading(true)
-    // TODO: Implement API call
-    setTimeout(() => {
+    
+    try {
+      const result = await addJournalEntry({
+        title: title || undefined,
+        content: content.trim(),
+        mood_before: moodScore ? parseInt(moodScore) : undefined,
+      })
+      
+      if (result?.success) {
+        // Reset form
+        setTitle("")
+        setContent("")
+        setMoodScore("")
+        setOpen(false)
+        setIsLoading(false)
+        // Delay refresh to avoid hydration mismatch
+        setTimeout(() => {
+          router.refresh()
+        }, 100)
+      } else {
+        setIsLoading(false)
+        const errorMessage = result?.error || "Günlük girişi eklenirken bir sorun oluştu. Lütfen tekrar deneyin."
+        alert(errorMessage)
+      }
+    } catch (error: any) {
+      console.error("Error adding journal entry:", error)
       setIsLoading(false)
-      setOpen(false)
-      setTitle("")
-      setContent("")
-      setMoodScore("")
-    }, 1000)
+      const errorMessage = error?.message || error?.error || "Günlük girişi eklenirken bir hata oluştu. Lütfen tekrar deneyin."
+      alert(errorMessage)
+    }
   }
 
   return (
@@ -64,13 +96,13 @@ export function JournalForm() {
             </div>
             <div className="grid gap-2">
               <Label htmlFor="content">İçerik</Label>
-              <textarea
+              <Textarea
                 id="content"
-                className="flex min-h-[200px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                 placeholder="Bugün neler oldu? Nasıl hissettin?"
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
                 required
+                className="min-h-[200px]"
               />
             </div>
             <div className="grid gap-2">

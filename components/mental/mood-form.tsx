@@ -22,6 +22,8 @@ import {
 } from "@/components/ui/select"
 import { Smile } from "lucide-react"
 import { tr } from "@/lib/i18n"
+import { addMoodLog } from "@/app/actions-mental"
+import { useRouter } from "next/navigation"
 
 const moodOptions = [
   { value: "1", label: "😢 Çok Kötü", emoji: "😢" },
@@ -37,6 +39,7 @@ const moodOptions = [
 ]
 
 export function MoodForm() {
+  const router = useRouter()
   const [open, setOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [moodScore, setMoodScore] = useState("")
@@ -45,15 +48,43 @@ export function MoodForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    
+    if (!moodScore) {
+      alert("Lütfen bir ruh hali seçin.")
+      return
+    }
+    
     setIsLoading(true)
-    // TODO: Implement API call
-    setTimeout(() => {
+    
+    try {
+      const result = await addMoodLog({
+        mood_score: parseInt(moodScore),
+        mood_label: moodLabel || undefined,
+        notes: notes || undefined,
+      })
+      
+      if (result?.success) {
+        // Reset form
+        setMoodScore("")
+        setMoodLabel("")
+        setNotes("")
+        setOpen(false)
+        setIsLoading(false)
+        // Delay refresh to avoid hydration mismatch
+        setTimeout(() => {
+          router.refresh()
+        }, 100)
+      } else {
+        setIsLoading(false)
+        const errorMessage = result?.error || "Ruh hali kaydı eklenirken bir sorun oluştu. Lütfen tekrar deneyin."
+        alert(errorMessage)
+      }
+    } catch (error: any) {
+      console.error("Error adding mood log:", error)
       setIsLoading(false)
-      setOpen(false)
-      setMoodScore("")
-      setMoodLabel("")
-      setNotes("")
-    }, 1000)
+      const errorMessage = error?.message || error?.error || "Ruh hali kaydı eklenirken bir hata oluştu. Lütfen tekrar deneyin."
+      alert(errorMessage)
+    }
   }
 
   return (
