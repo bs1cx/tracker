@@ -57,71 +57,100 @@ export function CalendarWidget({ trackables }: CalendarWidgetProps) {
   const getTrackablesForDay = (date: Date) => {
     const dateStart = startOfDay(date)
     
-    return trackables.filter((trackable) => {
-      // Check start_date first - only show trackables from their start_date onwards
-      if (trackable.start_date) {
-        const startDate = new Date(trackable.start_date)
-        const startDateStart = startOfDay(startDate)
-        if (dateStart < startDateStart) {
-          return false // Don't show trackables before their start_date
+    return trackables
+      .filter((trackable) => {
+        // Check start_date first - only show trackables from their start_date onwards
+        if (trackable.start_date) {
+          const startDate = new Date(trackable.start_date)
+          const startDateStart = startOfDay(startDate)
+          if (dateStart < startDateStart) {
+            return false // Don't show trackables before their start_date
+          }
+        } else if (trackable.created_at) {
+          // Fallback to created_at if start_date doesn't exist
+          const createdDate = new Date(trackable.created_at)
+          const createdDateStart = startOfDay(createdDate)
+          if (dateStart < createdDateStart) {
+            return false // Don't show trackables before they were created
+          }
         }
-      } else if (trackable.created_at) {
-        // Fallback to created_at if start_date doesn't exist
-        const createdDate = new Date(trackable.created_at)
-        const createdDateStart = startOfDay(createdDate)
-        if (dateStart < createdDateStart) {
-          return false // Don't show trackables before they were created
+        
+        // IMPORTANT: Only show trackables that have selected_days defined
+        // If no selected_days, don't show on calendar at all
+        if (
+          !trackable.selected_days ||
+          !Array.isArray(trackable.selected_days) ||
+          trackable.selected_days.length === 0
+        ) {
+          return false // Don't show trackables without selected days
         }
-      }
-      
-      // IMPORTANT: Only show trackables that have selected_days defined
-      // If no selected_days, don't show on calendar at all
-      if (
-        !trackable.selected_days ||
-        !Array.isArray(trackable.selected_days) ||
-        trackable.selected_days.length === 0
-      ) {
-        return false // Don't show trackables without selected days
-      }
-      
-      // Get day of week (0 = Sunday, 1 = Monday, ..., 6 = Saturday)
-      const dayOfWeek = getDay(date)
-      
-      // Map date-fns day index (0-6) to our Turkish day names
-      // 0: Sunday -> Pazar
-      // 1: Monday -> Pazartesi
-      // ...
-      const dayNames = [
-        "Pazar",      // 0
-        "Pazartesi",  // 1
-        "Salı",       // 2
-        "Çarşamba",   // 3
-        "Perşembe",   // 4
-        "Cuma",       // 5
-        "Cumartesi"   // 6
-      ]
-      
-      const currentDayName = dayNames[dayOfWeek]
-      
-      // Check if this day is in the selected_days array
-      // Also check for English day names for backward compatibility
-      const englishDayNames = [
-        "sunday",     // 0
-        "monday",     // 1
-        "tuesday",    // 2
-        "wednesday",  // 3
-        "thursday",   // 4
-        "friday",     // 5
-        "saturday"    // 6
-      ]
-      const currentEnglishDayName = englishDayNames[dayOfWeek]
-      
-      // Check both Turkish and English day names for compatibility
-      return (
-        trackable.selected_days.includes(currentDayName) ||
-        trackable.selected_days.includes(currentEnglishDayName)
-      )
-    })
+        
+        // Get day of week (0 = Sunday, 1 = Monday, ..., 6 = Saturday)
+        const dayOfWeek = getDay(date)
+        
+        // Map date-fns day index (0-6) to our Turkish day names
+        // 0: Sunday -> Pazar
+        // 1: Monday -> Pazartesi
+        // ...
+        const dayNames = [
+          "Pazar",      // 0
+          "Pazartesi",  // 1
+          "Salı",       // 2
+          "Çarşamba",   // 3
+          "Perşembe",   // 4
+          "Cuma",       // 5
+          "Cumartesi"   // 6
+        ]
+        
+        const currentDayName = dayNames[dayOfWeek]
+        
+        // Check if this day is in the selected_days array
+        // Also check for English day names for backward compatibility
+        const englishDayNames = [
+          "sunday",     // 0
+          "monday",     // 1
+          "tuesday",    // 2
+          "wednesday",  // 3
+          "thursday",   // 4
+          "friday",     // 5
+          "saturday"    // 6
+        ]
+        const currentEnglishDayName = englishDayNames[dayOfWeek]
+        
+        // Check both Turkish and English day names for compatibility
+        return (
+          trackable.selected_days.includes(currentDayName) ||
+          trackable.selected_days.includes(currentEnglishDayName)
+        )
+      })
+      .map((trackable) => {
+        // Check if this trackable was completed on this specific date
+        let isCompletedOnThisDate = false
+        
+        if (trackable.type === "DAILY_HABIT") {
+          // For daily habits, check if last_completed_at matches this date
+          if (trackable.last_completed_at) {
+            isCompletedOnThisDate = isSameCalendarDay(
+              trackable.last_completed_at,
+              date
+            )
+          }
+        } else if (trackable.type === "ONE_TIME") {
+          // For one-time tasks, check if status is completed
+          // and if it was completed on or before this date
+          if (trackable.status === "completed" && trackable.last_completed_at) {
+            const completedDate = new Date(trackable.last_completed_at)
+            const completedDateStart = startOfDay(completedDate)
+            // Show as completed if it was completed on this exact date
+            isCompletedOnThisDate = dateStart.getTime() === completedDateStart.getTime()
+          }
+        }
+        
+        return {
+          ...trackable,
+          is_completed_on_date: isCompletedOnThisDate,
+        }
+      })
   }
 
   return (
