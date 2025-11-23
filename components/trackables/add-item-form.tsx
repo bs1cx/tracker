@@ -79,6 +79,7 @@ export function AddItemForm() {
       priority: template.priority || "medium",
       selected_days: [],
       category: "habit",
+      start_date: new Date().toISOString().split("T")[0],
     })
     setActiveTab("manual")
   }
