@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS health_metrics (
     unit TEXT, -- 'bpm', 'hours', 'ml', 'kcal'
     notes TEXT,
     created_at TIMESTAMPTZ DEFAULT NOW(),
-    date DATE NOT NULL DEFAULT CURRENT_DATE
+    log_date DATE NOT NULL DEFAULT CURRENT_DATE
 );
 
 -- Sleep tracking
@@ -31,7 +31,7 @@ CREATE TABLE IF NOT EXISTS sleep_logs (
     sleep_efficiency NUMERIC, -- Percentage (0-100)
     wake_times INTEGER, -- Number of times woke up
     notes TEXT,
-    date DATE NOT NULL DEFAULT CURRENT_DATE,
+    log_date DATE NOT NULL DEFAULT CURRENT_DATE,
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
@@ -40,7 +40,7 @@ CREATE TABLE IF NOT EXISTS water_intake (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
     amount_ml INTEGER NOT NULL,
-    date DATE NOT NULL DEFAULT CURRENT_DATE,
+    log_date DATE NOT NULL DEFAULT CURRENT_DATE,
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
@@ -55,7 +55,7 @@ CREATE TABLE IF NOT EXISTS nutrition_logs (
     fat_g NUMERIC DEFAULT 0,
     barcode TEXT, -- For barcode scanner
     meal_type TEXT, -- 'breakfast', 'lunch', 'dinner', 'snack'
-    date DATE NOT NULL DEFAULT CURRENT_DATE,
+    log_date DATE NOT NULL DEFAULT CURRENT_DATE,
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
@@ -85,7 +85,7 @@ CREATE TABLE IF NOT EXISTS mood_logs (
     mood_score INTEGER NOT NULL CHECK (mood_score >= 1 AND mood_score <= 10),
     mood_label TEXT, -- 'happy', 'sad', 'anxious', 'calm', 'energetic', etc.
     notes TEXT,
-    date DATE NOT NULL DEFAULT CURRENT_DATE,
+    log_date DATE NOT NULL DEFAULT CURRENT_DATE,
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
@@ -95,7 +95,7 @@ CREATE TABLE IF NOT EXISTS motivation_logs (
     user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
     motivation_score INTEGER NOT NULL CHECK (motivation_score >= 1 AND motivation_score <= 10),
     notes TEXT,
-    date DATE NOT NULL DEFAULT CURRENT_DATE,
+    log_date DATE NOT NULL DEFAULT CURRENT_DATE,
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
@@ -106,7 +106,7 @@ CREATE TABLE IF NOT EXISTS meditation_sessions (
     session_type TEXT NOT NULL, -- 'breathing', 'meditation', 'mindfulness'
     duration_minutes INTEGER NOT NULL,
     notes TEXT,
-    date DATE NOT NULL DEFAULT CURRENT_DATE,
+    log_date DATE NOT NULL DEFAULT CURRENT_DATE,
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
@@ -118,7 +118,7 @@ CREATE TABLE IF NOT EXISTS journal_entries (
     content TEXT NOT NULL,
     mood_score INTEGER,
     tags TEXT[], -- Array of tags
-    date DATE NOT NULL DEFAULT CURRENT_DATE,
+    log_date DATE NOT NULL DEFAULT CURRENT_DATE,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -134,7 +134,7 @@ CREATE TABLE IF NOT EXISTS pomodoro_sessions (
     task_name TEXT,
     duration_minutes INTEGER NOT NULL DEFAULT 25,
     completed BOOLEAN DEFAULT false,
-    date DATE NOT NULL DEFAULT CURRENT_DATE,
+    log_date DATE NOT NULL DEFAULT CURRENT_DATE,
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
@@ -176,7 +176,7 @@ CREATE TABLE IF NOT EXISTS expenses (
     amount NUMERIC NOT NULL,
     category TEXT NOT NULL, -- 'food', 'transport', 'entertainment', 'bills', etc.
     description TEXT,
-    date DATE NOT NULL DEFAULT CURRENT_DATE,
+    log_date DATE NOT NULL DEFAULT CURRENT_DATE,
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
@@ -187,7 +187,7 @@ CREATE TABLE IF NOT EXISTS income (
     amount NUMERIC NOT NULL,
     source TEXT, -- 'salary', 'freelance', 'investment', etc.
     description TEXT,
-    date DATE NOT NULL DEFAULT CURRENT_DATE,
+    log_date DATE NOT NULL DEFAULT CURRENT_DATE,
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
@@ -209,19 +209,19 @@ CREATE TABLE IF NOT EXISTS budget_categories (
 -- INDEXES FOR NEW TABLES
 -- ============================================
 
-CREATE INDEX IF NOT EXISTS idx_health_metrics_user_date ON health_metrics(user_id, date);
-CREATE INDEX IF NOT EXISTS idx_sleep_logs_user_date ON sleep_logs(user_id, date);
-CREATE INDEX IF NOT EXISTS idx_water_intake_user_date ON water_intake(user_id, date);
-CREATE INDEX IF NOT EXISTS idx_nutrition_logs_user_date ON nutrition_logs(user_id, date);
-CREATE INDEX IF NOT EXISTS idx_mood_logs_user_date ON mood_logs(user_id, date);
-CREATE INDEX IF NOT EXISTS idx_motivation_logs_user_date ON motivation_logs(user_id, date);
-CREATE INDEX IF NOT EXISTS idx_meditation_sessions_user_date ON meditation_sessions(user_id, date);
-CREATE INDEX IF NOT EXISTS idx_journal_entries_user_date ON journal_entries(user_id, date);
-CREATE INDEX IF NOT EXISTS idx_pomodoro_sessions_user_date ON pomodoro_sessions(user_id, date);
-CREATE INDEX IF NOT EXISTS idx_focus_sessions_user_date ON focus_sessions(user_id, date);
+CREATE INDEX IF NOT EXISTS idx_health_metrics_user_date ON health_metrics(user_id, log_date);
+CREATE INDEX IF NOT EXISTS idx_sleep_logs_user_date ON sleep_logs(user_id, log_date);
+CREATE INDEX IF NOT EXISTS idx_water_intake_user_date ON water_intake(user_id, log_date);
+CREATE INDEX IF NOT EXISTS idx_nutrition_logs_user_date ON nutrition_logs(user_id, log_date);
+CREATE INDEX IF NOT EXISTS idx_mood_logs_user_date ON mood_logs(user_id, log_date);
+CREATE INDEX IF NOT EXISTS idx_motivation_logs_user_date ON motivation_logs(user_id, log_date);
+CREATE INDEX IF NOT EXISTS idx_meditation_sessions_user_date ON meditation_sessions(user_id, log_date);
+CREATE INDEX IF NOT EXISTS idx_journal_entries_user_date ON journal_entries(user_id, log_date);
+CREATE INDEX IF NOT EXISTS idx_pomodoro_sessions_user_date ON pomodoro_sessions(user_id, log_date);
+CREATE INDEX IF NOT EXISTS idx_focus_sessions_user_date ON focus_sessions(user_id, log_date);
 CREATE INDEX IF NOT EXISTS idx_goals_user ON goals(user_id);
-CREATE INDEX IF NOT EXISTS idx_expenses_user_date ON expenses(user_id, date);
-CREATE INDEX IF NOT EXISTS idx_income_user_date ON income(user_id, date);
+CREATE INDEX IF NOT EXISTS idx_expenses_user_date ON expenses(user_id, log_date);
+CREATE INDEX IF NOT EXISTS idx_income_user_date ON income(user_id, log_date);
 CREATE INDEX IF NOT EXISTS idx_budget_categories_user ON budget_categories(user_id);
 
 -- ============================================
