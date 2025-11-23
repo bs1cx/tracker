@@ -8,6 +8,7 @@ import {
   completeTrackableSchema,
 } from "@/lib/validations"
 import { revalidatePath } from "next/cache"
+import { getCurrentISODate, isSameCalendarDay } from "@/lib/date-utils"
 
 export async function createTrackable(data: {
   title: string
@@ -73,7 +74,7 @@ export async function updateTrackable(data: {
         ...(validated.current_value !== undefined && {
           current_value: validated.current_value,
         }),
-        updated_at: new Date().toISOString(),
+        updated_at: getCurrentISODate(),
       })
       .eq("id", validated.id)
       .eq("user_id", user.id)
@@ -119,7 +120,7 @@ export async function incrementProgress(data: { id: string; amount?: number }) {
       .from("trackables")
       .update({
         current_value: newValue,
-        updated_at: new Date().toISOString(),
+        updated_at: getCurrentISODate(),
       })
       .eq("id", validated.id)
       .eq("user_id", user.id)
@@ -173,7 +174,7 @@ export async function decrementProgress(data: { id: string }) {
       .from("trackables")
       .update({
         current_value: newValue,
-        updated_at: new Date().toISOString(),
+        updated_at: getCurrentISODate(),
       })
       .eq("id", data.id)
       .eq("user_id", user.id)
@@ -221,9 +222,12 @@ export async function completeTrackable(data: { id: string }) {
     if (fetchError) throw fetchError
     if (!trackable) throw new Error("Trackable not found")
 
+    // Check if currently completed using DST-aware calendar math
     const isCurrentlyCompleted =
       trackable.type === "DAILY_HABIT"
-        ? false // Will be determined by last_completed_at
+        ? trackable.last_completed_at
+          ? isSameCalendarDay(trackable.last_completed_at, new Date())
+          : false
         : trackable.status === "completed"
 
     const updateData: {
@@ -233,10 +237,10 @@ export async function completeTrackable(data: { id: string }) {
     } = {}
 
     if (trackable.type === "DAILY_HABIT") {
-      // Toggle completion for daily habits
+      // Toggle completion for daily habits using DST-aware date
       updateData.last_completed_at = isCurrentlyCompleted
         ? null
-        : new Date().toISOString()
+        : getCurrentISODate()
     } else if (trackable.type === "ONE_TIME") {
       // Toggle completion for one-time tasks
       updateData.status = isCurrentlyCompleted ? "active" : "completed"
@@ -247,7 +251,7 @@ export async function completeTrackable(data: { id: string }) {
       .from("trackables")
       .update({
         ...updateData,
-        updated_at: new Date().toISOString(),
+        updated_at: getCurrentISODate(),
       })
       .eq("id", validated.id)
       .eq("user_id", user.id)

@@ -5,6 +5,7 @@ import { ProgressTracker } from "@/components/trackables/progress-tracker"
 import { AddItemForm } from "@/components/trackables/add-item-form"
 import { LogoutButton } from "@/components/auth/logout-button"
 import type { Trackable } from "@/types/database"
+import { isSameCalendarDay } from "@/lib/date-utils"
 
 async function getTrackables() {
   const supabase = await createClient()
@@ -46,11 +47,11 @@ async function getTrackables() {
 
       if (trackable.type === "DAILY_HABIT") {
         if (trackable.last_completed_at) {
-          const lastCompleted = new Date(trackable.last_completed_at)
-          const today = new Date()
-          today.setHours(0, 0, 0, 0)
-          lastCompleted.setHours(0, 0, 0, 0)
-          is_completed_today = lastCompleted.getTime() === today.getTime()
+          // Use DST-aware calendar math to check if completed today
+          is_completed_today = isSameCalendarDay(
+            trackable.last_completed_at,
+            new Date()
+          )
         }
       } else if (trackable.type === "ONE_TIME") {
         is_completed_today = trackable.status === "completed"
