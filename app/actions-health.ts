@@ -576,16 +576,25 @@ export async function addSleepLog(data: {
       }
     }
 
+    // Ensure sleep_duration is not null or undefined
+    if (!validated.sleep_duration || isNaN(validated.sleep_duration)) {
+      return {
+        success: false,
+        data: null,
+        error: "Uyku süresi gereklidir ve geçerli bir sayı olmalıdır."
+      }
+    }
+
     const { data: insertedData, error } = await supabase
       .from("sleep_logs")
       .insert({
         user_id: user.id,
-        sleep_duration: validated.sleep_duration,
+        sleep_duration: Number(validated.sleep_duration),
         sleep_quality: validated.sleep_quality || null,
-        rem_duration: validated.rem_duration || null,
-        light_sleep_duration: validated.light_sleep_duration || null,
-        deep_sleep_duration: validated.deep_sleep_duration || null,
-        sleep_efficiency: validated.sleep_efficiency || null,
+        rem_duration: validated.rem_duration ? Number(validated.rem_duration) : null,
+        light_sleep_duration: validated.light_sleep_duration ? Number(validated.light_sleep_duration) : null,
+        deep_sleep_duration: validated.deep_sleep_duration ? Number(validated.deep_sleep_duration) : null,
+        sleep_efficiency: validated.sleep_efficiency ? Number(validated.sleep_efficiency) : null,
       })
       .select()
 

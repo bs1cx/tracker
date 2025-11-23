@@ -40,11 +40,25 @@ export function SleepForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    
+    // Validate required fields
+    if (!duration || isNaN(parseFloat(duration)) || parseFloat(duration) <= 0) {
+      alert("Lütfen geçerli bir uyku süresi girin (0'dan büyük bir sayı).")
+      return
+    }
+    
     setIsLoading(true)
     
     try {
+      const sleepDuration = parseFloat(duration)
+      if (isNaN(sleepDuration) || sleepDuration <= 0) {
+        alert("Lütfen geçerli bir uyku süresi girin.")
+        setIsLoading(false)
+        return
+      }
+      
       const result = await addSleepLog({
-        sleep_duration: parseFloat(duration),
+        sleep_duration: sleepDuration,
         sleep_quality: quality || undefined,
         rem_duration: rem ? parseFloat(rem) : undefined,
         light_sleep_duration: light ? parseFloat(light) : undefined,
