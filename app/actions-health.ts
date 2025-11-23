@@ -2,6 +2,36 @@
 
 import { createClient } from "@/lib/supabase/server"
 import { revalidatePath } from "next/cache"
+import { z } from "zod"
+
+// Validation schemas
+const heartRateSchema = z.object({
+  heart_rate: z.number().int().min(30).max(220),
+  notes: z.string().optional(),
+})
+
+const waterLogSchema = z.object({
+  amount_ml: z.number().int().positive(),
+})
+
+const sleepLogSchema = z.object({
+  sleep_duration: z.number().positive().max(24),
+  sleep_quality: z.enum(["poor", "fair", "good", "excellent"]).optional(),
+  rem_duration: z.number().positive().optional(),
+  light_sleep_duration: z.number().positive().optional(),
+  deep_sleep_duration: z.number().positive().optional(),
+  sleep_efficiency: z.number().min(0).max(100).optional(),
+  notes: z.string().optional(),
+})
+
+const nutritionLogSchema = z.object({
+  calories: z.number().int().min(0),
+  carbs_grams: z.number().positive().optional(),
+  protein_grams: z.number().positive().optional(),
+  fat_grams: z.number().positive().optional(),
+  meal_type: z.enum(["breakfast", "lunch", "dinner", "snack"]).optional(),
+  food_name: z.string().optional(),
+})
 
 // ============================================
 // SMOKING TRACKING
@@ -305,31 +335,77 @@ export async function getSleepLogs(date?: string) {
 export async function addWaterLog(data: {
   amount_ml: number
 }) {
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  try {
+    // Validate input
+    const validated = waterLogSchema.parse({
+      amount_ml: typeof data.amount_ml === 'string' ? parseInt(data.amount_ml) : data.amount_ml,
+    })
 
-  if (!user) {
-    throw new Error("Unauthorized")
+    const supabase = await createClient()
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser()
+
+    if (authError || !user) {
+      console.error("Auth error:", authError)
+      return { 
+        success: false, 
+        error: "Kimlik doğrulama hatası. Lütfen tekrar giriş yapın." 
+      }
+    }
+
+    const { data: insertedData, error } = await supabase
+      .from("water_intake")
+      .insert({
+        user_id: user.id,
+        amount_ml: validated.amount_ml,
+      })
+      .select()
+
+    if (error) {
+      console.error("Error adding water log:", error)
+      console.error("Error code:", error.code)
+      console.error("Error message:", error.message)
+      
+      if (error.code === "42P01") {
+        return { 
+          success: false, 
+          error: "Veritabanı tablosu bulunamadı. Lütfen Supabase SQL Editor'de 'supabase-fix-health-tables-rls.sql' dosyasını çalıştırın." 
+        }
+      }
+      if (error.code === "42501") {
+        return { 
+          success: false, 
+          error: "İzin hatası. RLS politikaları kontrol edilmeli." 
+        }
+      }
+      
+      return { 
+        success: false, 
+        error: `Su kaydı eklenirken bir hata oluştu: ${error.message || "Bilinmeyen hata"}` 
+      }
+    }
+
+    console.log("Water log inserted successfully:", insertedData)
+    revalidatePath("/health")
+    return { success: true }
+  } catch (error: any) {
+    console.error("Error in addWaterLog:", error)
+    
+    if (error instanceof z.ZodError) {
+      const errorMessages = error.errors.map(e => `${e.path.join('.')}: ${e.message}`).join(', ')
+      return { 
+        success: false, 
+        error: `Geçersiz veri: ${errorMessages}` 
+      }
+    }
+    
+    return { 
+      success: false, 
+      error: error?.message || "Su kaydı eklenirken beklenmeyen bir hata oluştu" 
+    }
   }
-
-  const { error, data: insertedData } = await supabase.from("water_intake").insert({
-    user_id: user.id,
-    amount_ml: data.amount_ml,
-  }).select()
-
-  if (error) {
-    console.error("Error adding water log:", error)
-    console.error("Error code:", error.code)
-    console.error("Error message:", error.message)
-    throw new Error(`Su kaydı eklenirken bir hata oluştu: ${error.message || error.code || "Bilinmeyen hata"}`)
-  }
-
-  console.log("Water log inserted successfully:", insertedData)
-
-  revalidatePath("/health")
-  return { success: true }
 }
 
 // ============================================
@@ -340,28 +416,84 @@ export async function addHeartRateLog(data: {
   heart_rate: number
   notes?: string
 }) {
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  try {
+    // Validate input
+    const validated = heartRateSchema.parse({
+      heart_rate: typeof data.heart_rate === 'string' ? parseInt(data.heart_rate) : data.heart_rate,
+      notes: data.notes,
+    })
 
-  if (!user) {
-    throw new Error("Unauthorized")
+    const supabase = await createClient()
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser()
+
+    if (authError || !user) {
+      console.error("Auth error:", authError)
+      return { 
+        success: false, 
+        error: "Kimlik doğrulama hatası. Lütfen tekrar giriş yapın." 
+      }
+    }
+
+    const { data: insertedData, error } = await supabase
+      .from("health_metrics")
+      .insert({
+        user_id: user.id,
+        heart_rate: validated.heart_rate,
+        log_date: new Date().toISOString().split("T")[0],
+      })
+      .select()
+
+    if (error) {
+      console.error("Error adding heart rate log:", error)
+      console.error("Error code:", error.code)
+      console.error("Error message:", error.message)
+      console.error("Error details:", error.details)
+      console.error("Error hint:", error.hint)
+      
+      // Check for specific error types
+      if (error.code === "42P01") {
+        return { 
+          success: false, 
+          error: "Veritabanı tablosu bulunamadı. Lütfen Supabase SQL Editor'de 'supabase-fix-health-tables-rls.sql' dosyasını çalıştırın." 
+        }
+      }
+      if (error.code === "42501") {
+        return { 
+          success: false, 
+          error: "İzin hatası. RLS politikaları kontrol edilmeli." 
+        }
+      }
+      
+      return { 
+        success: false, 
+        error: `Nabız kaydı eklenirken bir hata oluştu: ${error.message || "Bilinmeyen hata"}` 
+      }
+    }
+
+    console.log("Heart rate log inserted successfully:", insertedData)
+    revalidatePath("/health")
+    return { success: true }
+  } catch (error: any) {
+    console.error("Error in addHeartRateLog:", error)
+    
+    // Handle Zod validation errors
+    if (error instanceof z.ZodError) {
+      const errorMessages = error.errors.map(e => `${e.path.join('.')}: ${e.message}`).join(', ')
+      return { 
+        success: false, 
+        error: `Geçersiz veri: ${errorMessages}` 
+      }
+    }
+    
+    // Handle other errors
+    return { 
+      success: false, 
+      error: error?.message || "Nabız kaydı eklenirken beklenmeyen bir hata oluştu" 
+    }
   }
-
-  const { error } = await supabase.from("health_metrics").insert({
-    user_id: user.id,
-    heart_rate: data.heart_rate,
-    log_date: new Date().toISOString().split("T")[0],
-  })
-
-  if (error) {
-    console.error("Error adding heart rate log:", error)
-    throw new Error("Nabız kaydı eklenirken bir hata oluştu")
-  }
-
-  revalidatePath("/health")
-  return { success: true }
 }
 
 // ============================================
@@ -377,32 +509,87 @@ export async function addSleepLog(data: {
   sleep_efficiency?: number
   notes?: string
 }) {
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  try {
+    // Validate input
+    const validated = sleepLogSchema.parse({
+      sleep_duration: typeof data.sleep_duration === 'string' ? parseFloat(data.sleep_duration) : data.sleep_duration,
+      sleep_quality: data.sleep_quality,
+      rem_duration: data.rem_duration,
+      light_sleep_duration: data.light_sleep_duration,
+      deep_sleep_duration: data.deep_sleep_duration,
+      sleep_efficiency: data.sleep_efficiency,
+      notes: data.notes,
+    })
 
-  if (!user) {
-    throw new Error("Unauthorized")
+    const supabase = await createClient()
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser()
+
+    if (authError || !user) {
+      console.error("Auth error:", authError)
+      return { 
+        success: false, 
+        error: "Kimlik doğrulama hatası. Lütfen tekrar giriş yapın." 
+      }
+    }
+
+    const { data: insertedData, error } = await supabase
+      .from("sleep_logs")
+      .insert({
+        user_id: user.id,
+        sleep_duration: validated.sleep_duration,
+        sleep_quality: validated.sleep_quality || null,
+        rem_duration: validated.rem_duration || null,
+        light_sleep_duration: validated.light_sleep_duration || null,
+        deep_sleep_duration: validated.deep_sleep_duration || null,
+        sleep_efficiency: validated.sleep_efficiency || null,
+      })
+      .select()
+
+    if (error) {
+      console.error("Error adding sleep log:", error)
+      console.error("Error code:", error.code)
+      
+      if (error.code === "42P01") {
+        return { 
+          success: false, 
+          error: "Veritabanı tablosu bulunamadı. Lütfen Supabase SQL Editor'de 'supabase-fix-health-tables-rls.sql' dosyasını çalıştırın." 
+        }
+      }
+      if (error.code === "42501") {
+        return { 
+          success: false, 
+          error: "İzin hatası. RLS politikaları kontrol edilmeli." 
+        }
+      }
+      
+      return { 
+        success: false, 
+        error: `Uyku kaydı eklenirken bir hata oluştu: ${error.message || "Bilinmeyen hata"}` 
+      }
+    }
+
+    console.log("Sleep log inserted successfully:", insertedData)
+    revalidatePath("/health")
+    return { success: true }
+  } catch (error: any) {
+    console.error("Error in addSleepLog:", error)
+    
+    if (error instanceof z.ZodError) {
+      const errorMessages = error.errors.map(e => `${e.path.join('.')}: ${e.message}`).join(', ')
+      return { 
+        success: false, 
+        error: `Geçersiz veri: ${errorMessages}` 
+      }
+    }
+    
+    return { 
+      success: false, 
+      error: error?.message || "Uyku kaydı eklenirken beklenmeyen bir hata oluştu" 
+    }
   }
-
-  const { error } = await supabase.from("sleep_logs").insert({
-    user_id: user.id,
-    sleep_duration: data.sleep_duration,
-    sleep_quality: data.sleep_quality || null,
-    rem_duration: data.rem_duration || null,
-    light_sleep_duration: data.light_sleep_duration || null,
-    deep_sleep_duration: data.deep_sleep_duration || null,
-    sleep_efficiency: data.sleep_efficiency || null,
-  })
-
-  if (error) {
-    console.error("Error adding sleep log:", error)
-    throw new Error("Uyku kaydı eklenirken bir hata oluştu")
-  }
-
-  revalidatePath("/health")
-  return { success: true }
 }
 
 // ============================================
