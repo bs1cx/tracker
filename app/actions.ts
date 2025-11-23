@@ -21,7 +21,19 @@ export async function createTrackable(data: {
   category?: "task" | "habit"
 }) {
   try {
-    const validated = trackableSchema.parse(data)
+    // Validate data first
+    let validated
+    try {
+      validated = trackableSchema.parse(data)
+    } catch (validationError: any) {
+      console.error("Validation error:", validationError)
+      if (validationError.errors) {
+        const errorMessages = validationError.errors.map((e: any) => `${e.path.join('.')}: ${e.message}`).join(', ')
+        throw new Error(`Geçersiz veri: ${errorMessages}`)
+      }
+      throw new Error(`Geçersiz veri: ${validationError.message || "Lütfen tüm alanları doğru doldurun"}`)
+    }
+    
     const supabase = await createClient()
 
     const {
@@ -120,26 +132,35 @@ export async function createTrackable(data: {
     }
 
     revalidatePath("/")
-    return { success: true }
+    return { success: true, error: null }
   } catch (error: any) {
     console.error("Error creating trackable:", error)
-    console.error("Error stack:", error.stack)
+    console.error("Error stack:", error?.stack)
+    console.error("Error name:", error?.name)
+    console.error("Error code:", error?.code)
     
     // Return a more user-friendly error message
     if (error instanceof Error) {
+      const errorMsg = error.message || "Bilinmeyen hata"
+      
       // Check if it's a Zod validation error
-      if (error.message?.includes("ZodError") || error.message?.includes("validation")) {
-        throw new Error(`Geçersiz veri: ${error.message}. Lütfen tüm alanları doğru doldurun.`)
+      if (errorMsg.includes("ZodError") || errorMsg.includes("validation") || errorMsg.includes("Geçersiz veri")) {
+        return { success: false, error: errorMsg }
       }
+      
       // Check if it's a database column error
-      if (error.message?.includes("column") || error.message?.includes("42703")) {
-        throw new Error(
-          `Database kolonu eksik: ${error.message}. Lütfen migration script'lerini çalıştırın: supabase-migration-complete.sql ve supabase-schema-category.sql`
-        )
+      if (errorMsg.includes("column") || errorMsg.includes("42703") || errorMsg.includes("Database")) {
+        return { 
+          success: false, 
+          error: `Database kolonu eksik. Lütfen migration script'lerini çalıştırın:\n1. supabase-migration-complete.sql\n2. supabase-schema-category.sql` 
+        }
       }
-      throw new Error(error.message)
+      
+      // Return error message
+      return { success: false, error: errorMsg }
     }
-    throw new Error("Görev oluşturulurken beklenmeyen bir hata oluştu. Lütfen konsolu kontrol edin.")
+    
+    return { success: false, error: "Görev oluşturulurken beklenmeyen bir hata oluştu. Lütfen konsolu kontrol edin (F12)." }
   }
 }
 

@@ -94,7 +94,7 @@ export function AddItemForm() {
     setIsLoading(true)
 
     try {
-      await createTrackable({
+      const result = await createTrackable({
         title: formData.title,
         type: formData.type as "DAILY_HABIT" | "ONE_TIME" | "PROGRESS",
         target_value:
@@ -107,6 +107,11 @@ export function AddItemForm() {
         selected_days: formData.selected_days,
         category: formData.category || "habit",
       })
+
+      // Check if there was an error
+      if (result && !result.success) {
+        throw new Error(result.error || "Öğe oluşturulamadı")
+      }
 
       setFormData({
         title: "",
