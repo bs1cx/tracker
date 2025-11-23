@@ -74,8 +74,21 @@ export function CalendarWidget({ trackables }: CalendarWidgetProps) {
       ) {
         // Get day of week (0 = Sunday, 1 = Monday, ..., 6 = Saturday)
         const dayOfWeek = getDay(date)
-        // Convert to our day name format (monday, tuesday, etc.)
-        const dayNames = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"]
+        
+        // Map date-fns day index (0-6) to our Turkish day names
+        // 0: Sunday -> Pazar
+        // 1: Monday -> Pazartesi
+        // ...
+        const dayNames = [
+          "Pazar",      // 0
+          "Pazartesi",  // 1
+          "Salı",       // 2
+          "Çarşamba",   // 3
+          "Perşembe",   // 4
+          "Cuma",       // 5
+          "Cumartesi"   // 6
+        ]
+        
         const currentDayName = dayNames[dayOfWeek]
         
         // Check if this day is in the selected_days array
