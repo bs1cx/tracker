@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -34,6 +35,7 @@ const drinkTypes = [
 ]
 
 export function AlcoholForm() {
+  const router = useRouter()
   const [open, setOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [drinkType, setDrinkType] = useState("")
@@ -57,6 +59,7 @@ export function AlcoholForm() {
       setAmount("")
       setAlcoholPercentage("")
       setNotes("")
+      router.refresh()
     } catch (error) {
       console.error("Error adding alcohol log:", error)
       alert("Alkol kaydı eklenirken bir hata oluştu. Lütfen tekrar deneyin.")

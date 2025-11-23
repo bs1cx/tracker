@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -18,6 +19,7 @@ import { tr } from "@/lib/i18n"
 import { addStepsLog } from "@/app/actions-health"
 
 export function StepsForm() {
+  const router = useRouter()
   const [open, setOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [steps, setSteps] = useState("")
@@ -32,6 +34,7 @@ export function StepsForm() {
       })
       setOpen(false)
       setSteps("")
+      router.refresh()
     } catch (error) {
       console.error("Error adding steps log:", error)
       alert("Adım kaydı eklenirken bir hata oluştu. Lütfen tekrar deneyin.")

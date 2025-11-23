@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -22,8 +23,10 @@ import {
 } from "@/components/ui/select"
 import { Moon } from "lucide-react"
 import { tr } from "@/lib/i18n"
+import { addSleepLog } from "@/app/actions-health"
 
 export function SleepForm() {
+  const router = useRouter()
   const [open, setOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [duration, setDuration] = useState("")
@@ -38,9 +41,17 @@ export function SleepForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
-    // TODO: Implement API call
-    setTimeout(() => {
-      setIsLoading(false)
+    
+    try {
+      await addSleepLog({
+        sleep_duration: parseFloat(duration),
+        sleep_quality: quality || undefined,
+        rem_duration: rem ? parseFloat(rem) : undefined,
+        light_sleep_duration: light ? parseFloat(light) : undefined,
+        deep_sleep_duration: deep ? parseFloat(deep) : undefined,
+        sleep_efficiency: efficiency ? parseFloat(efficiency) : undefined,
+        notes: notes || undefined,
+      })
       setOpen(false)
       // Reset form
       setDuration("")
@@ -51,7 +62,13 @@ export function SleepForm() {
       setEfficiency("")
       setWakeTimes("")
       setNotes("")
-    }, 1000)
+      router.refresh()
+    } catch (error) {
+      console.error("Error adding sleep log:", error)
+      alert("Uyku kaydı eklenirken bir hata oluştu. Lütfen tekrar deneyin.")
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (

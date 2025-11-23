@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
@@ -32,6 +33,7 @@ const timeOfDayOptions = [
 ]
 
 export function EnergyForm() {
+  const router = useRouter()
   const [open, setOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [energyLevel, setEnergyLevel] = useState("5")
@@ -55,6 +57,7 @@ export function EnergyForm() {
       setTimeOfDay("")
       setFactors("")
       setNotes("")
+      router.refresh()
     } catch (error) {
       console.error("Error adding energy log:", error)
       alert("Enerji seviyesi kaydı eklenirken bir hata oluştu. Lütfen tekrar deneyin.")

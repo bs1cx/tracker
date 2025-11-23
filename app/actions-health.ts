@@ -294,6 +294,148 @@ export async function getSleepLogs(date?: string) {
 }
 
 // ============================================
+// WATER INTAKE TRACKING
+// ============================================
+
+export async function addWaterLog(data: {
+  amount_ml: number
+}) {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) {
+    throw new Error("Unauthorized")
+  }
+
+  const { error } = await supabase.from("water_intake").insert({
+    user_id: user.id,
+    amount_ml: data.amount_ml,
+  })
+
+  if (error) {
+    console.error("Error adding water log:", error)
+    throw new Error("Su kaydı eklenirken bir hata oluştu")
+  }
+
+  revalidatePath("/health")
+  return { success: true }
+}
+
+// ============================================
+// HEART RATE TRACKING
+// ============================================
+
+export async function addHeartRateLog(data: {
+  heart_rate: number
+  notes?: string
+}) {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) {
+    throw new Error("Unauthorized")
+  }
+
+  const { error } = await supabase.from("health_metrics").insert({
+    user_id: user.id,
+    heart_rate: data.heart_rate,
+    log_date: new Date().toISOString().split("T")[0],
+  })
+
+  if (error) {
+    console.error("Error adding heart rate log:", error)
+    throw new Error("Nabız kaydı eklenirken bir hata oluştu")
+  }
+
+  revalidatePath("/health")
+  return { success: true }
+}
+
+// ============================================
+// SLEEP TRACKING
+// ============================================
+
+export async function addSleepLog(data: {
+  sleep_duration: number
+  sleep_quality?: string
+  rem_duration?: number
+  light_sleep_duration?: number
+  deep_sleep_duration?: number
+  sleep_efficiency?: number
+  notes?: string
+}) {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) {
+    throw new Error("Unauthorized")
+  }
+
+  const { error } = await supabase.from("sleep_logs").insert({
+    user_id: user.id,
+    sleep_duration: data.sleep_duration,
+    sleep_quality: data.sleep_quality || null,
+    rem_duration: data.rem_duration || null,
+    light_sleep_duration: data.light_sleep_duration || null,
+    deep_sleep_duration: data.deep_sleep_duration || null,
+    sleep_efficiency: data.sleep_efficiency || null,
+  })
+
+  if (error) {
+    console.error("Error adding sleep log:", error)
+    throw new Error("Uyku kaydı eklenirken bir hata oluştu")
+  }
+
+  revalidatePath("/health")
+  return { success: true }
+}
+
+// ============================================
+// NUTRITION TRACKING
+// ============================================
+
+export async function addNutritionLog(data: {
+  calories: number
+  carbs_grams?: number
+  protein_grams?: number
+  fat_grams?: number
+  meal_type?: string
+  food_name?: string
+}) {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) {
+    throw new Error("Unauthorized")
+  }
+
+  const { error } = await supabase.from("nutrition_logs").insert({
+    user_id: user.id,
+    calories: data.calories,
+    carbs_grams: data.carbs_grams || null,
+    protein_grams: data.protein_grams || null,
+    fat_grams: data.fat_grams || null,
+    meal_type: data.meal_type || null,
+  })
+
+  if (error) {
+    console.error("Error adding nutrition log:", error)
+    throw new Error("Beslenme kaydı eklenirken bir hata oluştu")
+  }
+
+  revalidatePath("/health")
+  return { success: true }
+}
+
+// ============================================
 // ALCOHOL TRACKING
 // ============================================
 

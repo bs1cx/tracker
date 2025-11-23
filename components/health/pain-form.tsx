@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
@@ -48,6 +49,7 @@ const painLocations = [
 ]
 
 export function PainForm() {
+  const router = useRouter()
   const [open, setOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [painLevel, setPainLevel] = useState("5")
@@ -80,6 +82,7 @@ export function PainForm() {
       setTriggers("")
       setReliefMethod("")
       setNotes("")
+      router.refresh()
     } catch (error) {
       console.error("Error adding pain log:", error)
       alert("Ağrı kaydı eklenirken bir hata oluştu. Lütfen tekrar deneyin.")

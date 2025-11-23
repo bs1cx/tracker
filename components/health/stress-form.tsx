@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
@@ -34,6 +35,7 @@ const stressSources = [
 ]
 
 export function StressForm() {
+  const router = useRouter()
   const [open, setOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [stressLevel, setStressLevel] = useState("5")
@@ -57,6 +59,7 @@ export function StressForm() {
       setStressSource("")
       setCopingMethod("")
       setNotes("")
+      router.refresh()
     } catch (error) {
       console.error("Error adding stress log:", error)
       alert("Stres seviyesi kaydı eklenirken bir hata oluştu. Lütfen tekrar deneyin.")

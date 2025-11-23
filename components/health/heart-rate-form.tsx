@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -15,8 +16,10 @@ import {
 } from "@/components/ui/dialog"
 import { Plus } from "lucide-react"
 import { tr } from "@/lib/i18n"
+import { addHeartRateLog } from "@/app/actions-health"
 
 export function HeartRateForm() {
+  const router = useRouter()
   const [open, setOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [bpm, setBpm] = useState("")
@@ -25,13 +28,22 @@ export function HeartRateForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
-    // TODO: Implement API call
-    setTimeout(() => {
-      setIsLoading(false)
+    
+    try {
+      await addHeartRateLog({
+        heart_rate: parseInt(bpm),
+        notes: notes || undefined,
+      })
       setOpen(false)
       setBpm("")
       setNotes("")
-    }, 1000)
+      router.refresh()
+    } catch (error) {
+      console.error("Error adding heart rate log:", error)
+      alert("Nabız kaydı eklenirken bir hata oluştu. Lütfen tekrar deneyin.")
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (

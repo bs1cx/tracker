@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -36,6 +37,7 @@ const caffeineSources = [
 ]
 
 export function CaffeineForm() {
+  const router = useRouter()
   const [open, setOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [source, setSource] = useState("")
@@ -64,6 +66,7 @@ export function CaffeineForm() {
       setSource("")
       setCaffeineMg("")
       setNotes("")
+      router.refresh()
     } catch (error) {
       console.error("Error adding caffeine log:", error)
       alert("Kafein kaydı eklenirken bir hata oluştu. Lütfen tekrar deneyin.")

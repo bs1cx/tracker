@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -22,8 +23,10 @@ import {
 } from "@/components/ui/select"
 import { Utensils, Scan } from "lucide-react"
 import { tr } from "@/lib/i18n"
+import { addNutritionLog } from "@/app/actions-health"
 
 export function NutritionForm() {
+  const router = useRouter()
   const [open, setOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [foodName, setFoodName] = useState("")
@@ -37,9 +40,16 @@ export function NutritionForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
-    // TODO: Implement API call
-    setTimeout(() => {
-      setIsLoading(false)
+    
+    try {
+      await addNutritionLog({
+        calories: parseInt(calories),
+        carbs_grams: carbs ? parseFloat(carbs) : undefined,
+        protein_grams: protein ? parseFloat(protein) : undefined,
+        fat_grams: fat ? parseFloat(fat) : undefined,
+        meal_type: mealType || undefined,
+        food_name: foodName || undefined,
+      })
       setOpen(false)
       // Reset form
       setFoodName("")
@@ -49,7 +59,13 @@ export function NutritionForm() {
       setFat("")
       setMealType("")
       setBarcode("")
-    }, 1000)
+      router.refresh()
+    } catch (error) {
+      console.error("Error adding nutrition log:", error)
+      alert("Beslenme kaydı eklenirken bir hata oluştu. Lütfen tekrar deneyin.")
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
