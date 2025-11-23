@@ -330,7 +330,18 @@ CREATE INDEX IF NOT EXISTS idx_goals_user_status ON goals(user_id, status);
 CREATE INDEX IF NOT EXISTS idx_expenses_user_date ON expenses(user_id, log_date);
 CREATE INDEX IF NOT EXISTS idx_expenses_user_category ON expenses(user_id, category);
 CREATE INDEX IF NOT EXISTS idx_income_user_date ON income(user_id, log_date);
-CREATE INDEX IF NOT EXISTS idx_budget_categories_user_month ON budget_categories(user_id, month_year);
+
+-- Budget categories index (only create if month_year column exists)
+DO $$ 
+BEGIN
+    IF EXISTS (SELECT FROM information_schema.columns 
+               WHERE table_schema = 'public' 
+               AND table_name = 'budget_categories' 
+               AND column_name = 'month_year') THEN
+        CREATE INDEX IF NOT EXISTS idx_budget_categories_user_month 
+        ON budget_categories(user_id, month_year);
+    END IF;
+END $$;
 
 -- ============================================
 -- ROW LEVEL SECURITY (RLS) POLICIES
