@@ -68,12 +68,14 @@ export function NutritionForm() {
         }, 100)
       } else {
         setIsLoading(false)
-        alert("Beslenme kaydı eklenirken bir sorun oluştu. Lütfen tekrar deneyin.")
+        const errorMessage = (result as any)?.error || "Beslenme kaydı eklenirken bir sorun oluştu. Lütfen tekrar deneyin."
+        alert(errorMessage)
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error adding nutrition log:", error)
       setIsLoading(false)
-      alert("Beslenme kaydı eklenirken bir hata oluştu. Lütfen tekrar deneyin.")
+      const errorMessage = error?.message || (error as any)?.error || "Beslenme kaydı eklenirken bir hata oluştu. Lütfen tekrar deneyin."
+      alert(errorMessage)
     }
   }
 

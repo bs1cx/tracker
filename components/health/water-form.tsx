@@ -47,7 +47,8 @@ export function WaterForm() {
       } else {
         console.error("No success in result:", result)
         setIsLoading(false)
-        alert("Su kaydı eklenirken bir sorun oluştu. Lütfen tekrar deneyin.")
+        const errorMessage = result?.error || "Su kaydı eklenirken bir sorun oluştu. Lütfen tekrar deneyin."
+        alert(errorMessage)
       }
     } catch (error: any) {
       console.error("Error adding water log:", error)

@@ -71,12 +71,14 @@ export function SleepForm() {
         }, 100)
       } else {
         setIsLoading(false)
-        alert("Uyku kaydı eklenirken bir sorun oluştu. Lütfen tekrar deneyin.")
+        const errorMessage = result?.error || "Uyku kaydı eklenirken bir sorun oluştu. Lütfen tekrar deneyin."
+        alert(errorMessage)
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error adding sleep log:", error)
       setIsLoading(false)
-      alert("Uyku kaydı eklenirken bir hata oluştu. Lütfen tekrar deneyin.")
+      const errorMessage = error?.message || (error as any)?.error || "Uyku kaydı eklenirken bir hata oluştu. Lütfen tekrar deneyin."
+      alert(errorMessage)
     }
   }
 

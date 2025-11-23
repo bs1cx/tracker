@@ -604,31 +604,86 @@ export async function addNutritionLog(data: {
   meal_type?: string
   food_name?: string
 }) {
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  try {
+    // Validate input
+    const validated = nutritionLogSchema.parse({
+      calories: typeof data.calories === 'string' ? parseInt(data.calories) : data.calories,
+      carbs_grams: data.carbs_grams,
+      protein_grams: data.protein_grams,
+      fat_grams: data.fat_grams,
+      meal_type: data.meal_type as any,
+      food_name: data.food_name,
+    })
 
-  if (!user) {
-    throw new Error("Unauthorized")
+    const supabase = await createClient()
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser()
+
+    if (authError || !user) {
+      console.error("Auth error:", authError)
+      return { 
+        success: false, 
+        error: "Kimlik doğrulama hatası. Lütfen tekrar giriş yapın." 
+      }
+    }
+
+    const { data: insertedData, error } = await supabase
+      .from("nutrition_logs")
+      .insert({
+        user_id: user.id,
+        calories: validated.calories,
+        carbs_grams: validated.carbs_grams || null,
+        protein_grams: validated.protein_grams || null,
+        fat_grams: validated.fat_grams || null,
+        meal_type: validated.meal_type || null,
+        food_name: validated.food_name || null,
+      })
+      .select()
+
+    if (error) {
+      console.error("Error adding nutrition log:", error)
+      console.error("Error code:", error.code)
+      
+      if (error.code === "42P01") {
+        return { 
+          success: false, 
+          error: "Veritabanı tablosu bulunamadı. Lütfen Supabase SQL Editor'de 'supabase-fix-health-tables-rls.sql' dosyasını çalıştırın." 
+        }
+      }
+      if (error.code === "42501") {
+        return { 
+          success: false, 
+          error: "İzin hatası. RLS politikaları kontrol edilmeli." 
+        }
+      }
+      
+      return { 
+        success: false, 
+        error: `Beslenme kaydı eklenirken bir hata oluştu: ${error.message || "Bilinmeyen hata"}` 
+      }
+    }
+
+    console.log("Nutrition log inserted successfully:", insertedData)
+    revalidatePath("/health")
+    return { success: true }
+  } catch (error: any) {
+    console.error("Error in addNutritionLog:", error)
+    
+    if (error instanceof z.ZodError) {
+      const errorMessages = error.errors.map(e => `${e.path.join('.')}: ${e.message}`).join(', ')
+      return { 
+        success: false, 
+        error: `Geçersiz veri: ${errorMessages}` 
+      }
+    }
+    
+    return { 
+      success: false, 
+      error: error?.message || "Beslenme kaydı eklenirken beklenmeyen bir hata oluştu" 
+    }
   }
-
-  const { error } = await supabase.from("nutrition_logs").insert({
-    user_id: user.id,
-    calories: data.calories,
-    carbs_grams: data.carbs_grams || null,
-    protein_grams: data.protein_grams || null,
-    fat_grams: data.fat_grams || null,
-    meal_type: data.meal_type || null,
-  })
-
-  if (error) {
-    console.error("Error adding nutrition log:", error)
-    throw new Error("Beslenme kaydı eklenirken bir hata oluştu")
-  }
-
-  revalidatePath("/health")
-  return { success: true }
 }
 
 // ============================================
