@@ -91,7 +91,12 @@ export function EditTrackableDialog({
             </div>
             <div className="grid gap-2">
               <Label htmlFor="type">{tr.trackables.type}</Label>
-              <Select value={type} onValueChange={setType as any}>
+              <Select
+                value={type}
+                onValueChange={(value) =>
+                  setType(value as "DAILY_HABIT" | "ONE_TIME" | "PROGRESS")
+                }
+              >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -116,7 +121,9 @@ export function EditTrackableDialog({
                   </Label>
                   <Select
                     value={resetFrequency}
-                    onValueChange={setResetFrequency}
+                    onValueChange={(value) =>
+                      setResetFrequency(value as "daily" | "weekly" | "none")
+                    }
                   >
                     <SelectTrigger>
                       <SelectValue />

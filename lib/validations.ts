@@ -10,8 +10,11 @@ export const trackableSchema = z.object({
 export const updateTrackableSchema = z.object({
   id: z.string().uuid(),
   title: z.string().min(1).max(200).optional(),
+  type: z.enum(["DAILY_HABIT", "ONE_TIME", "PROGRESS"]).optional(),
   status: z.enum(["active", "completed", "archived"]).optional(),
   current_value: z.number().int().min(0).optional(),
+  target_value: z.number().int().positive().nullable().optional(),
+  reset_frequency: z.enum(["daily", "weekly", "none"]).optional(),
 })
 
 export const incrementProgressSchema = z.object({
