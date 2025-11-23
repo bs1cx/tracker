@@ -18,6 +18,7 @@ export async function createTrackable(data: {
   scheduled_time?: string | null
   priority?: "low" | "medium" | "high"
   selected_days?: string[] | null
+  category?: "task" | "habit"
 }) {
   try {
     const validated = trackableSchema.parse(data)
@@ -48,6 +49,9 @@ export async function createTrackable(data: {
     }
     if (data.priority) {
       insertData.priority = data.priority
+    }
+    if (data.category) {
+      insertData.category = data.category
     }
     // selected_days is now required, so always include it
     if (data.selected_days && data.selected_days.length > 0) {

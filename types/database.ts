@@ -15,6 +15,7 @@ export interface Trackable {
   priority?: "low" | "medium" | "high"
   scheduled_time?: string | null
   selected_days?: string[] | null
+  category?: "task" | "habit"
   created_at: string
   updated_at: string
   is_completed_today?: boolean

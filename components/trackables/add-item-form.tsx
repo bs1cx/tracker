@@ -47,6 +47,7 @@ export function AddItemForm() {
     scheduled_time: "",
     priority: "medium" as "low" | "medium" | "high",
     selected_days: [] as string[],
+    category: "habit" as "task" | "habit",
   })
   const router = useRouter()
 
@@ -76,6 +77,7 @@ export function AddItemForm() {
       scheduled_time: "",
       priority: template.priority || "medium",
       selected_days: [],
+      category: "habit",
     })
     setActiveTab("manual")
   }
@@ -103,6 +105,7 @@ export function AddItemForm() {
         scheduled_time: formData.scheduled_time || null,
         priority: formData.priority,
         selected_days: formData.selected_days,
+        category: formData.category,
       })
 
       setFormData({
@@ -113,6 +116,7 @@ export function AddItemForm() {
         scheduled_time: "",
         priority: "medium",
         selected_days: [],
+        category: "habit",
       })
       setSearchQuery("")
       setSelectedCategory("all")
@@ -347,6 +351,29 @@ export function AddItemForm() {
                 />
               </div>
             )}
+            {/* Category Selector */}
+            {formData.type && (
+              <div className="grid gap-2">
+                <Label htmlFor="category">Kategori</Label>
+                <Select
+                  value={formData.category}
+                  onValueChange={(value) =>
+                    setFormData({
+                      ...formData,
+                      category: value as "task" | "habit",
+                    })
+                  }
+                >
+                  <SelectTrigger id="category">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="habit">Alışkanlık</SelectItem>
+                    <SelectItem value="task">Görev</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
             {/* Day Selector for all types */}
             {formData.type && (
               <div className="grid gap-2">
@@ -375,6 +402,7 @@ export function AddItemForm() {
                     scheduled_time: "",
                     priority: "medium",
                     selected_days: [],
+                    category: "habit",
                   })
                   setActiveTab("templates")
                 }}

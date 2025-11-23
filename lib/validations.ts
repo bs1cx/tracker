@@ -15,6 +15,7 @@ export const trackableSchema = z.object({
     ),
   priority: z.enum(["low", "medium", "high"]).optional(),
   selected_days: z.array(z.string()).min(1, "En az 1 gün seçmelisiniz"),
+  category: z.enum(["task", "habit"]).optional(),
 })
 
 export const updateTrackableSchema = z.object({

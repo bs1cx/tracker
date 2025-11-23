@@ -48,7 +48,18 @@ export function CalendarWidget({ trackables }: CalendarWidgetProps) {
   }
 
   const getTrackablesForDay = (date: Date) => {
+    const dateStart = startOfDay(date)
+    
     return trackables.filter((trackable) => {
+      // Only show trackables created on or before this date
+      if (trackable.created_at) {
+        const createdDate = new Date(trackable.created_at)
+        const createdDateStart = startOfDay(createdDate)
+        if (dateStart < createdDateStart) {
+          return false // Don't show trackables before they were created
+        }
+      }
+      
       // Check if trackable has selected days
       if (
         trackable.selected_days &&
