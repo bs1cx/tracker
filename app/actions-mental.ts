@@ -243,15 +243,22 @@ export async function addMeditationSession(data: {
       : validated.type === "guided" ? "guided"
       : "other"
 
+    // Build insert data, only include type if it's provided
+    const insertData: any = {
+      user_id: user.id,
+      duration_minutes: validated.duration_minutes,
+      notes: validated.notes || null,
+      log_date: getCurrentISODate(),
+    }
+
+    // Only add type if it's provided and column exists
+    if (validated.type) {
+      insertData.type = sessionType
+    }
+
     const { data: insertedData, error } = await supabase
       .from("meditation_sessions")
-      .insert({
-        user_id: user.id,
-        duration_minutes: validated.duration_minutes,
-        type: sessionType,
-        notes: validated.notes || null,
-        log_date: getCurrentISODate(),
-      })
+      .insert(insertData)
       .select()
 
     if (error) {
@@ -336,17 +343,32 @@ export async function addJournalEntry(data: {
       }
     }
 
+    // Build insert data, only include columns that exist
+    const insertData: any = {
+      user_id: user.id,
+      title: validated.title || null,
+      content: validated.content,
+      log_date: getCurrentISODate(),
+    }
+
+    // Only add mood_before if provided
+    if (validated.mood_before !== undefined) {
+      insertData.mood_before = validated.mood_before
+    }
+
+    // Only add mood_after if provided
+    if (validated.mood_after !== undefined) {
+      insertData.mood_after = validated.mood_after
+    }
+
+    // Only add tags if provided
+    if (validated.tags !== undefined) {
+      insertData.tags = validated.tags
+    }
+
     const { data: insertedData, error } = await supabase
       .from("journal_entries")
-      .insert({
-        user_id: user.id,
-        title: validated.title || null,
-        content: validated.content,
-        mood_before: validated.mood_before || null,
-        mood_after: validated.mood_after || null,
-        tags: validated.tags || null,
-        log_date: getCurrentISODate(),
-      })
+      .insert(insertData)
       .select()
 
     if (error) {
