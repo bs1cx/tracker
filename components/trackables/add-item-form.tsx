@@ -82,6 +82,13 @@ export function AddItemForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    
+    // Validate that at least one day is selected
+    if (formData.selected_days.length === 0) {
+      alert("Lütfen en az 1 gün seçiniz")
+      return
+    }
+    
     setIsLoading(true)
 
     try {
@@ -95,7 +102,7 @@ export function AddItemForm() {
         reset_frequency: formData.reset_frequency,
         scheduled_time: formData.scheduled_time || null,
         priority: formData.priority,
-        selected_days: formData.selected_days.length > 0 ? formData.selected_days : null,
+        selected_days: formData.selected_days,
       })
 
       setFormData({
@@ -344,11 +351,12 @@ export function AddItemForm() {
             {formData.type && (
               <div className="grid gap-2">
                 <DaySelector
-                  label="Haftanın Günleri (Opsiyonel - Boş bırakılırsa tüm günler)"
+                  label="Haftanın Günleri"
                   value={formData.selected_days}
                   onChange={(days) =>
                     setFormData({ ...formData, selected_days: days })
                   }
+                  required={true}
                 />
               </div>
             )}

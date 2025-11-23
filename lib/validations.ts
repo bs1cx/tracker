@@ -14,7 +14,7 @@ export const trackableSchema = z.object({
       "Geçerli bir saat formatı giriniz (HH:MM)"
     ),
   priority: z.enum(["low", "medium", "high"]).optional(),
-  selected_days: z.array(z.string()).optional().nullable(),
+  selected_days: z.array(z.string()).min(1, "En az 1 gün seçmelisiniz"),
 })
 
 export const updateTrackableSchema = z.object({
@@ -27,7 +27,7 @@ export const updateTrackableSchema = z.object({
   reset_frequency: z.enum(["daily", "weekly", "none"]).optional(),
   priority: z.enum(["low", "medium", "high"]).optional(),
   scheduled_time: z.string().nullable().optional(),
-  selected_days: z.array(z.string()).optional().nullable(),
+  selected_days: z.array(z.string()).min(1, "En az 1 gün seçmelisiniz").optional().nullable(),
 })
 
 export const incrementProgressSchema = z.object({

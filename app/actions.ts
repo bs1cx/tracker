@@ -49,8 +49,11 @@ export async function createTrackable(data: {
     if (data.priority) {
       insertData.priority = data.priority
     }
+    // selected_days is now required, so always include it
     if (data.selected_days && data.selected_days.length > 0) {
       insertData.selected_days = data.selected_days
+    } else {
+      throw new Error("En az 1 gün seçmelisiniz")
     }
 
     const { error, data: insertedData } = await supabase

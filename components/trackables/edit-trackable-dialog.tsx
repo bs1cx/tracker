@@ -56,6 +56,13 @@ export function EditTrackableDialog({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    
+    // Validate that at least one day is selected
+    if (selectedDays.length === 0) {
+      alert("Lütfen en az 1 gün seçiniz")
+      return
+    }
+    
     setIsLoading(true)
     try {
       await onUpdate(trackable.id, {
@@ -65,6 +72,7 @@ export function EditTrackableDialog({
         target_value: targetValue ? parseInt(targetValue) : null,
         priority: priority as any,
         scheduled_time: scheduledTime || null,
+        selected_days: selectedDays,
       })
       setOpen(false)
     } catch (error) {
@@ -206,9 +214,10 @@ export function EditTrackableDialog({
             {/* Day Selector */}
             <div className="grid gap-2">
               <DaySelector
-                label="Haftanın Günleri (Opsiyonel - Boş bırakılırsa tüm günler)"
+                label="Haftanın Günleri"
                 value={selectedDays}
                 onChange={setSelectedDays}
+                required={true}
               />
             </div>
           </div>
