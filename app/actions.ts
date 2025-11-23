@@ -40,18 +40,42 @@ export async function createTrackable(data: {
       current_value: 0,
     }
 
-    if (data.scheduled_time) insertData.scheduled_time = data.scheduled_time
-    if (data.priority) insertData.priority = data.priority
+    // Only add optional fields if they are provided
+    if (data.scheduled_time && data.scheduled_time.trim() !== "") {
+      insertData.scheduled_time = data.scheduled_time
+    }
+    if (data.priority) {
+      insertData.priority = data.priority
+    } else {
+      // Default to medium if not provided
+      insertData.priority = "medium"
+    }
 
-    const { error } = await supabase.from("trackables").insert(insertData)
+    const { error, data: insertedData } = await supabase
+      .from("trackables")
+      .insert(insertData)
+      .select()
 
-    if (error) throw error
+    if (error) {
+      console.error("Supabase error creating trackable:", error)
+      // Check if it's a column missing error
+      if (error.message?.includes("column") || error.code === "42703") {
+        throw new Error(
+          "Database schema güncel değil. Lütfen migration script'ini çalıştırın: supabase-schema-priority-time.sql"
+        )
+      }
+      throw new Error(error.message || "Görev oluşturulurken bir hata oluştu")
+    }
 
     revalidatePath("/")
     return { success: true }
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error creating trackable:", error)
-    throw error
+    // Return a more user-friendly error message
+    if (error instanceof Error) {
+      throw new Error(error.message)
+    }
+    throw new Error("Görev oluşturulurken beklenmeyen bir hata oluştu")
   }
 }
 

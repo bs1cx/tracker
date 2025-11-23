@@ -107,9 +107,11 @@ export function AddItemForm() {
       setActiveTab("templates")
       setOpen(false)
       router.refresh()
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error creating trackable:", error)
-      alert(tr.trackables.failed)
+      const errorMessage =
+        error?.message || "Öğe oluşturulamadı. Lütfen tekrar deneyin."
+      alert(errorMessage)
     } finally {
       setIsLoading(false)
     }
@@ -130,9 +132,11 @@ export function AddItemForm() {
       setSearchQuery("")
       setSelectedCategory("all")
       router.refresh()
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error creating trackable:", error)
-      alert(tr.trackables.failed)
+      const errorMessage =
+        error?.message || "Öğe oluşturulamadı. Lütfen tekrar deneyin."
+      alert(errorMessage)
     } finally {
       setIsLoading(false)
     }

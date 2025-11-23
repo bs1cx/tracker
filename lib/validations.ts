@@ -5,7 +5,14 @@ export const trackableSchema = z.object({
   type: z.enum(["DAILY_HABIT", "ONE_TIME", "PROGRESS"]),
   target_value: z.number().int().positive().nullable().optional(),
   reset_frequency: z.enum(["daily", "weekly", "none"]).default("none"),
-  scheduled_time: z.string().nullable().optional(),
+  scheduled_time: z
+    .string()
+    .nullable()
+    .optional()
+    .refine(
+      (val) => !val || val.trim() === "" || /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/.test(val),
+      "Geçerli bir saat formatı giriniz (HH:MM)"
+    ),
   priority: z.enum(["low", "medium", "high"]).optional(),
 })
 
