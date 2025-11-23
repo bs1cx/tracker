@@ -227,10 +227,14 @@ export function DashboardContent({
 
   return (
     <div className="space-y-8">
-      {/* Calendar Widget - Smaller, centered */}
+      {/* Calendar Widget - Same width as 2 widgets below */}
       {calendarWidget && (
-        <div className="w-full max-w-4xl mx-auto">
-          {renderWidget("calendar")}
+        <div className="w-full">
+          <div className="grid gap-6 md:grid-cols-2">
+            <div className="md:col-span-2">
+              {renderWidget("calendar")}
+            </div>
+          </div>
         </div>
       )}
 
