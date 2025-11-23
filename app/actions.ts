@@ -219,7 +219,7 @@ export async function updateTrackable(data: {
   scheduled_time?: string | null
   selected_days?: string[] | null
   category?: "task" | "habit"
-  start_date?: string
+  start_date?: string | null
 }) {
   try {
     const validated = updateTrackableSchema.parse(data)
