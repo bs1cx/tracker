@@ -26,21 +26,21 @@ export function Widget({
   return (
     <Card
       className={cn(
-        "relative group transition-all hover:shadow-lg",
+        "relative group transition-all hover:shadow-xl border-slate-700/50 bg-gradient-to-br from-slate-800/80 to-slate-900/80 backdrop-blur-sm",
         isDragging && "opacity-50",
         className
       )}
     >
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <div className="flex items-center gap-2">
-          <GripVertical className="h-4 w-4 text-muted-foreground cursor-move" />
-          <CardTitle className="text-base font-semibold">{title}</CardTitle>
+          <GripVertical className="h-4 w-4 text-slate-500 cursor-move" />
+          <CardTitle className="text-base font-semibold text-[#60a5fa]">{title}</CardTitle>
         </div>
         {onRemove && (
           <Button
             variant="ghost"
             size="icon"
-            className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+            className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity text-slate-400 hover:text-slate-200"
             onClick={() => onRemove(id)}
           >
             <X className="h-4 w-4" />

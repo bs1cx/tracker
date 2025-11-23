@@ -41,26 +41,26 @@ export function DigitalClock() {
   const seconds = time.getSeconds().toString().padStart(2, "0")
 
   return (
-    <Card className="border-2 bg-gradient-to-br from-background to-muted/30 backdrop-blur-sm">
+    <Card className="border border-slate-700/50 bg-gradient-to-br from-slate-800/80 to-slate-900/80 backdrop-blur-sm shadow-xl">
       <CardContent className="p-4">
         <div className="flex flex-col items-center justify-center space-y-2">
           {/* Digital Clock */}
           <div className="flex items-baseline gap-1">
-            <div className="text-5xl font-mono font-bold tabular-nums bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text text-transparent">
+            <div className="text-5xl font-mono font-bold tabular-nums bg-gradient-to-r from-[#60a5fa] to-[#3b82f6] bg-clip-text text-transparent">
               {hours}
             </div>
-            <div className="text-5xl font-mono font-bold text-muted-foreground animate-pulse">
+            <div className="text-5xl font-mono font-bold text-[#60a5fa]/60 animate-pulse">
               :
             </div>
-            <div className="text-5xl font-mono font-bold tabular-nums bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text text-transparent">
+            <div className="text-5xl font-mono font-bold tabular-nums bg-gradient-to-r from-[#60a5fa] to-[#3b82f6] bg-clip-text text-transparent">
               {minutes}
             </div>
-            <div className="text-3xl font-mono font-semibold text-muted-foreground/60 ml-2">
+            <div className="text-3xl font-mono font-semibold text-[#60a5fa]/50 ml-2">
               {seconds}
             </div>
           </div>
           {/* Date */}
-          <div className="text-sm font-medium text-muted-foreground capitalize">
+          <div className="text-sm font-medium text-slate-400 capitalize">
             {formatDate(date)}
           </div>
         </div>

@@ -95,7 +95,7 @@ export default async function Dashboard() {
   const progressTrackers = trackables.filter((t) => t.type === "PROGRESS")
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
+    <div className="min-h-screen bg-gradient-to-br from-[#0f172a] via-[#1e293b] to-[#0f172a]">
       <div className="container mx-auto px-4 py-8 max-w-7xl">
         {/* Header with Clock */}
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">
@@ -106,10 +106,10 @@ export default async function Dashboard() {
           {/* Header Content */}
           <div className="lg:col-span-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
-              <h1 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+              <h1 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-[#60a5fa] via-[#3b82f6] to-[#60a5fa] bg-clip-text text-transparent">
                 {tr.dashboard.title}
               </h1>
-              <p className="text-muted-foreground mt-2 text-lg">
+              <p className="text-slate-400 mt-2 text-lg">
                 {tr.dashboard.subtitle}
               </p>
             </div>

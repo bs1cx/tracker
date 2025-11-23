@@ -57,9 +57,9 @@ export function ProgressTracker({ trackable }: ProgressTrackerProps) {
   }
 
   return (
-    <Card className="group">
+    <Card className="group border-slate-700/50 bg-gradient-to-br from-slate-800/80 to-slate-900/80 backdrop-blur-sm shadow-xl">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-base">{trackable.title}</CardTitle>
+        <CardTitle className="text-base text-slate-200">{trackable.title}</CardTitle>
         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
           <EditTrackableDialog
             trackable={trackable}
@@ -82,7 +82,7 @@ export function ProgressTracker({ trackable }: ProgressTrackerProps) {
             >
               <Minus className="h-4 w-4" />
             </Button>
-            <span className="text-2xl font-bold min-w-[3rem] text-center">
+            <span className="text-2xl font-bold min-w-[3rem] text-center text-[#60a5fa]">
               {currentValue}
             </span>
             <Button
@@ -95,7 +95,7 @@ export function ProgressTracker({ trackable }: ProgressTrackerProps) {
             </Button>
           </div>
           {trackable.target_value && (
-            <span className="text-sm text-muted-foreground">
+            <span className="text-sm text-slate-400">
               / {trackable.target_value}
             </span>
           )}

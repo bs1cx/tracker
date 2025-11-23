@@ -45,7 +45,7 @@ export function TaskCard({ trackable }: TaskCardProps) {
   return (
     <Card
       className={cn(
-        "transition-all hover:shadow-md group",
+        "transition-all hover:shadow-lg group border-slate-700/50 bg-gradient-to-br from-slate-800/80 to-slate-900/80 backdrop-blur-sm",
         isCompleted && "opacity-60"
       )}
     >
@@ -86,14 +86,14 @@ export function TaskCard({ trackable }: TaskCardProps) {
           </div>
           <div className="flex items-center gap-3 mt-1">
             {trackable.last_completed_at && (
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-slate-400">
                 {tr.trackables.lastCompleted}{" "}
                 {formatDate(trackable.last_completed_at, "PP")}
               </p>
             )}
             {trackable.scheduled_time && (
-              <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                <Clock className="h-3 w-3" />
+              <div className="flex items-center gap-1 text-xs text-slate-400">
+                <Clock className="h-3 w-3 text-[#60a5fa]" />
                 {trackable.scheduled_time}
               </div>
             )}

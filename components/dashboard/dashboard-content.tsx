@@ -64,14 +64,14 @@ export function DashboardContent({
           >
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1">
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <CheckCircle2 className="h-4 w-4" />
+                <div className="flex items-center gap-2 text-sm text-slate-400">
+                  <CheckCircle2 className="h-4 w-4 text-[#60a5fa]" />
                   Günlük Alışkanlıklar
                 </div>
-                <div className="text-2xl font-bold">
+                <div className="text-2xl font-bold text-[#60a5fa]">
                   {completedToday}/{totalHabits}
                 </div>
-                <div className="text-xs text-muted-foreground">
+                <div className="text-xs text-slate-500">
                   {totalHabits > 0
                     ? Math.round((completedToday / totalHabits) * 100)
                     : 0}
@@ -79,14 +79,14 @@ export function DashboardContent({
                 </div>
               </div>
               <div className="space-y-1">
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <Clock className="h-4 w-4" />
+                <div className="flex items-center gap-2 text-sm text-slate-400">
+                  <Clock className="h-4 w-4 text-[#60a5fa]" />
                   Görevler
                 </div>
-                <div className="text-2xl font-bold">
+                <div className="text-2xl font-bold text-[#60a5fa]">
                   {completedTasks}/{totalTasks}
                 </div>
-                <div className="text-xs text-muted-foreground">
+                <div className="text-xs text-slate-500">
                   {totalTasks > 0
                     ? Math.round((completedTasks / totalTasks) * 100)
                     : 0}
@@ -94,11 +94,11 @@ export function DashboardContent({
                 </div>
               </div>
               <div className="space-y-1 col-span-2">
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <TrendingUp className="h-4 w-4" />
+                <div className="flex items-center gap-2 text-sm text-slate-400">
+                  <TrendingUp className="h-4 w-4 text-[#60a5fa]" />
                   Toplam İlerleme
                 </div>
-                <div className="text-2xl font-bold">
+                <div className="text-2xl font-bold text-[#60a5fa]">
                   {progressTrackers.length} takipçi
                 </div>
               </div>
@@ -117,13 +117,13 @@ export function DashboardContent({
                 progressTrackers.slice(0, 3).map((trackable) => (
                   <div
                     key={trackable.id}
-                    className="flex items-center justify-between p-2 rounded-lg bg-muted/50"
+                    className="flex items-center justify-between p-3 rounded-lg bg-slate-700/30 border border-slate-700/50 hover:bg-slate-700/50 transition-colors"
                   >
                     <div className="flex-1 min-w-0">
-                      <div className="text-sm font-medium truncate">
+                      <div className="text-sm font-medium truncate text-slate-200">
                         {trackable.title}
                       </div>
-                      <div className="text-xs text-muted-foreground">
+                      <div className="text-xs text-slate-400">
                         {trackable.current_value}
                         {trackable.target_value
                           ? ` / ${trackable.target_value}`
@@ -131,7 +131,7 @@ export function DashboardContent({
                       </div>
                     </div>
                     {trackable.target_value && (
-                      <div className="text-xs font-medium ml-2">
+                      <div className="text-xs font-medium ml-2 text-[#60a5fa]">
                         {Math.round(
                           (trackable.current_value / trackable.target_value) *
                             100
@@ -236,7 +236,7 @@ export function DashboardContent({
         {dailyHabits.length > 0 && (
           <section>
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-2xl font-semibold">
+              <h2 className="text-2xl font-semibold text-[#60a5fa]">
                 {tr.dashboard.dailyHabits}
               </h2>
             </div>
@@ -252,7 +252,7 @@ export function DashboardContent({
         {oneTimeTasks.length > 0 && (
           <section>
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-2xl font-semibold">
+              <h2 className="text-2xl font-semibold text-[#60a5fa]">
                 {tr.dashboard.oneTimeTasks}
               </h2>
             </div>
@@ -268,7 +268,7 @@ export function DashboardContent({
         {progressTrackers.length > 0 && (
           <section>
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-2xl font-semibold">
+              <h2 className="text-2xl font-semibold text-[#60a5fa]">
                 {tr.dashboard.progressTrackers}
               </h2>
             </div>
