@@ -125,9 +125,19 @@ export function AddItemForm() {
       router.refresh()
     } catch (error: any) {
       console.error("Error creating trackable:", error)
-      const errorMessage =
-        error?.message || "Öğe oluşturulamadı. Lütfen tekrar deneyin."
-      alert(errorMessage)
+      console.error("Full error object:", error)
+      
+      // Extract error message
+      let errorMessage = "Öğe oluşturulamadı. Lütfen tekrar deneyin."
+      
+      if (error?.message) {
+        errorMessage = error.message
+      } else if (error?.toString) {
+        errorMessage = error.toString()
+      }
+      
+      // Show error with instructions
+      alert(`Hata: ${errorMessage}\n\nEğer "Database kolonu eksik" hatası alıyorsanız, Supabase SQL Editor'de migration script'lerini çalıştırmanız gerekiyor.`)
     } finally {
       setIsLoading(false)
     }
@@ -150,9 +160,19 @@ export function AddItemForm() {
       router.refresh()
     } catch (error: any) {
       console.error("Error creating trackable:", error)
-      const errorMessage =
-        error?.message || "Öğe oluşturulamadı. Lütfen tekrar deneyin."
-      alert(errorMessage)
+      console.error("Full error object:", error)
+      
+      // Extract error message
+      let errorMessage = "Öğe oluşturulamadı. Lütfen tekrar deneyin."
+      
+      if (error?.message) {
+        errorMessage = error.message
+      } else if (error?.toString) {
+        errorMessage = error.toString()
+      }
+      
+      // Show error with instructions
+      alert(`Hata: ${errorMessage}\n\nEğer "Database kolonu eksik" hatası alıyorsanız, Supabase SQL Editor'de migration script'lerini çalıştırmanız gerekiyor.`)
     } finally {
       setIsLoading(false)
     }

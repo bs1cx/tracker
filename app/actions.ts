@@ -138,18 +138,19 @@ export async function createTrackable(data: {
     console.error("Error creating trackable:", error)
     console.error("Error stack:", error?.stack)
     console.error("Error name:", error?.name)
-    console.error("Error code:", error?.code)
+    console.error("Error code:", (error as any)?.code)
     console.error("Error message:", error?.message)
     
     // Try to extract more details from Supabase errors
-    if (error?.code) {
-      console.error("Supabase error code:", error.code)
+    const errorCode = (error as any)?.code
+    if (errorCode) {
+      console.error("Supabase error code:", errorCode)
     }
-    if (error?.details) {
-      console.error("Supabase error details:", error.details)
+    if ((error as any)?.details) {
+      console.error("Supabase error details:", (error as any).details)
     }
-    if (error?.hint) {
-      console.error("Supabase error hint:", error.hint)
+    if ((error as any)?.hint) {
+      console.error("Supabase error hint:", (error as any).hint)
     }
     
     // For server actions, we need to throw errors, not return them
@@ -163,23 +164,23 @@ export async function createTrackable(data: {
       }
       
       // Check if it's a database column error
-      if (errorMsg.includes("column") || errorMsg.includes("42703") || error?.code === "42703") {
+      if (errorMsg.includes("column") || errorMsg.includes("42703") || errorCode === "42703") {
         throw new Error(
-          `Database kolonu eksik (Hata kodu: ${error?.code || "42703"}). Lütfen Supabase SQL Editor'de şu migration script'lerini sırayla çalıştırın:\n\n1. supabase-migration-complete.sql\n2. supabase-schema-category.sql\n\nNot: Sadece SQL içeriğini kopyalayın, "use server" veya "use client" gibi JavaScript kodlarını eklemeyin.`
+          `Database kolonu eksik (Hata kodu: ${errorCode || "42703"}). Lütfen Supabase SQL Editor'de şu migration script'lerini sırayla çalıştırın:\n\n1. supabase-migration-complete.sql\n2. supabase-schema-category.sql\n\nNot: Sadece SQL içeriğini kopyalayın, "use server" veya "use client" gibi JavaScript kodlarını eklemeyin.`
         )
       }
       
       // Check for other common Supabase errors
-      if (error?.code === "23505") {
+      if (errorCode === "23505") {
         throw new Error("Bu öğe zaten mevcut. Lütfen farklı bir isim deneyin.")
       }
-      if (error?.code === "23503") {
+      if (errorCode === "23503") {
         throw new Error("Geçersiz referans. Lütfen verilerinizi kontrol edin.")
       }
       
       // Include error code in message for debugging
-      const errorCode = error?.code ? ` (Kod: ${error.code})` : ""
-      throw new Error(`${errorMsg}${errorCode}`)
+      const codeStr = errorCode ? ` (Kod: ${errorCode})` : ""
+      throw new Error(`${errorMsg}${codeStr}`)
     }
     
     // For non-Error objects, try to stringify
