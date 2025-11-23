@@ -146,6 +146,7 @@ CREATE TABLE IF NOT EXISTS focus_sessions (
     end_time TIMESTAMPTZ,
     duration_minutes INTEGER,
     notes TEXT,
+    log_date DATE NOT NULL DEFAULT CURRENT_DATE,
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
