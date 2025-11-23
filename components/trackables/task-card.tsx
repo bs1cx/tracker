@@ -60,8 +60,8 @@ export function TaskCard({ trackable }: TaskCardProps) {
           <div className="flex items-center gap-2">
             <p
               className={cn(
-                "text-sm font-medium",
-                isCompleted && "line-through text-muted-foreground"
+                "text-sm font-medium text-slate-200",
+                isCompleted && "line-through text-slate-500"
               )}
             >
               {trackable.title}
