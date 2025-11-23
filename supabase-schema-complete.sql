@@ -451,6 +451,10 @@ CREATE POLICY "Users can manage own budget_categories" ON budget_categories FOR 
 -- ============================================
 
 -- Function to get user trackables with completion status
+-- Drop existing function first to avoid return type conflict
+DROP FUNCTION IF EXISTS get_user_trackables(uuid);
+
+-- Create the function with the updated return type
 CREATE OR REPLACE FUNCTION get_user_trackables(p_user_id UUID)
 RETURNS TABLE (
     id UUID,
@@ -477,7 +481,25 @@ RETURNS TABLE (
 BEGIN
     RETURN QUERY
     SELECT 
-        t.*,
+        t.id,
+        t.user_id,
+        t.title,
+        t.type,
+        t.status,
+        t.current_value,
+        t.target_value,
+        t.last_completed_at,
+        t.reset_frequency,
+        t.priority,
+        t.scheduled_time,
+        t.selected_days,
+        t.category,
+        t.start_date,
+        t.scheduled_date,
+        t.is_recurring,
+        t.recurrence_rule,
+        t.created_at,
+        t.updated_at,
         CASE 
             WHEN t.type = 'DAILY_HABIT' THEN
                 (t.last_completed_at IS NOT NULL AND DATE(t.last_completed_at) = CURRENT_DATE)
