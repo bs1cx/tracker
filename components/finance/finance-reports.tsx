@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
+import { useRouter } from "next/navigation"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line } from "recharts"
@@ -15,24 +16,51 @@ interface FinanceReportsProps {
 }
 
 export function FinanceReports({ monthlySummary: initialSummary }: FinanceReportsProps) {
+  const router = useRouter()
   const [monthlySummary, setMonthlySummary] = useState(initialSummary)
   const [weeklyData, setWeeklyData] = useState<any>(null)
   const [loading, setLoading] = useState(false)
 
+  // Load all finance data
+  const loadFinanceData = async () => {
+    setLoading(true)
+    try {
+      const [monthly, weekly] = await Promise.all([
+        getMonthlyFinanceSummary(),
+        getWeeklyFinanceData(),
+      ])
+      setMonthlySummary(monthly)
+      setWeeklyData(weekly)
+    } catch (error) {
+      console.error("Error loading finance data:", error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Initial load
   useEffect(() => {
-    const loadWeeklyData = async () => {
-      setLoading(true)
-      try {
-        const data = await getWeeklyFinanceData()
-        setWeeklyData(data)
-      } catch (error) {
-        console.error("Error loading weekly finance data:", error)
-      } finally {
-        setLoading(false)
-      }
+    loadFinanceData()
+  }, [])
+
+  // Listen for finance data updates (when forms are submitted)
+  useEffect(() => {
+    const handleFinanceUpdate = () => {
+      loadFinanceData()
     }
 
-    loadWeeklyData()
+    // Listen for custom event
+    window.addEventListener('financeDataUpdated', handleFinanceUpdate)
+    
+    // Also listen for router refresh
+    const interval = setInterval(() => {
+      loadFinanceData()
+    }, 5000) // Refresh every 5 seconds
+
+    return () => {
+      window.removeEventListener('financeDataUpdated', handleFinanceUpdate)
+      clearInterval(interval)
+    }
   }, [])
 
   // Prepare pie chart data for expenses

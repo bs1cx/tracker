@@ -59,6 +59,8 @@ export function IncomeForm() {
         setAmount("")
         setSource("")
         setDescription("")
+        // Dispatch custom event to update finance reports
+        window.dispatchEvent(new Event('financeDataUpdated'))
         setTimeout(() => router.refresh(), 100)
       } else {
         alert(result?.error || "Gelir eklenirken bir hata oluştu.")

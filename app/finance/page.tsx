@@ -2,12 +2,11 @@ import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
 import { tr } from "@/lib/i18n"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
 import { ExpenseForm } from "@/components/finance/expense-form"
 import { IncomeForm } from "@/components/finance/income-form"
 import { FinanceReports } from "@/components/finance/finance-reports"
 import { FinancialRules } from "@/components/finance/financial-rules"
-import { TrendingDown, TrendingUp, Wallet, BarChart3 } from "lucide-react"
+import { FinanceSummaryCards } from "@/components/finance/finance-summary-cards"
 import { getMonthlyFinanceSummary } from "@/app/actions-finance"
 
 export const dynamic = 'force-dynamic'
@@ -39,69 +38,7 @@ export default async function FinancePage() {
         </div>
 
         {/* Summary Cards */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-6">
-          <Card className="border-slate-700/50 bg-gradient-to-br from-slate-800/80 to-slate-900/80 backdrop-blur-sm">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-slate-200">
-                <TrendingDown className="h-5 w-5 text-red-500" />
-                {tr.finance.expenses}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-2xl font-bold text-slate-200">
-                ₺{monthlySummary?.totalExpenses?.toFixed(2) || "0.00"}
-              </p>
-              <p className="text-sm text-slate-400 mt-1">Bu Ay</p>
-            </CardContent>
-          </Card>
-
-          <Card className="border-slate-700/50 bg-gradient-to-br from-slate-800/80 to-slate-900/80 backdrop-blur-sm">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-slate-200">
-                <TrendingUp className="h-5 w-5 text-green-500" />
-                {tr.finance.income}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-2xl font-bold text-slate-200">
-                ₺{monthlySummary?.totalIncome?.toFixed(2) || "0.00"}
-              </p>
-              <p className="text-sm text-slate-400 mt-1">Bu Ay</p>
-            </CardContent>
-          </Card>
-
-          <Card className="border-slate-700/50 bg-gradient-to-br from-slate-800/80 to-slate-900/80 backdrop-blur-sm">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-slate-200">
-                <Wallet className="h-5 w-5 text-blue-500" />
-                Bakiye
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className={`text-2xl font-bold ${(monthlySummary?.balance || 0) >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                ₺{monthlySummary?.balance?.toFixed(2) || "0.00"}
-              </p>
-              <p className="text-sm text-slate-400 mt-1">Net Durum</p>
-            </CardContent>
-          </Card>
-
-          <Card className="border-slate-700/50 bg-gradient-to-br from-slate-800/80 to-slate-900/80 backdrop-blur-sm">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-slate-200">
-                <BarChart3 className="h-5 w-5 text-purple-500" />
-                Tasarruf Oranı
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-2xl font-bold text-slate-200">
-                {monthlySummary && monthlySummary.totalIncome > 0
-                  ? `${((monthlySummary.balance / monthlySummary.totalIncome) * 100).toFixed(1)}%`
-                  : "0%"}
-              </p>
-              <p className="text-sm text-slate-400 mt-1">Gelir oranı</p>
-            </CardContent>
-          </Card>
-        </div>
+        <FinanceSummaryCards initialSummary={monthlySummary} />
 
         {/* Forms */}
         <div className="grid gap-6 md:grid-cols-2 mb-6">

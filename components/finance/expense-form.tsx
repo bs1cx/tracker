@@ -60,6 +60,8 @@ export function ExpenseForm() {
         setAmount("")
         setCategory("")
         setDescription("")
+        // Dispatch custom event to update finance reports
+        window.dispatchEvent(new Event('financeDataUpdated'))
         setTimeout(() => router.refresh(), 100)
       } else {
         alert(result?.error || "Harcama eklenirken bir hata oluştu.")
