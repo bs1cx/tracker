@@ -81,12 +81,24 @@ export function FinanceReports({ monthlySummary: initialSummary }: FinanceReport
 
   // Prepare weekly chart data
   const weeklyChartData = weeklyData?.dailyData
-    ? Object.entries(weeklyData.dailyData).map(([date, data]: [string, any]) => ({
-        date: format(new Date(date), "dd/MM"),
-        expenses: data.expenses,
-        income: data.income,
-        balance: data.income - data.expenses,
-      }))
+    ? Object.entries(weeklyData.dailyData).map(([date, data]: [string, any]) => {
+        try {
+          return {
+            date: format(new Date(date), "dd/MM"),
+            expenses: Number(data?.expenses || 0),
+            income: Number(data?.income || 0),
+            balance: Number(data?.income || 0) - Number(data?.expenses || 0),
+          }
+        } catch (error) {
+          console.error("Error formatting weekly chart data:", error)
+          return {
+            date: date,
+            expenses: 0,
+            income: 0,
+            balance: 0,
+          }
+        }
+      })
     : []
 
   return (
@@ -168,7 +180,7 @@ export function FinanceReports({ monthlySummary: initialSummary }: FinanceReport
                       Tasarruf Oranı
                     </div>
                     <div className="text-2xl font-bold text-slate-200 mt-2">
-                      {monthlySummary?.totalIncome > 0
+                      {monthlySummary && monthlySummary.totalIncome > 0
                         ? `${((monthlySummary.balance / monthlySummary.totalIncome) * 100).toFixed(1)}%`
                         : "0%"}
                     </div>

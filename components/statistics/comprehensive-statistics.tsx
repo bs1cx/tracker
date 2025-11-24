@@ -192,11 +192,11 @@ export function ComprehensiveStatistics() {
   ]
 
   const moduleDistributionData = [
-    { name: "Sağlık", value: stats.health?.month?.count || 0, color: "#ef4444" },
-    { name: "Mental", value: stats.mental?.month?.journalCount || 0, color: "#a855f7" },
-    { name: "Verimlilik", value: stats.productivity?.month?.completedPomodoros || 0, color: "#3b82f6" },
-    { name: "Finans", value: (stats.finance?.month?.expenseCount || 0) + (stats.finance?.month?.incomeCount || 0), color: "#22c55e" },
-  ]
+    { name: "Sağlık", value: Number(stats?.health?.month?.count || 0), color: "#ef4444" },
+    { name: "Mental", value: Number(stats?.mental?.month?.journalCount || 0), color: "#a855f7" },
+    { name: "Verimlilik", value: Number(stats?.productivity?.month?.completedPomodoros || 0), color: "#3b82f6" },
+    { name: "Finans", value: Number(stats?.finance?.month?.expenseCount || 0) + Number(stats?.finance?.month?.incomeCount || 0), color: "#22c55e" },
+  ].filter(entry => entry.value > 0) // Only show modules with data
 
   return (
     <div className="space-y-6">
@@ -248,7 +248,7 @@ export function ComprehensiveStatistics() {
                   <Flame className="h-8 w-8 text-orange-500" />
                 </div>
                 <p className="text-xs text-slate-500 mt-2">
-                  {streaks.length > 0 ? `En uzun seri: ${Math.max(...streaks.map(s => s.currentStreak || 0))} gün` : "Seri yok"}
+                  {streaks && streaks.length > 0 ? `En uzun seri: ${Math.max(...streaks.map(s => s?.currentStreak || 0))} gün` : "Seri yok"}
                 </p>
               </CardContent>
             </Card>
@@ -328,8 +328,8 @@ export function ComprehensiveStatistics() {
                     fill="#8884d8"
                     dataKey="value"
                   >
-                    {moduleDistributionData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    {moduleDistributionData && moduleDistributionData.length > 0 && moduleDistributionData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry?.color || COLORS[index % COLORS.length]} />
                     ))}
                   </Pie>
                   <Tooltip />
@@ -339,7 +339,7 @@ export function ComprehensiveStatistics() {
           </Card>
 
           {/* Habit Streaks */}
-          {streaks.length > 0 && (
+          {streaks && streaks.length > 0 && (
             <Card className="border-slate-700/50 bg-slate-900/50">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-slate-200">
@@ -350,16 +350,16 @@ export function ComprehensiveStatistics() {
               <CardContent>
                 <div className="space-y-3">
                   {streaks.slice(0, 5).map((streak) => (
-                    <div key={streak.id} className="flex items-center justify-between p-3 border border-slate-700 rounded-lg bg-slate-800/50">
+                    <div key={streak?.id || Math.random()} className="flex items-center justify-between p-3 border border-slate-700 rounded-lg bg-slate-800/50">
                       <div className="flex-1">
-                        <p className="font-semibold text-slate-200">{streak.title}</p>
+                        <p className="font-semibold text-slate-200">{streak?.title || "Bilinmeyen"}</p>
                         <p className="text-sm text-slate-400">
-                          {streak.totalCompletions} tamamlanma
+                          {streak?.totalCompletions || 0} tamamlanma
                         </p>
                       </div>
                       <div className="text-right">
-                        <p className="text-lg font-bold text-orange-500">{streak.currentStreak || 0} 🔥</p>
-                        <p className="text-xs text-slate-500">En uzun: {streak.longestStreak || 0}</p>
+                        <p className="text-lg font-bold text-orange-500">{streak?.currentStreak || 0} 🔥</p>
+                        <p className="text-xs text-slate-500">En uzun: {streak?.longestStreak || 0}</p>
                       </div>
                     </div>
                   ))}
@@ -481,9 +481,9 @@ export function ComprehensiveStatistics() {
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>
                 <BarChart data={[
-                  { period: "Bugün", uyku: stats.health?.today?.totalSleep || 0, su: (stats.health?.today?.totalWater || 0) / 1000, adım: (stats.health?.today?.totalSteps || 0) / 1000, egzersiz: (stats.health?.today?.totalExercise || 0) / 60 },
-                  { period: "Bu Hafta", uyku: (stats.health?.week?.totalSleep || 0) / 7, su: (stats.health?.week?.totalWater || 0) / 7 / 1000, adım: (stats.health?.week?.totalSteps || 0) / 7 / 1000, egzersiz: (stats.health?.week?.totalExercise || 0) / 7 / 60 },
-                  { period: "Bu Ay", uyku: (stats.health?.month?.totalSleep || 0) / 30, su: (stats.health?.month?.totalWater || 0) / 30 / 1000, adım: (stats.health?.month?.totalSteps || 0) / 30 / 1000, egzersiz: (stats.health?.month?.totalExercise || 0) / 30 / 60 },
+                  { period: "Bugün", uyku: Number(stats?.health?.today?.totalSleep || 0), su: Number((stats?.health?.today?.totalWater || 0) / 1000), adım: Number((stats?.health?.today?.totalSteps || 0) / 1000), egzersiz: Number((stats?.health?.today?.totalExercise || 0) / 60) },
+                  { period: "Bu Hafta", uyku: Number((stats?.health?.week?.totalSleep || 0) / 7), su: Number((stats?.health?.week?.totalWater || 0) / 7 / 1000), adım: Number((stats?.health?.week?.totalSteps || 0) / 7 / 1000), egzersiz: Number((stats?.health?.week?.totalExercise || 0) / 7 / 60) },
+                  { period: "Bu Ay", uyku: Number((stats?.health?.month?.totalSleep || 0) / 30), su: Number((stats?.health?.month?.totalWater || 0) / 30 / 1000), adım: Number((stats?.health?.month?.totalSteps || 0) / 30 / 1000), egzersiz: Number((stats?.health?.month?.totalExercise || 0) / 30 / 60) },
                 ]}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#475569" />
                   <XAxis dataKey="period" stroke="#94a3b8" />
@@ -509,7 +509,7 @@ export function ComprehensiveStatistics() {
                   <div>
                     <p className="text-sm text-slate-400">Ortalama Ruh Hali</p>
                     <p className="text-2xl font-bold text-slate-200">
-                      {(stats.mental?.month?.avgMood || 0) > 0 ? (stats.mental.month.avgMood).toFixed(1) : "--"}/10
+                      {(stats?.mental?.month?.avgMood || 0) > 0 ? Number(stats.mental.month.avgMood).toFixed(1) : "--"}/10
                     </p>
                     <p className="text-xs text-slate-500 mt-1">
                       Bu ay
@@ -526,7 +526,7 @@ export function ComprehensiveStatistics() {
                   <div>
                     <p className="text-sm text-slate-400">Ortalama Motivasyon</p>
                     <p className="text-2xl font-bold text-slate-200">
-                      {(stats.mental?.month?.avgMotivation || 0) > 0 ? (stats.mental.month.avgMotivation).toFixed(1) : "--"}/10
+                      {(stats?.mental?.month?.avgMotivation || 0) > 0 ? Number(stats.mental.month.avgMotivation).toFixed(1) : "--"}/10
                     </p>
                     <p className="text-xs text-slate-500 mt-1">
                       Bu ay
@@ -761,7 +761,7 @@ export function ComprehensiveStatistics() {
                     <p className="text-sm text-slate-400">Tasarruf Oranı</p>
                     <p className="text-2xl font-bold text-slate-200">
                       {(stats.finance?.month?.totalIncome || 0) > 0
-                        ? `${(((stats.finance.month.balance || 0) / stats.finance.month.totalIncome) * 100).toFixed(1)}%`
+                        ? `${(((stats?.finance?.month?.balance || 0) / (stats?.finance?.month?.totalIncome || 1)) * 100).toFixed(1)}%`
                         : "0%"}
                     </p>
                     <p className="text-xs text-slate-500 mt-1">

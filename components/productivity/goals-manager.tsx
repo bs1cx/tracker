@@ -166,9 +166,12 @@ export function GoalsManager() {
         // Dispatch custom event to update other components
         window.dispatchEvent(new Event('productivityDataUpdated'))
         setTimeout(() => router.refresh(), 100)
+      } else {
+        alert(result?.error || "Hedef tamamlanırken bir hata oluştu.")
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error completing goal:", error)
+      alert(error?.message || "Hedef tamamlanırken bir hata oluştu.")
     }
   }
 

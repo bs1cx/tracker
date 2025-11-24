@@ -102,9 +102,12 @@ export function PomodoroTimer() {
         setTimeout(() => {
           router.refresh()
         }, 100)
+      } else {
+        alert(result?.error || "Pomodoro seansı kaydedilirken bir hata oluştu.")
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error saving pomodoro session:", error)
+      alert(error?.message || "Pomodoro seansı kaydedilirken bir hata oluştu.")
     }
   }
 
@@ -133,13 +136,17 @@ export function PomodoroTimer() {
       const elapsed = Math.floor((new Date().getTime() - startTimeRef.current.getTime()) / 1000 / 60)
       if (elapsed > 0) {
         try {
-          await addPomodoroSession({
+          const result = await addPomodoroSession({
             duration_minutes: elapsed,
             task_title: taskTitle || undefined,
             completed: false,
           })
-        } catch (error) {
+          if (result?.success) {
+            window.dispatchEvent(new Event('productivityDataUpdated'))
+          }
+        } catch (error: any) {
           console.error("Error saving incomplete pomodoro session:", error)
+          // Don't show alert for incomplete sessions, just log
         }
       }
     }
@@ -161,9 +168,18 @@ export function PomodoroTimer() {
   }
 
   const handleCustomDuration = () => {
-    const minutes = parseInt(customMinutes)
-    if (minutes > 0 && minutes <= 480) {
-      setDuration(minutes)
+    try {
+      const minutes = parseInt(customMinutes)
+      if (!isNaN(minutes) && minutes > 0 && minutes <= 480) {
+        setDuration(minutes)
+        setShowCustomInput(false)
+        setCustomMinutes("")
+      } else {
+        alert("Lütfen 1 ile 480 arasında bir değer giriniz.")
+      }
+    } catch (error) {
+      console.error("Error setting custom duration:", error)
+      alert("Geçersiz süre değeri. Lütfen tekrar deneyin.")
     }
   }
 
@@ -246,7 +262,16 @@ export function PomodoroTimer() {
           <div className="flex gap-2 items-center justify-center">
             <Select
               value={minutes.toString()}
-              onValueChange={(value) => setDuration(parseInt(value))}
+              onValueChange={(value) => {
+                try {
+                  const parsed = parseInt(value)
+                  if (!isNaN(parsed) && parsed > 0) {
+                    setDuration(parsed)
+                  }
+                } catch (error) {
+                  console.error("Error parsing duration:", error)
+                }
+              }}
               disabled={isRunning}
             >
               <SelectTrigger className="w-[140px]">
