@@ -63,6 +63,23 @@ export function DailyHealthSummaryCard() {
 
   useEffect(() => {
     loadSummary()
+    
+    // Listen for health data updates
+    const handleHealthUpdate = () => {
+      loadSummary()
+    }
+    
+    window.addEventListener('healthDataUpdated', handleHealthUpdate)
+    
+    // Also refresh periodically
+    const interval = setInterval(() => {
+      loadSummary()
+    }, 5000) // Refresh every 5 seconds
+    
+    return () => {
+      window.removeEventListener('healthDataUpdated', handleHealthUpdate)
+      clearInterval(interval)
+    }
   }, [])
 
   const loadSummary = async () => {
@@ -184,6 +201,8 @@ export function DailyHealthSummaryCard() {
         setIsEditing(false)
         setOpen(false)
         setIsLoading(false)
+        // Dispatch custom event to update other components
+        window.dispatchEvent(new Event('healthDataUpdated'))
         // Delay refresh to avoid hydration mismatch
         setTimeout(() => {
           router.refresh()

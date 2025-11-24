@@ -86,6 +86,8 @@ export function GoalsManager() {
           setEditingGoal(null)
           resetForm()
           loadGoals()
+          // Dispatch custom event to update other components
+          window.dispatchEvent(new Event('productivityDataUpdated'))
           setTimeout(() => router.refresh(), 100)
         } else {
           alert(result?.error || "Hedef güncellenirken bir hata oluştu.")
@@ -103,6 +105,8 @@ export function GoalsManager() {
           setOpen(false)
           resetForm()
           loadGoals()
+          // Dispatch custom event to update other components
+          window.dispatchEvent(new Event('productivityDataUpdated'))
           setTimeout(() => router.refresh(), 100)
         } else {
           alert(result?.error || "Hedef oluşturulurken bir hata oluştu.")
@@ -137,6 +141,8 @@ export function GoalsManager() {
       const result = await deleteGoal(goalId)
       if (result?.success) {
         loadGoals()
+        // Dispatch custom event to update other components
+        window.dispatchEvent(new Event('productivityDataUpdated'))
         setTimeout(() => router.refresh(), 100)
       } else {
         alert(result?.error || "Hedef silinirken bir hata oluştu.")
@@ -157,6 +163,8 @@ export function GoalsManager() {
 
       if (result?.success) {
         loadGoals()
+        // Dispatch custom event to update other components
+        window.dispatchEvent(new Event('productivityDataUpdated'))
         setTimeout(() => router.refresh(), 100)
       }
     } catch (error) {

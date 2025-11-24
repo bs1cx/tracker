@@ -61,10 +61,17 @@ export function TransactionsList() {
     }
 
     window.addEventListener('financeDataUpdated', handleFinanceUpdate)
+    
+    // Also refresh periodically
+    const interval = setInterval(() => {
+      loadData()
+    }, 5000) // Refresh every 5 seconds
+
     return () => {
       window.removeEventListener('financeDataUpdated', handleFinanceUpdate)
+      clearInterval(interval)
     }
-  }, [])
+  }, [filters]) // Add filters as dependency
 
   const loadData = async () => {
     setLoading(true)
@@ -75,13 +82,22 @@ export function TransactionsList() {
       if (filters.source) filterParams.source = filters.source
       if (filters.startDate) filterParams.startDate = filters.startDate
       if (filters.endDate) filterParams.endDate = filters.endDate
-      if (filters.minAmount) filterParams.minAmount = parseFloat(filters.minAmount)
-      if (filters.maxAmount) filterParams.maxAmount = parseFloat(filters.maxAmount)
+      if (filters.minAmount && filters.minAmount !== "") {
+        const min = parseFloat(filters.minAmount)
+        if (!isNaN(min)) filterParams.minAmount = min
+      }
+      if (filters.maxAmount && filters.maxAmount !== "") {
+        const max = parseFloat(filters.maxAmount)
+        if (!isNaN(max)) filterParams.maxAmount = max
+      }
 
       const data = await getTransactions(filterParams)
-      setTransactions(data)
+      if (data) {
+        setTransactions(data)
+      }
     } catch (error) {
       console.error("Error loading transactions:", error)
+      setTransactions({ expenses: [], income: [] })
     } finally {
       setLoading(false)
     }

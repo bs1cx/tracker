@@ -73,7 +73,8 @@ export function FocusMode() {
         setDuration(0)
         setDistractions(0)
         setNotes("")
-        
+        // Dispatch custom event to update other components
+        window.dispatchEvent(new Event('productivityDataUpdated'))
         setTimeout(() => {
           router.refresh()
         }, 100)

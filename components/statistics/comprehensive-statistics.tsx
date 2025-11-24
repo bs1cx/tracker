@@ -108,9 +108,27 @@ export function ComprehensiveStatistics() {
   useEffect(() => {
     loadData()
     
-    // Refresh every 30 seconds
+    // Listen for all data updates
+    const handleHealthUpdate = () => loadData()
+    const handleMentalUpdate = () => loadData()
+    const handleProductivityUpdate = () => loadData()
+    const handleFinanceUpdate = () => loadData()
+    
+    window.addEventListener('healthDataUpdated', handleHealthUpdate)
+    window.addEventListener('mentalDataUpdated', handleMentalUpdate)
+    window.addEventListener('productivityDataUpdated', handleProductivityUpdate)
+    window.addEventListener('financeDataUpdated', handleFinanceUpdate)
+    
+    // Also refresh periodically
     const interval = setInterval(loadData, 30000)
-    return () => clearInterval(interval)
+    
+    return () => {
+      window.removeEventListener('healthDataUpdated', handleHealthUpdate)
+      window.removeEventListener('mentalDataUpdated', handleMentalUpdate)
+      window.removeEventListener('productivityDataUpdated', handleProductivityUpdate)
+      window.removeEventListener('financeDataUpdated', handleFinanceUpdate)
+      clearInterval(interval)
+    }
   }, [])
 
   const loadData = async () => {

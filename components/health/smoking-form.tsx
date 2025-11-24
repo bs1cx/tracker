@@ -44,6 +44,8 @@ export function SmokingForm() {
         setNotes("")
         setOpen(false)
         setIsLoading(false)
+        // Dispatch custom event to update other components
+        window.dispatchEvent(new Event('healthDataUpdated'))
         // Delay refresh to avoid hydration mismatch
         setTimeout(() => {
           router.refresh()

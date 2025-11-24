@@ -157,6 +157,23 @@ export function WeeklyAnalysis({ selectedDate = new Date() }: WeeklyAnalysisProp
     }
 
     fetchWeekData()
+    
+    // Listen for health data updates
+    const handleHealthUpdate = () => {
+      fetchWeekData()
+    }
+    
+    window.addEventListener('healthDataUpdated', handleHealthUpdate)
+    
+    // Also refresh periodically
+    const interval = setInterval(() => {
+      fetchWeekData()
+    }, 5000) // Refresh every 5 seconds
+    
+    return () => {
+      window.removeEventListener('healthDataUpdated', handleHealthUpdate)
+      clearInterval(interval)
+    }
   }, [selectedDate])
 
   if (loading) {

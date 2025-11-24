@@ -97,7 +97,8 @@ export function PomodoroTimer() {
         setShowTaskInput(false)
         startTimeRef.current = null
         totalSecondsRef.current = defaultMinutes * 60
-        
+        // Dispatch custom event to update other components
+        window.dispatchEvent(new Event('productivityDataUpdated'))
         setTimeout(() => {
           router.refresh()
         }, 100)

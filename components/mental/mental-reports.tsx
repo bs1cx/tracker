@@ -66,6 +66,23 @@ export function MentalReports({ todayMood, todayMotivation, todayMeditation, tod
     }
 
     loadData()
+    
+    // Listen for mental data updates
+    const handleMentalUpdate = () => {
+      loadData()
+    }
+    
+    window.addEventListener('mentalDataUpdated', handleMentalUpdate)
+    
+    // Also refresh periodically
+    const interval = setInterval(() => {
+      loadData()
+    }, 5000) // Refresh every 5 seconds
+    
+    return () => {
+      window.removeEventListener('mentalDataUpdated', handleMentalUpdate)
+      clearInterval(interval)
+    }
   }, [])
 
   if (loading) {

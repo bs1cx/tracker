@@ -59,6 +59,23 @@ export function ProductivityReports({ todayPomodoro, todayFocus, todayTotal }: P
     }
 
     loadData()
+    
+    // Listen for productivity data updates
+    const handleProductivityUpdate = () => {
+      loadData()
+    }
+    
+    window.addEventListener('productivityDataUpdated', handleProductivityUpdate)
+    
+    // Also refresh periodically
+    const interval = setInterval(() => {
+      loadData()
+    }, 5000) // Refresh every 5 seconds
+    
+    return () => {
+      window.removeEventListener('productivityDataUpdated', handleProductivityUpdate)
+      clearInterval(interval)
+    }
   }, [])
 
   if (loading) {

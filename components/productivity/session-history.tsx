@@ -25,6 +25,23 @@ export function SessionHistory() {
     }
 
     loadSessions()
+    
+    // Listen for productivity data updates
+    const handleProductivityUpdate = () => {
+      loadSessions()
+    }
+    
+    window.addEventListener('productivityDataUpdated', handleProductivityUpdate)
+    
+    // Also refresh periodically
+    const interval = setInterval(() => {
+      loadSessions()
+    }, 5000) // Refresh every 5 seconds
+    
+    return () => {
+      window.removeEventListener('productivityDataUpdated', handleProductivityUpdate)
+      clearInterval(interval)
+    }
   }, [])
 
   const formatDate = (dateStr: string) => {

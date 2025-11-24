@@ -62,6 +62,8 @@ export function MeditationForm() {
         setNotes("")
         setOpen(false)
         setIsLoading(false)
+        // Dispatch custom event to update other components
+        window.dispatchEvent(new Event('mentalDataUpdated'))
         // Delay refresh to avoid hydration mismatch
         setTimeout(() => {
           router.refresh()
