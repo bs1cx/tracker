@@ -94,7 +94,7 @@ export default async function FinancePage() {
             </CardHeader>
             <CardContent>
               <p className="text-2xl font-bold text-slate-200">
-                {monthlySummary?.totalIncome > 0
+                {monthlySummary && monthlySummary.totalIncome > 0
                   ? `${((monthlySummary.balance / monthlySummary.totalIncome) * 100).toFixed(1)}%`
                   : "0%"}
               </p>
