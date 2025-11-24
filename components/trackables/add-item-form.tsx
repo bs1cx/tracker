@@ -49,6 +49,7 @@ export function AddItemForm() {
     selected_days: [] as string[],
     category: "habit" as "task" | "habit",
     start_date: new Date().toISOString().split("T")[0],
+    end_date: "",
   })
   const router = useRouter()
 
@@ -80,6 +81,7 @@ export function AddItemForm() {
       selected_days: [],
       category: "habit",
       start_date: new Date().toISOString().split("T")[0],
+      end_date: "",
     })
     setActiveTab("manual")
   }
@@ -91,6 +93,12 @@ export function AddItemForm() {
     // For templates, we might want to allow empty days initially
     if (activeTab === "manual" && formData.selected_days.length === 0) {
       alert("Lütfen en az 1 gün seçiniz")
+      return
+    }
+    
+    // Validate end_date is after start_date
+    if (formData.end_date && formData.start_date && formData.end_date < formData.start_date) {
+      alert("Bitiş tarihi başlangıç tarihinden önce olamaz")
       return
     }
     
@@ -110,6 +118,7 @@ export function AddItemForm() {
         selected_days: formData.selected_days || [], // Ensure array is passed
         category: formData.category || "habit",
         start_date: formData.start_date,
+        end_date: formData.end_date || null,
       })
 
       setFormData({
@@ -122,11 +131,14 @@ export function AddItemForm() {
         selected_days: [],
         category: "habit",
         start_date: new Date().toISOString().split("T")[0],
+        end_date: "",
       })
       setSearchQuery("")
       setSelectedCategory("all")
       setActiveTab("templates")
       setOpen(false)
+      // Dispatch custom event to update other components
+      window.dispatchEvent(new Event('trackablesDataUpdated'))
       router.refresh()
     } catch (error: any) {
       console.error("Error creating trackable:", error)
@@ -161,10 +173,13 @@ export function AddItemForm() {
         selected_days: ["Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma", "Cumartesi", "Pazar"], // Default to all days for templates
         category: "habit",
         start_date: new Date().toISOString().split("T")[0],
+        end_date: null,
       })
       setOpen(false)
       setSearchQuery("")
       setSelectedCategory("all")
+      // Dispatch custom event to update other components
+      window.dispatchEvent(new Event('trackablesDataUpdated'))
       router.refresh()
     } catch (error: any) {
       console.error("Error creating trackable:", error)
@@ -391,6 +406,22 @@ export function AddItemForm() {
                 }
               />
             </div>
+            {/* End Date Picker */}
+            <div className="grid gap-2">
+              <Label htmlFor="end_date">Bitiş Tarihi (Opsiyonel)</Label>
+              <Input
+                id="end_date"
+                type="date"
+                value={formData.end_date}
+                min={formData.start_date}
+                onChange={(e) =>
+                  setFormData({ ...formData, end_date: e.target.value })
+                }
+              />
+              {formData.end_date && formData.start_date && formData.end_date < formData.start_date && (
+                <p className="text-xs text-red-500">Bitiş tarihi başlangıç tarihinden önce olamaz</p>
+              )}
+            </div>
             {/* Category Selector */}
             {formData.type && (
               <div className="grid gap-2">
@@ -444,6 +475,7 @@ export function AddItemForm() {
                     selected_days: [],
                     category: "habit",
                     start_date: new Date().toISOString().split("T")[0],
+                    end_date: "",
                   })
                   setActiveTab("templates")
                 }}

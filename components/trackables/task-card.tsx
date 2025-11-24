@@ -27,19 +27,36 @@ export function TaskCard({ trackable }: TaskCardProps) {
     try {
       await completeTrackable({ id: trackable.id })
       setIsCompleted(!isCompleted)
+      // Dispatch custom event to update other components
+      window.dispatchEvent(new Event('trackablesDataUpdated'))
     } catch (error) {
       console.error("Error completing trackable:", error)
+      alert("Görev tamamlanırken bir hata oluştu")
     } finally {
       setIsLoading(false)
     }
   }
 
   const handleUpdate = async (id: string, data: Partial<Trackable>) => {
-    await updateTrackable({ id, ...data })
+    try {
+      await updateTrackable({ id, ...data })
+      // Dispatch custom event to update other components
+      window.dispatchEvent(new Event('trackablesDataUpdated'))
+    } catch (error: any) {
+      console.error("Error updating trackable:", error)
+      alert(error?.message || "Görev güncellenirken bir hata oluştu")
+    }
   }
 
   const handleDelete = async (id: string) => {
-    await deleteTrackable({ id })
+    try {
+      await deleteTrackable({ id })
+      // Dispatch custom event to update other components
+      window.dispatchEvent(new Event('trackablesDataUpdated'))
+    } catch (error: any) {
+      console.error("Error deleting trackable:", error)
+      alert(error?.message || "Görev silinirken bir hata oluştu")
+    }
   }
 
   return (
@@ -103,6 +120,18 @@ export function TaskCard({ trackable }: TaskCardProps) {
                 <span className="truncate max-w-[100px]">
                   {trackable.selected_days.length} gün
                 </span>
+              </div>
+            )}
+            {trackable.start_date && (
+              <div className="flex items-center gap-1 text-xs text-slate-400">
+                <Calendar className="h-3 w-3 text-blue-500" />
+                <span>Başlangıç: {formatDate(trackable.start_date, "dd/MM/yyyy")}</span>
+              </div>
+            )}
+            {trackable.end_date && (
+              <div className="flex items-center gap-1 text-xs text-slate-400">
+                <Calendar className="h-3 w-3 text-orange-500" />
+                <span>Bitiş: {formatDate(trackable.end_date, "dd/MM/yyyy")}</span>
               </div>
             )}
           </div>

@@ -20,6 +20,7 @@ export async function createTrackable(data: {
   selected_days?: string[] | null
   category?: "task" | "habit"
   start_date?: string
+  end_date?: string | null
 }) {
   try {
     // Log incoming data
@@ -75,6 +76,15 @@ export async function createTrackable(data: {
       insertData.start_date = data.start_date
     } else {
       insertData.start_date = getCurrentISODate().split("T")[0] // Default to today
+    }
+    if (data.end_date && data.end_date.trim() !== "") {
+      // Validate end_date is after start_date
+      const startDate = new Date(data.start_date || insertData.start_date)
+      const endDate = new Date(data.end_date)
+      if (endDate < startDate) {
+        throw new Error("Bitiş tarihi başlangıç tarihinden önce olamaz")
+      }
+      insertData.end_date = data.end_date
     }
     // selected_days is now required, so always include it
     if (data.selected_days && data.selected_days.length > 0) {
@@ -220,6 +230,7 @@ export async function updateTrackable(data: {
   selected_days?: string[] | null
   category?: "task" | "habit"
   start_date?: string | null
+  end_date?: string | null
 }) {
   try {
     const validated = updateTrackableSchema.parse(data)
@@ -251,6 +262,14 @@ export async function updateTrackable(data: {
       updateData.scheduled_time = data.scheduled_time
     if (data.start_date !== undefined)
       updateData.start_date = data.start_date
+    if (data.end_date !== undefined) {
+      // Validate end_date is after start_date if both are provided
+      if (data.end_date && data.start_date && data.end_date < data.start_date) {
+        throw new Error("Bitiş tarihi başlangıç tarihinden önce olamaz")
+      }
+      updateData.end_date = data.end_date
+    }
+    if (data.category !== undefined) updateData.category = data.category
 
     const { error } = await supabase
       .from("trackables")

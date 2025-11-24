@@ -23,8 +23,11 @@ export function ProgressTracker({ trackable }: ProgressTrackerProps) {
     try {
       await incrementProgress({ id: trackable.id, amount: 1 })
       setCurrentValue((prev) => prev + 1)
-    } catch (error) {
+      // Dispatch custom event to update other components
+      window.dispatchEvent(new Event('trackablesDataUpdated'))
+    } catch (error: any) {
       console.error("Error incrementing progress:", error)
+      alert(error?.message || "İlerleme artırılırken bir hata oluştu")
     } finally {
       setIsLoading(false)
     }
@@ -36,8 +39,11 @@ export function ProgressTracker({ trackable }: ProgressTrackerProps) {
     try {
       await decrementProgress({ id: trackable.id })
       setCurrentValue((prev) => Math.max(0, prev - 1))
-    } catch (error) {
+      // Dispatch custom event to update other components
+      window.dispatchEvent(new Event('trackablesDataUpdated'))
+    } catch (error: any) {
       console.error("Error decrementing progress:", error)
+      alert(error?.message || "İlerleme azaltılırken bir hata oluştu")
     } finally {
       setIsLoading(false)
     }
@@ -49,11 +55,25 @@ export function ProgressTracker({ trackable }: ProgressTrackerProps) {
       : 0
 
   const handleUpdate = async (id: string, data: Partial<Trackable>) => {
-    await updateTrackable({ id, ...data })
+    try {
+      await updateTrackable({ id, ...data })
+      // Dispatch custom event to update other components
+      window.dispatchEvent(new Event('trackablesDataUpdated'))
+    } catch (error: any) {
+      console.error("Error updating trackable:", error)
+      alert(error?.message || "İlerleme güncellenirken bir hata oluştu")
+    }
   }
 
   const handleDelete = async (id: string) => {
-    await deleteTrackable({ id })
+    try {
+      await deleteTrackable({ id })
+      // Dispatch custom event to update other components
+      window.dispatchEvent(new Event('trackablesDataUpdated'))
+    } catch (error: any) {
+      console.error("Error deleting trackable:", error)
+      alert(error?.message || "İlerleme silinirken bir hata oluştu")
+    }
   }
 
   return (

@@ -50,6 +50,20 @@ export function DashboardContent({
     }
   }, [widgets, mounted])
 
+  // Listen for trackables data updates and refresh
+  useEffect(() => {
+    const handleTrackablesUpdate = () => {
+      // Refresh the page to get updated data
+      window.location.reload()
+    }
+    
+    window.addEventListener('trackablesDataUpdated', handleTrackablesUpdate)
+    
+    return () => {
+      window.removeEventListener('trackablesDataUpdated', handleTrackablesUpdate)
+    }
+  }, [])
+
   const handleAddWidget = (widgetId: string) => {
     // Allow up to 2 widgets
     if (!widgets.includes(widgetId) && widgets.length < 2) {

@@ -53,6 +53,15 @@ export function EditTrackableDialog({
   const [selectedDays, setSelectedDays] = useState<string[]>(
     (trackable.selected_days as string[]) || []
   )
+  const [startDate, setStartDate] = useState(
+    trackable.start_date || new Date().toISOString().split("T")[0]
+  )
+  const [endDate, setEndDate] = useState(
+    trackable.end_date || ""
+  )
+  const [category, setCategory] = useState<"task" | "habit">(
+    (trackable.category as "task" | "habit") || "habit"
+  )
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -60,6 +69,12 @@ export function EditTrackableDialog({
     // Validate that at least one day is selected
     if (selectedDays.length === 0) {
       alert("Lütfen en az 1 gün seçiniz")
+      return
+    }
+    
+    // Validate end_date is after start_date
+    if (endDate && startDate && endDate < startDate) {
+      alert("Bitiş tarihi başlangıç tarihinden önce olamaz")
       return
     }
     
@@ -73,10 +88,14 @@ export function EditTrackableDialog({
         priority: priority as any,
         scheduled_time: scheduledTime || null,
         selected_days: selectedDays,
+        start_date: startDate || null,
+        end_date: endDate || null,
+        category: category,
       })
       setOpen(false)
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error updating trackable:", error)
+      alert(error?.message || "Öğe güncellenirken bir hata oluştu")
     } finally {
       setIsLoading(false)
     }
@@ -219,6 +238,48 @@ export function EditTrackableDialog({
                 onChange={setSelectedDays}
                 required={true}
               />
+            </div>
+            {/* Start Date */}
+            <div className="grid gap-2">
+              <Label htmlFor="start_date">Başlangıç Tarihi</Label>
+              <Input
+                id="start_date"
+                type="date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+              />
+            </div>
+            {/* End Date */}
+            <div className="grid gap-2">
+              <Label htmlFor="end_date">Bitiş Tarihi (Opsiyonel)</Label>
+              <Input
+                id="end_date"
+                type="date"
+                value={endDate}
+                min={startDate}
+                onChange={(e) => setEndDate(e.target.value)}
+              />
+              {endDate && startDate && endDate < startDate && (
+                <p className="text-xs text-red-500">Bitiş tarihi başlangıç tarihinden önce olamaz</p>
+              )}
+            </div>
+            {/* Category */}
+            <div className="grid gap-2">
+              <Label htmlFor="category">Kategori</Label>
+              <Select
+                value={category}
+                onValueChange={(value) =>
+                  setCategory(value as "task" | "habit")
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="habit">Alışkanlık</SelectItem>
+                  <SelectItem value="task">Görev</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
           <DialogFooter>

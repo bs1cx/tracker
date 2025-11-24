@@ -16,6 +16,8 @@ export const trackableSchema = z.object({
   priority: z.enum(["low", "medium", "high"]).optional(),
   selected_days: z.array(z.string()).optional().default([]),
   category: z.enum(["task", "habit"]).optional(),
+  start_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Geçerli bir tarih formatı giriniz (YYYY-MM-DD)").optional(),
+  end_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Geçerli bir tarih formatı giriniz (YYYY-MM-DD)").nullable().optional(),
 })
 
 export const updateTrackableSchema = z.object({
@@ -29,6 +31,9 @@ export const updateTrackableSchema = z.object({
   priority: z.enum(["low", "medium", "high"]).optional(),
   scheduled_time: z.string().nullable().optional(),
   selected_days: z.array(z.string()).min(1, "En az 1 gün seçmelisiniz").optional().nullable(),
+  category: z.enum(["task", "habit"]).optional(),
+  start_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Geçerli bir tarih formatı giriniz (YYYY-MM-DD)").nullable().optional(),
+  end_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Geçerli bir tarih formatı giriniz (YYYY-MM-DD)").nullable().optional(),
 })
 
 export const incrementProgressSchema = z.object({

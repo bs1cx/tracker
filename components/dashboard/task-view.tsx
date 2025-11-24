@@ -45,7 +45,18 @@ export function TaskView({
     // Update every minute
     const interval = setInterval(updateToday, 60000)
     
-    return () => clearInterval(interval)
+    // Listen for trackables data updates
+    const handleTrackablesUpdate = () => {
+      // Force re-render by updating a state
+      setToday(new Date())
+    }
+    
+    window.addEventListener('trackablesDataUpdated', handleTrackablesUpdate)
+    
+    return () => {
+      clearInterval(interval)
+      window.removeEventListener('trackablesDataUpdated', handleTrackablesUpdate)
+    }
   }, [])
 
   // Filter trackables based on view type - STRICT DATE FILTERING

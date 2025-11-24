@@ -17,6 +17,7 @@ export interface Trackable {
   selected_days?: string[] | null
   category?: "task" | "habit"
   start_date?: string | null
+  end_date?: string | null
   scheduled_date?: string | null // timestamptz: specific date/time when task should appear
   is_recurring?: boolean
   recurrence_rule?: {
