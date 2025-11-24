@@ -21,27 +21,26 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { TrendingDown, Plus } from "lucide-react"
+import { TrendingUp, Plus } from "lucide-react"
 import { tr } from "@/lib/i18n"
-import { addExpense } from "@/app/actions-finance"
+import { addIncome } from "@/app/actions-finance"
 
-const expenseCategories = [
-  "Yemek",
-  "Ulaşım",
-  "Eğlence",
-  "Faturalar",
-  "Alışveriş",
-  "Sağlık",
-  "Eğitim",
+const incomeSources = [
+  "Maaş",
+  "Freelance",
+  "Yatırım",
+  "Kira Geliri",
+  "Bonus",
+  "Hediye",
   "Diğer",
 ]
 
-export function ExpenseForm() {
+export function IncomeForm() {
   const router = useRouter()
   const [open, setOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [amount, setAmount] = useState("")
-  const [category, setCategory] = useState("")
+  const [source, setSource] = useState("")
   const [description, setDescription] = useState("")
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -49,24 +48,24 @@ export function ExpenseForm() {
     setIsLoading(true)
 
     try {
-      const result = await addExpense({
+      const result = await addIncome({
         amount: parseFloat(amount),
-        category,
+        source: source || undefined,
         description: description || undefined,
       })
 
       if (result?.success) {
         setOpen(false)
         setAmount("")
-        setCategory("")
+        setSource("")
         setDescription("")
         setTimeout(() => router.refresh(), 100)
       } else {
-        alert(result?.error || "Harcama eklenirken bir hata oluştu.")
+        alert(result?.error || "Gelir eklenirken bir hata oluştu.")
       }
     } catch (error: any) {
-      console.error("Error adding expense:", error)
-      alert("Harcama eklenirken bir hata oluştu.")
+      console.error("Error adding income:", error)
+      alert("Gelir eklenirken bir hata oluştu.")
     } finally {
       setIsLoading(false)
     }
@@ -76,16 +75,16 @@ export function ExpenseForm() {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button size="sm" variant="outline">
-          <TrendingDown className="mr-2 h-4 w-4" />
-          Yeni Harcama
+          <TrendingUp className="mr-2 h-4 w-4" />
+          Yeni Gelir
         </Button>
       </DialogTrigger>
       <DialogContent>
         <form onSubmit={handleSubmit}>
           <DialogHeader>
-            <DialogTitle>Harcama Ekle</DialogTitle>
+            <DialogTitle>Gelir Ekle</DialogTitle>
             <DialogDescription>
-              Yaptığınız harcamayı kaydedin
+              Elde ettiğiniz geliri kaydedin
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
@@ -96,22 +95,22 @@ export function ExpenseForm() {
                 type="number"
                 step="0.01"
                 min="0"
-                placeholder="100.00"
+                placeholder="1000.00"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
                 required
               />
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="category">{tr.finance.category}</Label>
-              <Select value={category} onValueChange={setCategory} required>
+              <Label htmlFor="source">Kaynak (Opsiyonel)</Label>
+              <Select value={source} onValueChange={setSource}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Kategori seçin" />
+                  <SelectValue placeholder="Kaynak seçin" />
                 </SelectTrigger>
                 <SelectContent>
-                  {expenseCategories.map((cat) => (
-                    <SelectItem key={cat} value={cat}>
-                      {cat}
+                  {incomeSources.map((src) => (
+                    <SelectItem key={src} value={src}>
+                      {src}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -121,7 +120,7 @@ export function ExpenseForm() {
               <Label htmlFor="description">Açıklama (Opsiyonel)</Label>
               <Input
                 id="description"
-                placeholder="Harcama detayı"
+                placeholder="Gelir detayı"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
               />
