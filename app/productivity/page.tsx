@@ -5,6 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { PomodoroTimer } from "@/components/productivity/pomodoro-timer"
 import { FocusMode } from "@/components/productivity/focus-mode"
 import { GoalsManager } from "@/components/productivity/goals-manager"
+import { ProductivityReports } from "@/components/productivity/productivity-reports"
+import { SessionHistory } from "@/components/productivity/session-history"
 import { CheckSquare, FileText } from "lucide-react"
 import { getTodayPomodoroSessions, getTodayFocusSessions } from "@/app/actions-productivity"
 import Link from "next/link"
@@ -108,9 +110,21 @@ export default async function ProductivityPage() {
           {/* Focus Mode */}
           <FocusMode />
 
+          {/* Session History */}
+          <SessionHistory />
+
           {/* Goals */}
           <div className="md:col-span-2 lg:col-span-3">
             <GoalsManager />
+          </div>
+
+          {/* Reports */}
+          <div className="md:col-span-2 lg:col-span-3">
+            <ProductivityReports
+              todayPomodoro={totalPomodoroMinutes}
+              todayFocus={totalFocusMinutes}
+              todayTotal={totalPomodoroMinutes + totalFocusMinutes}
+            />
           </div>
         </div>
       </div>
