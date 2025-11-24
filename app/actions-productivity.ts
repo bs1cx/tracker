@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server"
 import { revalidatePath } from "next/cache"
 import { z } from "zod"
 import { getCurrentISODate } from "@/lib/date-utils"
+import { format } from "date-fns"
 
 // Validation schemas
 const pomodoroSessionSchema = z.object({
@@ -481,6 +482,279 @@ export async function getActiveGoals() {
   } catch (error) {
     console.error("Error in getActiveGoals:", error)
     return []
+  }
+}
+
+// Get weekly productivity data
+export async function getWeeklyProductivityData() {
+  try {
+    const supabase = await createClient()
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+
+    if (!user) return null
+
+    const { getStartOfWeek, getEndOfWeek, getDaysInInterval } = await import("@/lib/date-utils")
+    const startOfWeek = getStartOfWeek()
+    const endOfWeek = getEndOfWeek()
+    const days = getDaysInInterval(startOfWeek, endOfWeek)
+
+    // Fetch pomodoro sessions
+    const { data: pomodoroData, error: pomodoroError } = await supabase
+      .from("pomodoro_sessions")
+      .select("*")
+      .eq("user_id", user.id)
+      .gte("log_date", format(startOfWeek, "yyyy-MM-dd"))
+      .lte("log_date", format(endOfWeek, "yyyy-MM-dd"))
+      .order("log_date", { ascending: true })
+
+    // Fetch focus sessions
+    const { data: focusData, error: focusError } = await supabase
+      .from("focus_sessions")
+      .select("*")
+      .eq("user_id", user.id)
+      .gte("log_date", format(startOfWeek, "yyyy-MM-dd"))
+      .lte("log_date", format(endOfWeek, "yyyy-MM-dd"))
+      .order("log_date", { ascending: true })
+
+    if (pomodoroError || focusError) {
+      console.error("Error fetching weekly productivity data:", pomodoroError || focusError)
+      return null
+    }
+
+    // Group data by day
+    const pomodoroByDay: Record<string, { sessions: number; minutes: number }> = {}
+    const focusByDay: Record<string, { sessions: number; minutes: number }> = {}
+
+    days.forEach(day => {
+      const dayStr = format(day, "yyyy-MM-dd")
+      pomodoroByDay[dayStr] = { sessions: 0, minutes: 0 }
+      focusByDay[dayStr] = { sessions: 0, minutes: 0 }
+    })
+
+    pomodoroData?.forEach(session => {
+      const dayStr = session.log_date
+      if (pomodoroByDay[dayStr]) {
+        pomodoroByDay[dayStr].sessions++
+        pomodoroByDay[dayStr].minutes += session.duration_minutes || 0
+      }
+    })
+
+    focusData?.forEach(session => {
+      const dayStr = session.log_date
+      if (focusByDay[dayStr]) {
+        focusByDay[dayStr].sessions++
+        focusByDay[dayStr].minutes += session.duration_minutes || 0
+      }
+    })
+
+    // Format for charts
+    const pomodoroChart = days.map(day => {
+      const dayStr = format(day, "yyyy-MM-dd")
+      return {
+        date: format(day, "dd/MM"),
+        sessions: pomodoroByDay[dayStr]?.sessions || 0,
+        minutes: pomodoroByDay[dayStr]?.minutes || 0,
+      }
+    })
+
+    const focusChart = days.map(day => {
+      const dayStr = format(day, "yyyy-MM-dd")
+      return {
+        date: format(day, "dd/MM"),
+        sessions: focusByDay[dayStr]?.sessions || 0,
+        minutes: focusByDay[dayStr]?.minutes || 0,
+      }
+    })
+
+    const totalMinutes = days.map(day => {
+      const dayStr = format(day, "yyyy-MM-dd")
+      return {
+        date: format(day, "dd/MM"),
+        minutes: (pomodoroByDay[dayStr]?.minutes || 0) + (focusByDay[dayStr]?.minutes || 0),
+      }
+    })
+
+    // Calculate averages
+    const totalPomodoroMinutes = pomodoroData?.reduce((sum, s) => sum + (s.duration_minutes || 0), 0) || 0
+    const totalFocusMinutes = focusData?.reduce((sum, s) => sum + (s.duration_minutes || 0), 0) || 0
+    const totalPomodoroSessions = pomodoroData?.length || 0
+    const totalFocusSessions = focusData?.length || 0
+
+    return {
+      pomodoro: pomodoroChart,
+      focus: focusChart,
+      total: totalMinutes,
+      averages: {
+        pomodoroMinutes: totalPomodoroMinutes / 7,
+        focusMinutes: totalFocusMinutes / 7,
+        pomodoroSessions: totalPomodoroSessions / 7,
+        focusSessions: totalFocusSessions / 7,
+      },
+      totals: {
+        pomodoroMinutes: totalPomodoroMinutes,
+        focusMinutes: totalFocusMinutes,
+        pomodoroSessions: totalPomodoroSessions,
+        focusSessions: totalFocusSessions,
+        totalMinutes: totalPomodoroMinutes + totalFocusMinutes,
+      },
+    }
+  } catch (error) {
+    console.error("Error in getWeeklyProductivityData:", error)
+    return null
+  }
+}
+
+// Get monthly productivity data
+export async function getMonthlyProductivityData() {
+  try {
+    const supabase = await createClient()
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+
+    if (!user) return null
+
+    const { getStartOfMonth, getEndOfMonth, getStartOfWeek, getEndOfWeek } = await import("@/lib/date-utils")
+    const startOfMonth = getStartOfMonth()
+    const endOfMonth = getEndOfMonth()
+
+    // Fetch all sessions for the month
+    const { data: pomodoroData, error: pomodoroError } = await supabase
+      .from("pomodoro_sessions")
+      .select("*")
+      .eq("user_id", user.id)
+      .gte("log_date", format(startOfMonth, "yyyy-MM-dd"))
+      .lte("log_date", format(endOfMonth, "yyyy-MM-dd"))
+      .order("log_date", { ascending: true })
+
+    const { data: focusData, error: focusError } = await supabase
+      .from("focus_sessions")
+      .select("*")
+      .eq("user_id", user.id)
+      .gte("log_date", format(startOfMonth, "yyyy-MM-dd"))
+      .lte("log_date", format(endOfMonth, "yyyy-MM-dd"))
+      .order("log_date", { ascending: true })
+
+    if (pomodoroError || focusError) {
+      console.error("Error fetching monthly productivity data:", pomodoroError || focusError)
+      return null
+    }
+
+    // Group by weeks
+    const weeks: Array<{ start: Date; end: Date; weekNum: number }> = []
+    let currentWeekStart = getStartOfWeek(startOfMonth)
+    let weekNum = 1
+
+    while (currentWeekStart <= endOfMonth) {
+      const weekEnd = getEndOfWeek(currentWeekStart)
+      weeks.push({
+        start: currentWeekStart,
+        end: weekEnd > endOfMonth ? endOfMonth : weekEnd,
+        weekNum,
+      })
+      weekNum++
+      currentWeekStart = new Date(weekEnd)
+      currentWeekStart.setDate(currentWeekStart.getDate() + 1)
+    }
+
+    const pomodoroByWeek = weeks.map(week => {
+      const weekPomodoro = pomodoroData?.filter(s => {
+        const logDate = new Date(s.log_date)
+        return logDate >= week.start && logDate <= week.end
+      }) || []
+      return {
+        week: `Hafta ${week.weekNum}`,
+        sessions: weekPomodoro.length,
+        minutes: weekPomodoro.reduce((sum, s) => sum + (s.duration_minutes || 0), 0),
+      }
+    })
+
+    const focusByWeek = weeks.map(week => {
+      const weekFocus = focusData?.filter(s => {
+        const logDate = new Date(s.log_date)
+        return logDate >= week.start && logDate <= week.end
+      }) || []
+      return {
+        week: `Hafta ${week.weekNum}`,
+        sessions: weekFocus.length,
+        minutes: weekFocus.reduce((sum, s) => sum + (s.duration_minutes || 0), 0),
+      }
+    })
+
+    const totalByWeek = weeks.map((week, idx) => ({
+      week: `Hafta ${week.weekNum}`,
+      minutes: pomodoroByWeek[idx].minutes + focusByWeek[idx].minutes,
+    }))
+
+    // Calculate totals and averages
+    const totalPomodoroMinutes = pomodoroData?.reduce((sum, s) => sum + (s.duration_minutes || 0), 0) || 0
+    const totalFocusMinutes = focusData?.reduce((sum, s) => sum + (s.duration_minutes || 0), 0) || 0
+    const totalPomodoroSessions = pomodoroData?.length || 0
+    const totalFocusSessions = focusData?.length || 0
+    const daysInMonth = Math.ceil((endOfMonth.getTime() - startOfMonth.getTime()) / (1000 * 60 * 60 * 24)) + 1
+
+    return {
+      pomodoro: pomodoroByWeek,
+      focus: focusByWeek,
+      total: totalByWeek,
+      averages: {
+        pomodoroMinutes: totalPomodoroMinutes / daysInMonth,
+        focusMinutes: totalFocusMinutes / daysInMonth,
+        pomodoroSessions: totalPomodoroSessions / daysInMonth,
+        focusSessions: totalFocusSessions / daysInMonth,
+      },
+      totals: {
+        pomodoroMinutes: totalPomodoroMinutes,
+        focusMinutes: totalFocusMinutes,
+        pomodoroSessions: totalPomodoroSessions,
+        focusSessions: totalFocusSessions,
+        totalMinutes: totalPomodoroMinutes + totalFocusMinutes,
+      },
+    }
+  } catch (error) {
+    console.error("Error in getMonthlyProductivityData:", error)
+    return null
+  }
+}
+
+// Get recent sessions (last 10)
+export async function getRecentSessions() {
+  try {
+    const supabase = await createClient()
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+
+    if (!user) return { pomodoro: [], focus: [] }
+
+    const { data: pomodoroData, error: pomodoroError } = await supabase
+      .from("pomodoro_sessions")
+      .select("*")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false })
+      .limit(10)
+
+    const { data: focusData, error: focusError } = await supabase
+      .from("focus_sessions")
+      .select("*")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false })
+      .limit(10)
+
+    if (pomodoroError || focusError) {
+      console.error("Error fetching recent sessions:", pomodoroError || focusError)
+      return { pomodoro: [], focus: [] }
+    }
+
+    return {
+      pomodoro: pomodoroData || [],
+      focus: focusData || [],
+    }
+  } catch (error) {
+    console.error("Error in getRecentSessions:", error)
+    return { pomodoro: [], focus: [] }
   }
 }
 
