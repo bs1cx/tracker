@@ -316,3 +316,142 @@ export async function getWeeklyFinanceData() {
   }
 }
 
+// Get all expenses and income with filters
+export async function getTransactions(filters?: {
+  type?: "expense" | "income" | "all"
+  category?: string
+  source?: string
+  startDate?: string
+  endDate?: string
+  minAmount?: number
+  maxAmount?: number
+  limit?: number
+}) {
+  try {
+    const supabase = await createClient()
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+
+    if (!user) return { expenses: [], income: [] }
+
+    const expensesQuery = supabase
+      .from("expenses")
+      .select("*")
+      .eq("user_id", user.id)
+
+    const incomeQuery = supabase
+      .from("income")
+      .select("*")
+      .eq("user_id", user.id)
+
+    // Apply filters
+    if (filters?.category) {
+      expensesQuery.eq("category", filters.category)
+    }
+    if (filters?.source) {
+      incomeQuery.eq("source", filters.source)
+    }
+    if (filters?.startDate) {
+      expensesQuery.gte("log_date", filters.startDate)
+      incomeQuery.gte("log_date", filters.startDate)
+    }
+    if (filters?.endDate) {
+      expensesQuery.lte("log_date", filters.endDate)
+      incomeQuery.lte("log_date", filters.endDate)
+    }
+    if (filters?.minAmount !== undefined) {
+      expensesQuery.gte("amount", filters.minAmount)
+      incomeQuery.gte("amount", filters.minAmount)
+    }
+    if (filters?.maxAmount !== undefined) {
+      expensesQuery.lte("amount", filters.maxAmount)
+      incomeQuery.lte("amount", filters.maxAmount)
+    }
+
+    // Order by date
+    expensesQuery.order("log_date", { ascending: false })
+    incomeQuery.order("log_date", { ascending: false })
+
+    // Apply limit
+    if (filters?.limit) {
+      expensesQuery.limit(filters.limit)
+      incomeQuery.limit(filters.limit)
+    }
+
+    const [expensesResult, incomeResult] = await Promise.all([
+      filters?.type !== "income" ? expensesQuery : Promise.resolve({ data: [], error: null }),
+      filters?.type !== "expense" ? incomeQuery : Promise.resolve({ data: [], error: null }),
+    ])
+
+    if (expensesResult.error || incomeResult.error) {
+      console.error("Error fetching transactions:", expensesResult.error || incomeResult.error)
+      return { expenses: [], income: [] }
+    }
+
+    return {
+      expenses: expensesResult.data || [],
+      income: incomeResult.data || [],
+    }
+  } catch (error) {
+    console.error("Error in getTransactions:", error)
+    return { expenses: [], income: [] }
+  }
+}
+
+// Get unique categories from expenses
+export async function getExpenseCategories() {
+  try {
+    const supabase = await createClient()
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+
+    if (!user) return []
+
+    const { data, error } = await supabase
+      .from("expenses")
+      .select("category")
+      .eq("user_id", user.id)
+
+    if (error) {
+      console.error("Error fetching categories:", error)
+      return []
+    }
+
+    const uniqueCategories = Array.from(new Set(data?.map(e => e.category).filter(Boolean) || []))
+    return uniqueCategories.sort()
+  } catch (error) {
+    console.error("Error in getExpenseCategories:", error)
+    return []
+  }
+}
+
+// Get unique sources from income
+export async function getIncomeSources() {
+  try {
+    const supabase = await createClient()
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+
+    if (!user) return []
+
+    const { data, error } = await supabase
+      .from("income")
+      .select("source")
+      .eq("user_id", user.id)
+
+    if (error) {
+      console.error("Error fetching sources:", error)
+      return []
+    }
+
+    const uniqueSources = Array.from(new Set(data?.map(i => i.source).filter(Boolean) || []))
+    return uniqueSources.sort()
+  } catch (error) {
+    console.error("Error in getIncomeSources:", error)
+    return []
+  }
+}
+

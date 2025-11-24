@@ -7,6 +7,7 @@ import { IncomeForm } from "@/components/finance/income-form"
 import { FinanceReports } from "@/components/finance/finance-reports"
 import { FinancialRules } from "@/components/finance/financial-rules"
 import { FinanceSummaryCards } from "@/components/finance/finance-summary-cards"
+import { TransactionsList } from "@/components/finance/transactions-list"
 import { getMonthlyFinanceSummary } from "@/app/actions-finance"
 
 export const dynamic = 'force-dynamic'
@@ -59,6 +60,11 @@ export default async function FinancePage() {
               <IncomeForm />
             </CardContent>
           </Card>
+        </div>
+
+        {/* Transactions List */}
+        <div className="mb-6">
+          <TransactionsList />
         </div>
 
         {/* Reports */}
